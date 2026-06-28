@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Shield, Users, Trophy, Swords, Beer, Scroll, Plus, RefreshCw, Check, Minus, MapPin, Trash2, ChevronDown, ChevronUp, Package, Sparkles } from 'lucide-react';
+import { Shield, Users, Trophy, Swords, Beer, Scroll, Plus, RefreshCw, Check, Minus, MapPin, Trash2, ChevronDown, ChevronUp, Package, Sparkles, Hammer, Layers, Flame } from 'lucide-react';
 
 // Configuration de tes accès Supabase
 const SUPABASE_URL = "https://pdndmtktluaggvupgsej.supabase.co";
@@ -118,6 +118,10 @@ export default function App() {
     if (data) {
       setChantiers([...chantiers, data[0]]);
       setNewChantierName('');
+    } else {
+      // Fallback si Supabase n'est pas encore configuré à 100%
+      setChantiers([...chantiers, { ...newChantier, id: Date.now() }]);
+      setNewChantierName('');
     }
   };
 
@@ -155,7 +159,6 @@ export default function App() {
 
     const query = aiQuery.toLowerCase();
     
-    // Système de réponses simulé enrichi pour Minecraft / Create / Ars Nouveau
     setTimeout(() => {
       if (query.includes('create') || query.includes('machinery') || query.includes('machine')) {
         setAiResponse("⚙️ [Grimoire Create] : Pour automatiser la récolte d'Andésite, assemblez un Mechanical Drill connecté à une source de rotation (Water Wheel). N'oubliez pas que pour débloquer les crafts avancés, la capture d'un Blaze dans le Nether reste l'étape prioritaire pour alimenter vos Blaze Burners !");
@@ -229,7 +232,7 @@ export default function App() {
 
   const chestSlots = Array.from({ length: 54 }, (_, idx) => trouvailles[idx] || null);
 
-  // ÉCRAN 1 : ACCUEIL ET INSCRIPTION DU PSEUDO (Style exact de ton image_189d60.jpg)
+  // ÉCRAN ACCUEIL (PSEUDO)
   if (!isRegistered) {
     return (
       <div className="min-h-screen bg-[#18120f] text-[#d4c5b9] font-serif flex flex-col justify-between" style={{ backgroundImage: 'linear-gradient(rgba(20, 14, 10, 0.94), rgba(12, 8, 6, 0.98)), url("https://images.unsplash.com/photo-1597200381847-30ec200eeb9a?q=80&w=1200")' }}>
@@ -288,7 +291,7 @@ export default function App() {
     );
   }
 
-  // ÉCRAN 2 : PANNEAU DES CHANTIERS ET INTERFACE COMPLET
+  // INTERFACE PRINCIPALE
   return (
     <div className="min-h-screen bg-[#0e0a08] text-[#94a3b8] font-sans antialiased">
       <header className="border-b border-[#291a12] bg-[#140f0c] sticky top-0 z-50 px-4 lg:px-8 py-4">
@@ -309,11 +312,11 @@ export default function App() {
         </div>
       </header>
 
-      {/* ONGLETS DE NAVIGATION */}
+      {/* NAVIGATION ONGLETS */}
       <div className="bg-[#140f0c] border-b border-[#291a12]/60 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex gap-1">
           {[
-            { id: 'projets', label: 'Chantiers de Guilde', icon: Swords },
+            { id: 'projets', label: 'Chantiers de Guilde', icon: Hammer },
             { id: 'trouvailles', label: 'Double Coffre', icon: Scroll },
             { id: 'raids', label: 'Raids & Boss', icon: Shield },
             { id: 'guide', label: 'Grimoire d\'Aide', icon: Trophy },
@@ -336,75 +339,133 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* COMPOSANT CHANTIERS */}
+            {/* ==================== NOUVEAU COMPOSANT CHANTIERS REFONDU ==================== */}
             {activeTab === 'projets' && (
-              <div className="space-y-6">
-                {/* AJOUTER UN CHANTIER CUSTOM */}
-                <form onSubmit={handleAddChantier} className="bg-[#140f0c] border border-[#3e2b1f] rounded p-4 grid grid-cols-1 md:grid-cols-4 gap-3 text-xs items-end shadow-lg">
-                  <div className="md:col-span-2">
-                    <label className="block text-[10px] font-bold uppercase text-stone-500 mb-1">🔨 Ouvrir un nouveau chantier / Objectif</label>
-                    <input type="text" value={newChantierName} onChange={(e) => setNewChantierName(e.target.value)} placeholder="Ex: Coffres de plaques d'Acier, Autel d'Invocation..." className="w-full bg-[#070504] border border-[#3a2920] rounded p-2 text-stone-100 focus:outline-none" required />
+              <div className="space-y-8 animate-fadeIn">
+                
+                {/* BLOC FORMULAIRE ERGONOMIQUE ET STRUCTURÉ */}
+                <div className="bg-gradient-to-br from-[#19120e] to-[#120c09] border border-[#443022] rounded-xl p-5 shadow-2xl">
+                  <div className="flex items-center gap-2.5 mb-4 border-b border-[#3a291f] pb-3">
+                    <Layers className="w-5 h-5 text-[#e58219]" />
+                    <div>
+                      <h3 className="font-serif font-bold text-stone-200 text-sm uppercase tracking-wide">Lancer ou Planifier un Objectif Commun</h3>
+                      <p className="text-[11px] text-stone-400">Remplissez les besoins de la guilde pour coordonner les crafts et collectes de ressources.</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-stone-500 mb-1">Voie d'évolution</label>
-                    <select value={newChantierCategory} onChange={(e) => setNewChantierCategory(e.target.value)} className="w-full bg-[#070504] border border-[#3a2920] rounded p-2 text-stone-300">
-                      <option value="machinery">⚙️ Technologie (Create)</option>
-                      <option value="magic">🔮 Magie (Ars Nouveau)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-stone-500 mb-1">Ressources requises</label>
-                    <input type="number" value={newChantierMax} onChange={(e) => setNewChantierMax(e.target.value)} className="w-full bg-[#070504] border border-[#3a2920] rounded p-2 text-stone-100 focus:outline-none" />
-                  </div>
-                  <button type="submit" className="md:col-span-4 bg-amber-700 hover:bg-amber-600 text-stone-950 font-serif font-bold py-2 rounded uppercase tracking-wider transition-colors">Graver ce chantier commun</button>
-                </form>
 
-                {/* LES LISTES DE CHANTIERS */}
+                  <form onSubmit={handleAddChantier} className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs items-end">
+                    <div className="md:col-span-5">
+                      <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1.5 tracking-wider">Intitulé du Chantier / Matériaux visés</label>
+                      <input type="text" value={newChantierName} onChange={(e) => setNewChantierName(e.target.value)} placeholder="Ex: 64x Plaques d'Acier, Autel de Source niveau 3..." className="w-full bg-[#090605] border border-[#3e2b1f] rounded-lg p-2.5 text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#e58219] transition-all text-xs" required />
+                    </div>
+                    
+                    <div className="md:col-span-4">
+                      <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1.5 tracking-wider">Catégorie du Projet</label>
+                      <select value={newChantierCategory} onChange={(e) => setNewChantierCategory(e.target.value)} className="w-full bg-[#090605] border border-[#3e2b1f] rounded-lg p-2.5 text-stone-300 focus:outline-none focus:border-[#e58219] transition-all text-xs cursor-pointer">
+                        <option value="machinery">⚙️ Technologie & Automatisation (Create)</option>
+                        <option value="magic">🔮 Arts Arcaniques & Magie (Ars Nouveau)</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-3">
+                      <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1.5 tracking-wider">Quantité totale requise</label>
+                      <input type="number" min="1" value={newChantierMax} onChange={(e) => setNewChantierMax(e.target.value)} className="w-full bg-[#090605] border border-[#3e2b1f] rounded-lg p-2.5 text-stone-100 focus:outline-none focus:border-[#e58219] transition-all text-xs" required />
+                    </div>
+
+                    <div className="md:col-span-12 mt-1">
+                      <button type="submit" className="w-full bg-[#e58219] hover:bg-[#c96f12] text-stone-950 font-serif font-black py-3 rounded-lg uppercase tracking-widest transition-all shadow-lg active:scale-[0.99] flex items-center justify-center gap-2 text-xs">
+                        <Plus className="w-4 h-4 stroke-[3]" /> Inscrire l'objectif sur le grand tableau
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* ZONE DES LISTES DE CHANTIERS */}
                 {['machinery', 'magic'].map((cat) => (
-                  <div key={cat} className="bg-[#140f0c] border border-[#2e2017] rounded overflow-hidden shadow-2xl">
-                    <button onClick={() => setExpandedCategories({ ...expandedCategories, [cat]: !expandedCategories[cat] })} className="w-full px-4 py-3 bg-[#1b1410] flex items-center justify-between border-b border-[#2e2017] text-stone-200 hover:bg-[#211914] transition">
-                      <span className="font-serif font-bold uppercase tracking-wider text-xs text-[#e58219]">
-                        {cat === 'machinery' ? '⚙️ Chantiers d\'Ingénierie Technologique (Create)' : '🔮 Chantiers des Hautes Sphères Magiques (Ars Nouveau)'}
-                      </span>
-                      {expandedCategories[cat] ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <div key={cat} className="bg-[#120d0a] border border-[#2b1d15] rounded-xl overflow-hidden shadow-xl">
+                    
+                    {/* EN-TÊTE DE SECTION DÉROULANTE */}
+                    <button onClick={() => setExpandedCategories({ ...expandedCategories, [cat]: !expandedCategories[cat] })} className="w-full px-5 py-4 bg-[#1a130f] flex items-center justify-between border-b border-[#2b1d15] text-stone-200 hover:bg-[#221813] transition-all">
+                      <div className="flex items-center gap-3">
+                        {cat === 'machinery' ? <Flame className="w-4 h-4 text-amber-500" /> : <Sparkles className="w-4 h-4 text-purple-400" />}
+                        <span className="font-serif font-bold uppercase tracking-wider text-xs text-stone-200">
+                          {cat === 'machinery' ? "Chantiers d'Ingénierie & Usines (Create)" : "Chantiers Magiques & Cabales (Ars Nouveau)"}
+                        </span>
+                        <span className="bg-[#090605] border border-[#332219] px-2 py-0.5 rounded-full text-[10px] font-mono font-bold text-stone-400">
+                          {chantiers.filter(c => c.category === cat).length} actif(s)
+                        </span>
+                      </div>
+                      {expandedCategories[cat] ? <ChevronUp className="w-4 h-4 text-stone-500" /> : <ChevronDown className="w-4 h-4 text-stone-500" />}
                     </button>
+
+                    {/* GRILLE DES CHANTIERS DE LA CATÉGORIE */}
                     {expandedCategories[cat] && (
-                      <div className="divide-y divide-[#2e2017]/40 bg-[#0f0a08]">
+                      <div className="p-4 bg-[#0a0706] divide-y divide-[#1f140e]/60">
                         {chantiers.filter(c => c.category === cat).length === 0 ? (
-                          <p className="p-4 text-stone-600 italic text-xs">Aucun chantier actif. Utilisez le formulaire ci-dessus pour lancer la guilde !</p>
+                          <div className="text-center py-8 text-stone-600 italic text-xs font-serif">
+                            Aucun objectif actif dans cette catégorie pour le moment.
+                          </div>
                         ) : (
                           chantiers.filter(c => c.category === cat).map((res) => {
                             const isFinished = res.current >= res.max;
+                            const percentage = Math.min(Math.round((res.current / res.max) * 100), 100);
+
                             return (
-                              <div key={res.id} className={`p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs transition-colors ${isFinished ? 'bg-emerald-950/10 border-l-2 border-emerald-600' : ''}`}>
-                                <div className="flex items-center gap-3">
-                                  {/* BOUTON SUPPRIMER LE CHANTIER */}
-                                  <button onClick={() => handleDeleteChantier(res.id)} className="text-stone-700 hover:text-red-500 p-1 rounded transition-colors" title="Supprimer définitivement ce chantier">
-                                    <Trash2 className="w-3.5 h-3.5" />
+                              <div key={res.id} className={`py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all first:pt-1 last:pb-1`}>
+                                
+                                {/* 1. INFOS & SUPPRESSION */}
+                                <div className="flex items-start gap-3 md:w-2/5">
+                                  <button onClick={() => handleDeleteChantier(res.id)} className="mt-0.5 text-stone-600 hover:text-red-500 hover:bg-red-950/20 p-1.5 rounded-md transition-all" title="Supprimer définitivement ce chantier">
+                                    <Trash2 className="w-4 h-4" />
                                   </button>
-                                  <div>
-                                    <span className={`font-medium font-serif ${isFinished ? 'text-emerald-400 line-through' : 'text-stone-300'}`}>{res.name}</span>
-                                    {isFinished && <span className="ml-2 text-[9px] uppercase tracking-wider font-bold text-emerald-500 bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-900/40">Validé / Fini</span>}
-                                    {res.by && !isFinished && <span className="text-[9px] text-amber-500 bg-amber-950/30 px-1.5 py-0.5 rounded font-mono ml-2">Soutenu par {res.by}</span>}
+                                  <div className="space-y-1">
+                                    <span className={`font-serif font-bold text-sm block tracking-wide ${isFinished ? 'text-emerald-400 line-through' : 'text-stone-200'}`}>
+                                      {res.name}
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5 items-center">
+                                      {isFinished ? (
+                                        <span className="text-[9px] uppercase tracking-wider font-extrabold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">Validé / Fini ✅</span>
+                                      ) : (
+                                        <span className="text-[9px] uppercase tracking-wider font-bold text-amber-500 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/40">En cours 🔨</span>
+                                      )}
+                                      {res.by && (
+                                        <span className="text-[9px] text-stone-400 font-mono">Dernier contributeur : <b className="text-stone-300 font-sans">{res.by}</b></span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 2. BARRE DE PROGRESSION ERGONOMIQUE */}
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex justify-between text-[10px] font-mono font-bold text-stone-400">
+                                    <span>Progression globale</span>
+                                    <span className={isFinished ? "text-emerald-400" : "text-amber-500"}>{percentage}%</span>
+                                  </div>
+                                  <div className="w-full bg-[#16100d] h-2.5 rounded-full overflow-hidden border border-[#2b1d15] p-0.5">
+                                    <div className={`h-full rounded-full transition-all duration-300 ${isFinished ? 'bg-gradient-to-r from-emerald-600 to-teal-400 shadow-[0_0_10px_rgba(52,211,153,0.3)]' : 'bg-gradient-to-r from-amber-600 to-yellow-500'}`} style={{ width: `${percentage}%` }}></div>
                                   </div>
                                 </div>
                                 
+                                {/* 3. PANNEAU DE CONTROLE DES COMPTEURS & VALIDATION */}
                                 <div className="flex items-center gap-1.5 justify-end font-mono">
-                                  <button onClick={() => updateQuantity(res.id, -10)} className="px-1.5 py-0.5 bg-[#140f0c] border border-[#302118] text-stone-400 hover:text-white rounded">-10</button>
-                                  <button onClick={() => updateQuantity(res.id, -1)} className="p-1 bg-[#140f0c] border border-[#302118] text-stone-400 hover:text-white rounded"><Minus className="w-3 h-3" /></button>
-                                  
-                                  <div className={`px-3 py-0.5 font-bold border rounded min-w-[75px] text-center ${isFinished ? 'bg-[#05140b] border-emerald-800 text-emerald-400' : 'bg-[#070504] border-[#2c1d15] text-[#e58219]'}`}>
-                                    {res.current}/{res.max}
+                                  <div className="flex rounded-lg bg-[#120d0a] border border-[#2e2017] p-1 items-center overflow-hidden">
+                                    <button onClick={() => updateQuantity(res.id, -10)} className="px-2 py-1 text-[10px] text-stone-500 hover:text-stone-200 transition-colors hover:bg-[#1a130f] rounded font-bold">-10</button>
+                                    <button onClick={() => updateQuantity(res.id, -1)} className="p-1.5 text-stone-500 hover:text-stone-200 transition-colors hover:bg-[#1a130f] rounded"><Minus className="w-3 h-3" /></button>
+                                    
+                                    <div className={`px-4 text-xs font-black min-w-[80px] text-center select-none ${isFinished ? 'text-emerald-400' : 'text-[#e58219]'}`}>
+                                      {res.current} / {res.max}
+                                    </div>
+                                    
+                                    <button onClick={() => updateQuantity(res.id, 1)} className="p-1.5 text-stone-500 hover:text-stone-200 transition-colors hover:bg-[#1a130f] rounded"><Plus className="w-3 h-3" /></button>
+                                    <button onClick={() => updateQuantity(res.id, 10)} className="px-2 py-1 text-[10px] text-stone-500 hover:text-stone-200 transition-colors hover:bg-[#1a130f] rounded font-bold">+10</button>
                                   </div>
-                                  
-                                  <button onClick={() => updateQuantity(res.id, 1)} className="p-1 bg-[#140f0c] border border-[#302118] text-stone-400 hover:text-white rounded"><Plus className="w-3 h-3" /></button>
-                                  <button onClick={() => updateQuantity(res.id, 10)} className="px-1.5 py-0.5 bg-[#140f0c] border border-[#302118] text-stone-400 hover:text-white rounded">+10</button>
-                                  
-                                  {/* BOUTON TOUT VALIDER / MARQUER COMME FINI */}
-                                  <button onClick={() => updateQuantity(res.id, 0, true)} className="p-1 bg-emerald-950 text-emerald-400 border border-emerald-850 hover:bg-emerald-900 rounded transition-all" title="Marquer immédiatement comme complété">
-                                    <Check className="w-3.5 h-3.5 font-bold" />
+
+                                  {/* BOUTON TOUT VALIDER INSTANTANÉMENT */}
+                                  <button onClick={() => updateQuantity(res.id, 0, true)} className="p-2 bg-emerald-950/80 text-emerald-400 border border-emerald-800 hover:bg-emerald-900 hover:text-white rounded-lg transition-all active:scale-95 shadow" title="Marquer immédiatement comme fini (100%)">
+                                    <Check className="w-4 h-4 stroke-[3]" />
                                   </button>
                                 </div>
+
                               </div>
                             );
                           })
@@ -491,10 +552,9 @@ export default function App() {
               </div>
             )}
 
-            {/* GRIMOIRE IA D'AIDE ET GUIDES */}
+            {/* GRIMOIRE IA */}
             {activeTab === 'guide' && (
               <div className="space-y-6 text-xs">
-                {/* INTERACTION IA RE-DÉVELOPPÉE */}
                 <div className="bg-[#150f1c] border border-purple-950 rounded p-4 space-y-3 shadow-xl">
                   <h3 className="font-serif font-bold text-purple-400 uppercase tracking-wide flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4 text-purple-400" /> Grimoire Magique d'Arcane Frontier
@@ -509,13 +569,12 @@ export default function App() {
                   </form>
                   
                   {aiResponse && (
-                    <div className="p-3 bg-[#0a060d] border border-purple-900/60 rounded text-stone-300 font-mono leading-relaxed bg-opacity-80">
+                    <div className="p-3 bg-[#0a060d] border border-purple-900/60 rounded text-stone-300 font-mono leading-relaxed bg-opacity-80 animate-fadeIn">
                       {aiResponse}
                     </div>
                   )}
                 </div>
 
-                {/* LIENS PARTAGÉS */}
                 <div className="space-y-3">
                   <form onSubmit={handleAddGuide} className="bg-[#140f0c] border border-[#2e2017] rounded p-4 grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <input type="text" value={guideTitle} onChange={(e) => setGuideTitle(e.target.value)} placeholder="Titre de la vidéo ou doc..." className="bg-[#070504] border border-[#3a2920] rounded p-2" required />
