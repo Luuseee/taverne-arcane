@@ -13,7 +13,6 @@ export default function App() {
   const [coordY, setCoordY] = useState('');
   const [coordZ, setCoordZ] = useState('');
   
-  // Nouveaux états pour les Items Rares
   const [itemName, setItemName] = useState('');
   const [itemRarity, setItemRarity] = useState('Epic');
   const [itemLocation, setItemLocation] = useState('');
@@ -23,7 +22,6 @@ export default function App() {
   const [guideTitle, setGuideTitle] = useState('');
   const [guideUrl, setGuideUrl] = useState('');
   
-  // État IA
   const [aiQuery, setAiQuery] = useState('');
   const [aiResponse, setAiResponse] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -61,7 +59,6 @@ export default function App() {
     if (userPseudo.trim()) setIsRegistered(true);
   };
 
-  // --- LOGIQUE QUANTITÉS PROJETS ---
   const updateQuantity = (category, id, amount, setAbsolute = false) => {
     setProjectData({
       ...projectData,
@@ -81,7 +78,6 @@ export default function App() {
     setExpandedCategories({ ...expandedCategories, [cat]: !expandedCategories[cat] });
   };
 
-  // --- EXPÉDITIONS / ENREGISTREMENTS ---
   const handleAddTrouvaille = (e) => {
     e.preventDefault();
     if (lieuNom.trim()) {
@@ -104,7 +100,7 @@ export default function App() {
         id: Date.now(),
         type: 'item',
         name: itemName,
-        coords: itemLocation ? `Trouvé à: ${itemLocation}` : 'Loot Aléatoire',
+        coords: itemLocation ? `Lieu: ${itemLocation}` : 'Loot Aléatoire',
         by: userPseudo,
         rarity: itemRarity
       }]);
@@ -138,7 +134,6 @@ export default function App() {
     }
   };
 
-  // --- SIMULATION IA EXPERT MODPACK ---
   const askExpertAI = (e) => {
     e.preventDefault();
     if (!aiQuery.trim()) return;
@@ -157,11 +152,13 @@ export default function App() {
       } else if (query.includes('classe') || query.includes('competence')) {
         response = "⚔️ [Classes & Skills] : Le pack propose plus de 250 capacités réparties sur plusieurs arbres de compétences (Guerrier, Ranger, Mage). Tu peux débloquer plusieurs sous-classes mais l'XP de compétence requiert des loots de boss.";
       }
-      
       setAiResponse(response);
       setIsAiLoading(false);
     }, 800);
   };
+
+  // On crée une grille fixe de 54 cases pour simuler le double coffre (6 lignes de 9 cases)
+  const chestSlots = Array.from({ length: 54 }, (_, index) => trouvailles[index] || null);
 
   return (
     <div className="min-h-screen bg-[#0b0f14] text-[#94a3b8] font-sans antialiased">
@@ -209,7 +206,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto flex gap-1">
               {[
                 { id: 'projets', label: 'Projets', icon: Swords },
-                { id: 'trouvailles', label: 'Trouvailles & Map', icon: Scroll },
+                { id: 'trouvailles', label: 'Trouvailles', icon: Scroll },
                 { id: 'raids', label: 'Raids', icon: Shield },
                 { id: 'guide', label: 'Guide & IA Grimoire', icon: Trophy },
               ].map(tab => {
@@ -224,10 +221,10 @@ export default function App() {
             </div>
           </div>
 
-          {/* MAIN */}
+          {/* MAIN CONTAINER */}
           <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
             
-            {/* 1. PROJETS DEPLIANTS AVEC BOUTONS MULTIPLES */}
+            {/* TAB: PROJETS */}
             {activeTab === 'projets' && (
               <div className="space-y-6">
                 <div>
@@ -235,7 +232,6 @@ export default function App() {
                   <p className="text-sm text-stone-500 mt-1">Déplie les catégories et ajuste tes récoltes d'un coup grâce aux outils de farm rapide.</p>
                 </div>
 
-                {/* CATEGORIE 1 : TECHNIQUE / CREATE */}
                 <div className="bg-[#111722] border border-stone-800/80 rounded-lg overflow-hidden shadow-xl">
                   <button onClick={() => toggleCategory('machinery')} className="w-full px-5 py-4 bg-[#141b29] flex items-center justify-between border-b border-stone-800/60 text-stone-200 hover:bg-[#182133] transition">
                     <div className="flex items-center gap-3">
@@ -244,7 +240,6 @@ export default function App() {
                     </div>
                     {expandedCategories.machinery ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                  
                   {expandedCategories.machinery && (
                     <div className="divide-y divide-stone-800/40">
                       {projectData.machinery.map((res) => (
@@ -253,22 +248,14 @@ export default function App() {
                             <span className="font-medium text-stone-300">{res.name}</span>
                             {res.by && <span className="text-[10px] text-cyan-400 bg-cyan-950/30 px-1.5 py-0.5 rounded font-mono ml-2">Modifié par {res.by}</span>}
                           </div>
-                          
                           <div className="flex flex-wrap items-center gap-2 justify-end">
                             <button onClick={() => updateQuantity('machinery', res.id, -10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">-10</button>
                             <button onClick={() => updateQuantity('machinery', res.id, -1)} className="p-1 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white rounded"><Minus className="w-3.5 h-3.5" /></button>
-                            
-                            <div className="px-4 py-1 text-sm font-bold font-mono bg-stone-950 border border-stone-850 rounded text-center min-w-[70px]">
-                              {res.current}/{res.max}
-                            </div>
-                            
+                            <div className="px-4 py-1 text-sm font-bold font-mono bg-stone-950 border border-stone-850 rounded text-center min-w-[70px]">{res.current}/{res.max}</div>
                             <button onClick={() => updateQuantity('machinery', res.id, 1)} className="p-1 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white rounded"><Plus className="w-3.5 h-3.5" /></button>
                             <button onClick={() => updateQuantity('machinery', res.id, 10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">+10</button>
                             <button onClick={() => updateQuantity('machinery', res.id, res.max, true)} className="p-1 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded hover:bg-emerald-900"><Check className="w-3.5 h-3.5" /></button>
-                            
-                            <button onClick={() => updateQuantity('machinery', res.id, 0, true)} title="Remettre à zéro" className="p-1 bg-red-950/40 border border-red-900/40 text-red-400 hover:bg-red-900 rounded ml-2">
-                              <RefreshCw className="w-3.5 h-3.5" />
-                            </button>
+                            <button onClick={() => updateQuantity('machinery', res.id, 0, true)} title="Remettre à zéro" className="p-1 bg-red-950/40 border border-red-900/40 text-red-400 hover:bg-red-900 rounded ml-2"><RefreshCw className="w-3.5 h-3.5" /></button>
                           </div>
                         </div>
                       ))}
@@ -276,7 +263,6 @@ export default function App() {
                   )}
                 </div>
 
-                {/* CATEGORIE 2 : MAGIE / ARTIFACTS */}
                 <div className="bg-[#111722] border border-stone-800/80 rounded-lg overflow-hidden shadow-xl">
                   <button onClick={() => toggleCategory('magic')} className="w-full px-5 py-4 bg-[#141b29] flex items-center justify-between border-b border-stone-800/60 text-stone-200 hover:bg-[#182133] transition">
                     <div className="flex items-center gap-3">
@@ -285,7 +271,6 @@ export default function App() {
                     </div>
                     {expandedCategories.magic ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
-                  
                   {expandedCategories.magic && (
                     <div className="divide-y divide-stone-800/40">
                       {projectData.magic.map((res) => (
@@ -294,7 +279,6 @@ export default function App() {
                             <span className="font-medium text-stone-300">{res.name}</span>
                             {res.by && <span className="text-[10px] text-cyan-400 bg-cyan-950/30 px-1.5 py-0.5 rounded font-mono ml-2">Modifié par {res.by}</span>}
                           </div>
-                          
                           <div className="flex flex-wrap items-center gap-2 justify-end">
                             <button onClick={() => updateQuantity('magic', res.id, -10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">-10</button>
                             <button onClick={() => updateQuantity('magic', res.id, -1)} className="p-1 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white rounded"><Minus className="w-3.5 h-3.5" /></button>
@@ -302,9 +286,7 @@ export default function App() {
                             <button onClick={() => updateQuantity('magic', res.id, 1)} className="p-1 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white rounded"><Plus className="w-3.5 h-3.5" /></button>
                             <button onClick={() => updateQuantity('magic', res.id, 10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">+10</button>
                             <button onClick={() => updateQuantity('magic', res.id, res.max, true)} className="p-1 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded"><Check className="w-3.5 h-3.5" /></button>
-                            <button onClick={() => updateQuantity('magic', res.id, 0, true)} title="Remettre à zéro" className="p-1 bg-red-950/40 border border-red-900/40 text-red-400 hover:bg-red-900 rounded ml-2">
-                              <RefreshCw className="w-3.5 h-3.5" />
-                            </button>
+                            <button onClick={() => updateQuantity('magic', res.id, 0, true)} title="Remettre à zéro" className="p-1 bg-red-950/40 border border-red-900/40 text-red-400 hover:bg-red-900 rounded ml-2"><RefreshCw className="w-3.5 h-3.5" /></button>
                           </div>
                         </div>
                       ))}
@@ -314,116 +296,107 @@ export default function App() {
               </div>
             )}
 
-            {/* 2. TROUVAILLES AVEC MAP ET COFFRE AUX ITEMS */}
+            {/* TAB: TROUVAILLES (FORMULAIRES + DOUBLE COFFRE INTERFACE) */}
             {activeTab === 'trouvailles' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <div className="lg:col-span-7 space-y-6">
-                  
-                  <div className="bg-[#111722] border border-stone-800 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <MapPin className="w-4 h-4 text-amber-500" />
-                      <h3 className="font-serif font-bold uppercase text-xs text-stone-200 tracking-wider">Aperçu Cartographique du Serveur (Seed-Based)</h3>
-                    </div>
-                    <div className="aspect-video bg-[#070b10] border border-stone-900 rounded flex flex-col items-center justify-center relative overflow-hidden group">
-                      <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                      <div className="z-10 text-center p-4">
-                        <span className="text-[11px] font-mono uppercase tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-1 rounded block mb-2 w-max mx-auto">Dynmap Active</span>
-                        <p className="text-xs text-stone-500 font-sans max-w-sm">La mini-map génère les points d'intérêts basés sur la seed et les entrées enregistrées par la communauté à droite.</p>
-                      </div>
-                      <div className="absolute bottom-2 right-2 text-[10px] font-mono text-stone-600">0, 0 • Centre de Spawn</div>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#111722] border border-stone-800 rounded-lg p-5">
-                    <div className="flex items-center justify-between border-b border-stone-800 pb-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-5 h-5 text-amber-500" />
-                        <h3 className="font-serif font-bold uppercase text-sm text-stone-200 tracking-wide">Le Grand Coffre Fort de la Communauté</h3>
-                      </div>
-                      <span className="text-[10px] font-mono text-stone-500">{trouvailles.length} entrées scellées</span>
-                    </div>
-
-                    {trouvailles.length === 0 ? (
-                      <div className="grid grid-cols-3 gap-2 opacity-30">
-                        {[...Array(6)].map((_, i) => (
-                          <div key={i} className="aspect-square border-2 border-dashed border-stone-800 rounded bg-[#090d14] flex items-center justify-center text-[10px]">Vide</div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {trouvailles.map((t) => (
-                          <div key={t.id} className="bg-[#0e131d] border border-stone-800 p-3 rounded flex items-start justify-between gap-2 hover:border-stone-700 transition">
-                            <div className="flex gap-2.5 overflow-hidden">
-                              <div className={`w-10 h-10 rounded shrink-0 border flex items-center justify-center font-bold text-xs uppercase ${t.type === 'item' ? 'bg-purple-950/40 border-purple-800/40 text-purple-400' : 'bg-amber-950/40 border-amber-800/40 text-amber-400'}`}>
-                                {t.type === 'item' ? 'Loot' : 'Loc'}
-                              </div>
-                              <div className="overflow-hidden">
-                                <h4 className="font-bold text-stone-200 text-sm truncate">{t.name}</h4>
-                                <p className="text-[11px] text-stone-400 font-mono mt-0.5 truncate">{t.coords}</p>
-                                <span className={`text-[9px] font-bold px-1 py-0.5 rounded uppercase mt-1 inline-block ${t.rarity === 'Legendary' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : t.rarity === 'Epic' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                                  {t.rarity}
-                                </span>
-                              </div>
-                            </div>
-                            <button onClick={() => setTrouvailles(trouvailles.filter(item => item.id !== t.id))} className="text-stone-600 hover:text-red-400 shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Registre des Découvertes</h2>
+                  <p className="text-sm text-stone-500 mt-1">Renseigne tes explorations en haut, elles s'ajouteront directement dans les slots du double coffre communautaire.</p>
                 </div>
 
-                <div className="lg:col-span-5 space-y-6">
-                  
-                  <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-4">
-                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-amber-500" /> Répertorier une Structure / Lieu</h4>
+                {/* FORMULAIRES EN LIGNE TOUT EN HAUT */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Formulaire Lieu */}
+                  <div className="bg-[#111722] border border-stone-800 rounded-lg p-4 shadow-md">
+                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-amber-500" /> Enregistrer un Lieu / Structure</h4>
                     <form onSubmit={handleAddTrouvaille} className="space-y-3">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1">Nom (Donjon, Cité, Ruine...)</label>
-                        <input type="text" value={lieuNom} onChange={(e) => setLieuNom(e.target.value)} placeholder="Ex: Forteresse Voidsent" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" required />
-                      </div>
+                      <input type="text" value={lieuNom} onChange={(e) => setLieuNom(e.target.value)} placeholder="Ex: Cité des Enders Corrompus" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" required />
                       <div className="grid grid-cols-3 gap-1">
                         <input type="text" value={coordX} onChange={(e) => setCoordX(e.target.value)} placeholder="X" className="bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs text-center focus:border-amber-500 focus:outline-none" />
                         <input type="text" value={coordY} onChange={(e) => setCoordY(e.target.value)} placeholder="Y" className="bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs text-center focus:border-amber-500 focus:outline-none" />
                         <input type="text" value={coordZ} onChange={(e) => setCoordZ(e.target.value)} placeholder="Z" className="bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs text-center focus:border-amber-500 focus:outline-none" />
                       </div>
-                      <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2 rounded text-xs uppercase tracking-wider font-serif">Valider le lieu</button>
+                      <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-1.5 rounded text-xs uppercase font-serif tracking-wide">Déposer le Lieu</button>
                     </form>
                   </div>
 
-                  <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-4">
-                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-purple-400" /> Ajouter un Item Important déniché</h4>
+                  {/* Formulaire Item */}
+                  <div className="bg-[#111722] border border-stone-800 rounded-lg p-4 shadow-md">
+                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-purple-400" /> Enregistrer un Loot Rare</h4>
                     <form onSubmit={handleAddItem} className="space-y-3">
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1">Nom de l'objet / Artefact</label>
-                        <input type="text" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Ex: Orbe Mythique, Grimoire d'Ars" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" required />
-                      </div>
+                      <input type="text" value={itemName} onChange={(e) => setItemName(e.target.value)} placeholder="Ex: Épée de l'Éclipse Mythique" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" required />
                       <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1">Rareté</label>
-                          <select value={itemRarity} onChange={(e) => setItemRarity(e.target.value)} className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none">
-                            <option value="Rare">Rare (Bleu)</option>
-                            <option value="Epic">Épique (Violet)</option>
-                            <option value="Legendary">Mythique (Or)</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1">Provenance (Optionnel)</label>
-                          <input type="text" value={itemLocation} onChange={(e) => setItemLocation(e.target.value)} placeholder="Ex: Boss Ignis" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" />
-                        </div>
+                        <select value={itemRarity} onChange={(e) => setItemRarity(e.target.value)} className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none">
+                          <option value="Rare">Rare (Bleu)</option>
+                          <option value="Epic">Épique (Violet)</option>
+                          <option value="Legendary">Mythique (Or)</option>
+                        </select>
+                        <input type="text" value={itemLocation} onChange={(e) => setItemLocation(e.target.value)} placeholder="Où ? (Ex: Donjon Nether)" className="w-full bg-stone-950 border border-stone-800 rounded p-2 text-stone-200 text-xs focus:border-amber-500 focus:outline-none" />
                       </div>
-                      <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 rounded text-xs uppercase tracking-wider font-serif">Mettre au Coffre</button>
+                      <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded text-xs uppercase font-serif tracking-wide">Déposer le Butin</button>
                     </form>
                   </div>
+                </div>
 
+                {/* DOUBLE COFFRE MINECRAFT STYLE */}
+                <div className="bg-[#c6c6c6] border-4 border-t-[#f0f0f0] border-l-[#f0f0f0] border-b-[#555555] border-r-[#555555] p-4 shadow-2xl rounded max-w-4xl mx-auto">
+                  
+                  {/* Titre du Coffre style Minecraft GUI */}
+                  <div className="text-[#373737] font-mono text-sm font-bold uppercase tracking-wide mb-3 px-1 flex items-center gap-2">
+                    <Package className="w-4 h-4 text-[#373737]" /> Double Coffre
+                  </div>
+
+                  {/* Grille des 54 Slots (6x9) */}
+                  <div className="grid grid-cols-9 gap-1 bg-[#8b8b8b] p-1.5 border-2 border-b-[#f0f0f0] border-r-[#f0f0f0] border-t-[#555555] border-l-[#555555]">
+                    {chestSlots.map((slot, index) => (
+                      <div 
+                        key={index} 
+                        className="aspect-square bg-[#8b8b8b] border-2 border-t-[#555555] border-l-[#555555] border-b-[#f0f0f0] border-r-[#f0f0f0] relative group flex items-center justify-center p-1 hover:bg-[#9c9c9c] transition-colors"
+                      >
+                        {slot ? (
+                          <>
+                            {/* Visuel abrégé de l'item dans le slot */}
+                            <div className={`w-full h-full rounded flex items-center justify-center font-mono font-bold text-[10px] uppercase shadow-inner cursor-help select-none ${slot.type === 'item' ? 'bg-purple-900/30 text-purple-300 border border-purple-700/40' : 'bg-amber-900/30 text-amber-300 border border-amber-700/40'}`}>
+                              {slot.type === 'item' ? '✨' : '🗺️'}
+                            </div>
+
+                            {/* Tooltip complet au survol (façon infobulle Minecraft) */}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 bg-[#100416]/95 border-2 border-[#2e0766] p-2.5 rounded text-xs min-w-[200px] shadow-2xl font-mono text-stone-200 pointer-events-none">
+                              <div className={`font-bold text-sm ${slot.rarity === 'Legendary' ? 'text-[#ffaa00]' : slot.rarity === 'Epic' ? 'text-[#b800b8]' : slot.rarity === 'Rare' ? 'text-[#55ffff]' : 'text-[#55ff55]'}`}>
+                                {slot.name}
+                              </div>
+                              <div className="text-gray-400 text-[11px] mt-1">{slot.coords}</div>
+                              <div className="text-gray-500 text-[10px] mt-2 border-t border-purple-900/40 pt-1">Ajouté par : {slot.by}</div>
+                              
+                              <div className="text-red-400 text-[9px] mt-1 animate-pulse italic">Clic sur la croix rouge pour jeter l'item</div>
+                            </div>
+
+                            {/* Petit bouton de suppression discret sur l'item */}
+                            <button 
+                              onClick={() => setTrouvailles(trouvailles.filter(item => item.id !== slot.id))}
+                              className="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 items-center justify-center hidden group-hover:flex z-10 shadow"
+                            >
+                              ✕
+                            </button>
+                          </>
+                        ) : (
+                          // Case vide
+                          <div className="w-full h-full opacity-0"></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Petit texte explicatif en bas du coffre */}
+                  <div className="text-right text-[10px] text-stone-600 font-mono mt-2 uppercase px-1">
+                    Inventaire : 54 Emplacements Larges
+                  </div>
                 </div>
 
               </div>
             )}
 
-            {/* 3. PLANIFICATEUR DE RAIDS */}
+            {/* TAB: RAIDS */}
             {activeTab === 'raids' && (
               <div className="space-y-6">
                 <div>
@@ -462,10 +435,9 @@ export default function App() {
               </div>
             )}
 
-            {/* 4. GUIDES & ENCYCLOPÉDIE DES ARCANES AVEC IA EXPERT */}
+            {/* TAB: GUIDE & IA */}
             {activeTab === 'guide' && (
               <div className="space-y-8">
-                
                 <div className="bg-[#131322] border border-purple-900/60 rounded-lg p-5 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-5"><HelpCircle className="w-32 h-32 text-purple-400" /></div>
                   <div className="flex items-center gap-2 mb-4 border-b border-purple-900/40 pb-3">
@@ -475,7 +447,6 @@ export default function App() {
                       <p className="text-xs text-purple-400">Indexé sur 270+ mods, scripts KubeJS et modifications d'expertises RPG.</p>
                     </div>
                   </div>
-
                   <form onSubmit={askExpertAI} className="space-y-4">
                     <div>
                       <label className="block text-xs font-bold text-stone-400 uppercase mb-1.5">Quelle est ton interrogation, voyageur ?</label>
@@ -487,12 +458,7 @@ export default function App() {
                       </div>
                     </div>
                   </form>
-
-                  {aiResponse && (
-                    <div className="mt-4 bg-[#090912] border border-purple-950 p-4 rounded text-sm text-stone-300 font-sans leading-relaxed shadow-inner">
-                      {aiResponse}
-                    </div>
-                  )}
+                  {aiResponse && <div className="mt-4 bg-[#090912] border border-purple-950 p-4 rounded text-sm text-stone-300 font-sans leading-relaxed shadow-inner">{aiResponse}</div>}
                 </div>
 
                 <div className="space-y-4">
@@ -500,7 +466,6 @@ export default function App() {
                     <h3 className="text-xl font-serif font-bold text-stone-100 uppercase tracking-wide">Vidéolithothèque de la Communauté</h3>
                     <p className="text-sm text-stone-500 mt-1">Partagez les tutoriels cruciaux trouvés sur le net pour automatiser le serveur.</p>
                   </div>
-
                   <form onSubmit={handleAddGuide} className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <div>
                       <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Titre du guide / Sujet</label>
@@ -510,11 +475,8 @@ export default function App() {
                       <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Lien YouTube complet</label>
                       <input type="url" value={guideUrl} onChange={(e) => setGuideUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" required />
                     </div>
-                    <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 rounded text-sm uppercase tracking-wider font-serif flex items-center justify-center gap-2">
-                      <Plus className="w-4 h-4" /> Relayer la vidéo
-                    </button>
+                    <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 rounded text-sm uppercase tracking-wider font-serif flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> Relayer la vidéo</button>
                   </form>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {guides.length === 0 ? <p className="text-sm text-stone-600 italic">Aucune archive vidéo enregistrée pour l'instant.</p> : (
                       guides.map((g) => (
@@ -533,7 +495,6 @@ export default function App() {
                     )}
                   </div>
                 </div>
-
               </div>
             )}
 
