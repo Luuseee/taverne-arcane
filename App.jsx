@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Users, Trophy, MessageSquare, Key, Swords, Beer, Scroll, Plus, RotateCw, Check, Minus, Youtube, MapPin, Trash2, ChevronDown, ChevronUp, RefreshCw, Box, HelpCircle } from 'lucide-react';
+import { Shield, Users, Trophy, Key, Swords, Beer, Scroll, Plus, RotateCw, Check, Minus, Youtube, MapPin, Trash2, ChevronDown, ChevronUp, RefreshCw, Package, HelpCircle } from 'lucide-react';
 
 export default function App() {
   const [isRegistered, setIsRegistered] = useState(false);
@@ -112,6 +112,32 @@ export default function App() {
     }
   };
 
+  const handleAddGuide = (e) => {
+    e.preventDefault();
+    if (guideTitle.trim() && guideUrl.trim()) {
+      setGuides([...guides, {
+        id: Date.now(),
+        title: guideTitle,
+        url: guideUrl,
+        by: userPseudo
+      }]);
+      setGuideTitle(''); setGuideUrl('');
+    }
+  };
+
+  const handleAddRaid = (e) => {
+    e.preventDefault();
+    if (newRaidName.trim()) {
+      setRaids([...raids, {
+        id: Date.now(),
+        name: newRaidName,
+        date: newRaidDate || 'À définir',
+        status: 'En préparation'
+      }]);
+      setNewRaidName(''); setNewRaidDate('');
+    }
+  };
+
   // --- SIMULATION IA EXPERT MODPACK ---
   const askExpertAI = (e) => {
     e.preventDefault();
@@ -213,7 +239,7 @@ export default function App() {
                 <div className="bg-[#111722] border border-stone-800/80 rounded-lg overflow-hidden shadow-xl">
                   <button onClick={() => toggleCategory('machinery')} className="w-full px-5 py-4 bg-[#141b29] flex items-center justify-between border-b border-stone-800/60 text-stone-200 hover:bg-[#182133] transition">
                     <div className="flex items-center gap-3">
-                      <Box className="w-5 h-5 text-amber-500" />
+                      <Package className="w-5 h-5 text-amber-500" />
                       <span className="font-serif font-bold uppercase tracking-wider text-sm">Chantier Tech : Machine à XP (Create)</span>
                     </div>
                     {expandedCategories.machinery ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -229,7 +255,6 @@ export default function App() {
                           </div>
                           
                           <div className="flex flex-wrap items-center gap-2 justify-end">
-                            {/* Boutons d'ajustement express */}
                             <button onClick={() => updateQuantity('machinery', res.id, -10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">-10</button>
                             <button onClick={() => updateQuantity('machinery', res.id, -1)} className="p-1 bg-stone-900 border border-stone-800 text-stone-400 hover:text-white rounded"><Minus className="w-3.5 h-3.5" /></button>
                             
@@ -241,7 +266,6 @@ export default function App() {
                             <button onClick={() => updateQuantity('machinery', res.id, 10)} className="px-2 py-1 bg-stone-900 border border-stone-800 text-xs text-stone-400 hover:text-white rounded">+10</button>
                             <button onClick={() => updateQuantity('machinery', res.id, res.max, true)} className="p-1 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded hover:bg-emerald-900"><Check className="w-3.5 h-3.5" /></button>
                             
-                            {/* Bouton reset "Tout vider d'un coup" */}
                             <button onClick={() => updateQuantity('machinery', res.id, 0, true)} title="Remettre à zéro" className="p-1 bg-red-950/40 border border-red-900/40 text-red-400 hover:bg-red-900 rounded ml-2">
                               <RefreshCw className="w-3.5 h-3.5" />
                             </button>
@@ -294,16 +318,13 @@ export default function App() {
             {activeTab === 'trouvailles' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                {/* COLONNE GAUCHE (MAP & COFFRE DE STOCKAGE VISUEL) */}
                 <div className="lg:col-span-7 space-y-6">
                   
-                  {/* Bloc Mini-Map Dyn */}
                   <div className="bg-[#111722] border border-stone-800 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <MapPin className="w-4 h-4 text-amber-500" />
                       <h3 className="font-serif font-bold uppercase text-xs text-stone-200 tracking-wider">Aperçu Cartographique du Serveur (Seed-Based)</h3>
                     </div>
-                    {/* Simulation d'une grille de map Minecraft */}
                     <div className="aspect-video bg-[#070b10] border border-stone-900 rounded flex flex-col items-center justify-center relative overflow-hidden group">
                       <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:16px_16px]"></div>
                       <div className="z-10 text-center p-4">
@@ -314,11 +335,10 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Le Grand Coffre Virtuel */}
                   <div className="bg-[#111722] border border-stone-800 rounded-lg p-5">
                     <div className="flex items-center justify-between border-b border-stone-800 pb-3 mb-4">
                       <div className="flex items-center gap-2">
-                        <Box className="w-5 h-5 text-amber-500" />
+                        <Package className="w-5 h-5 text-amber-500" />
                         <h3 className="font-serif font-bold uppercase text-sm text-stone-200 tracking-wide">Le Grand Coffre Fort de la Communauté</h3>
                       </div>
                       <span className="text-[10px] font-mono text-stone-500">{trouvailles.length} entrées scellées</span>
@@ -335,7 +355,6 @@ export default function App() {
                         {trouvailles.map((t) => (
                           <div key={t.id} className="bg-[#0e131d] border border-stone-800 p-3 rounded flex items-start justify-between gap-2 hover:border-stone-700 transition">
                             <div className="flex gap-2.5 overflow-hidden">
-                              {/* Avatar visuel de type item/lieu */}
                               <div className={`w-10 h-10 rounded shrink-0 border flex items-center justify-center font-bold text-xs uppercase ${t.type === 'item' ? 'bg-purple-950/40 border-purple-800/40 text-purple-400' : 'bg-amber-950/40 border-amber-800/40 text-amber-400'}`}>
                                 {t.type === 'item' ? 'Loot' : 'Loc'}
                               </div>
@@ -356,10 +375,8 @@ export default function App() {
 
                 </div>
 
-                {/* COLONNE DROITE (FORMULAIRES D'AJOUT) */}
                 <div className="lg:col-span-5 space-y-6">
                   
-                  {/* Formulaire Lieu */}
                   <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-4">
                     <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-amber-500" /> Répertorier une Structure / Lieu</h4>
                     <form onSubmit={handleAddTrouvaille} className="space-y-3">
@@ -376,9 +393,8 @@ export default function App() {
                     </form>
                   </div>
 
-                  {/* Formulaire Item Modpack */}
                   <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-4">
-                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><Box className="w-3.5 h-3.5 text-purple-400" /> Ajouter un Item Important déniché</h4>
+                    <h4 className="font-serif font-bold text-stone-200 text-xs uppercase tracking-wider mb-3 border-b border-stone-800 pb-2 flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-purple-400" /> Ajouter un Item Important déniché</h4>
                     <form onSubmit={handleAddItem} className="space-y-3">
                       <div>
                         <label className="block text-[10px] font-bold uppercase text-stone-400 mb-1">Nom de l'objet / Artefact</label>
@@ -450,7 +466,6 @@ export default function App() {
             {activeTab === 'guide' && (
               <div className="space-y-8">
                 
-                {/* BLOC GRIMOIRE DE L'IA EXPERT */}
                 <div className="bg-[#131322] border border-purple-900/60 rounded-lg p-5 shadow-2xl relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-5"><HelpCircle className="w-32 h-32 text-purple-400" /></div>
                   <div className="flex items-center gap-2 mb-4 border-b border-purple-900/40 pb-3">
@@ -480,7 +495,6 @@ export default function App() {
                   )}
                 </div>
 
-                {/* LIENS VIDÉOS YOUTUBE */}
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-serif font-bold text-stone-100 uppercase tracking-wide">Vidéolithothèque de la Communauté</h3>
