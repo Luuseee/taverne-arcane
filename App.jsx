@@ -1,28 +1,31 @@
 import React, { useState } from 'react';
-import { Shield, Users, Trophy, MessageSquare, Key, Swords, Beer, Scroll, Plus, RotateCw, Check, Minus, Youtube, Link, Trash2 } from 'lucide-react';
+import { Shield, Users, Trophy, MessageSquare, Key, Swords, Beer, Scroll, Plus, RotateCw, Check, Minus, Youtube, MapPin, Trash2 } from 'lucide-react';
 
 export default function App() {
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [userPseudo, setUserPseudo] = useState('');
   const [activeTab, setActiveTab] = useState('projets');
-  const [userPseudo, setUserPseudo] = useState('aky');
-  const [isEditingPseudo, setIsEditingPseudo] = useState(false);
-  const [tempPseudo, setTempPseudo] = useState('aky');
   
-  // Onglet Trouvailles : Liens YouTube et partages
-  const [trouvailles, setTrouvailles] = useState([
-    { id: 1, title: "Tuto Create : Usine à fer optimisée", url: "https://youtube.com/watch?v=dQw4w9WgXcQ", type: "youtube" }
-  ]);
-  const [newTitle, setNewTitle] = useState('');
-  const [newUrl, setNewUrl] = useState('');
+  // Onglet Trouvailles (Lieux découverts avec Coordonnées)
+  const [trouvailles, setTrouvailles] = useState([]);
+  const [lieuNom, setLieuNom] = useState('');
+  const [coordX, setCoordX] = useState('');
+  const [coordY, setCoordY] = useState('');
+  const [coordZ, setCoordZ] = useState('');
+
+  // Onglet Guide (Liens YouTube partagés par la commu)
+  const [guides, setGuides] = useState([]);
+  const [guideTitle, setGuideTitle] = useState('');
+  const [guideUrl, setGuideUrl] = useState('');
 
   // Onglet Raids
-  const [raids, setRaids] = useState([
-    { id: 1, name: "Le Dragon de l'End", status: "En préparation", date: "Samedi soir" },
-    { id: 2, name: "Raid de la Forteresse de Néant", status: "Terminé", date: "Passé" }
-  ]);
+  const [raids, setRaids] = useState([]);
+  const [newRaidName, setNewRaidName] = useState('');
+  const [newRaidDate, setNewRaidDate] = useState('');
 
   // État pour les ressources de la Machine à XP (Projets)
   const [resources, setResources] = useState([
-    { id: 'fer', name: 'Fer', current: 0, max: 45, by: 'aky' },
+    { id: 'fer', name: 'Fer', current: 0, max: 45, by: '' },
     { id: 'cuivre', name: 'Cuivre', current: 0, max: 18, by: '' },
     { id: 'zinc', name: 'Zinc', current: 0, max: 18, by: '' },
     { id: 'or', name: 'Or', current: 0, max: 3, by: '' },
@@ -34,6 +37,15 @@ export default function App() {
     { id: 'verre', name: 'Verre', current: 0, max: 1, by: '' },
   ]);
 
+  // Connexion de base
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (userPseudo.trim()) {
+      setIsRegistered(true);
+    }
+  };
+
+  // Gestion du farm
   const handleIncrement = (id) => {
     setResources(resources.map(res => {
       if (res.id === id && res.current < res.max) {
@@ -61,80 +73,117 @@ export default function App() {
     }));
   };
 
-  const handleSavePseudo = (e) => {
-    e.preventDefault();
-    if (tempPseudo.trim()) {
-      setUserPseudo(tempPseudo);
-      setIsEditingPseudo(false);
-    }
-  };
-
+  // Ajouter un lieu (Trouvailles)
   const handleAddTrouvaille = (e) => {
     e.preventDefault();
-    if (newTitle.trim() && newUrl.trim()) {
-      const isYoutube = newUrl.includes('youtube.com') || newUrl.includes('youtu.be');
+    if (lieuNom.trim()) {
       setTrouvailles([...trouvailles, {
         id: Date.now(),
-        title: newTitle,
-        url: newUrl,
-        type: isYoutube ? 'youtube' : 'link'
+        name: lieuNom,
+        x: coordX || '?',
+        y: coordY || '?',
+        z: coordZ || '?',
+        by: userPseudo
       }]);
-      setNewTitle('');
-      setNewUrl('');
+      setLieuNom('');
+      setCoordX('');
+      setCoordY('');
+      setCoordZ('');
     }
   };
 
-  const handleDeleteTrouvaille = (id) => {
-    setTrouvailles(trouvailles.filter(t => t.id !== id));
+  // Ajouter un tuto YouTube (Guide)
+  const handleAddGuide = (e) => {
+    e.preventDefault();
+    if (guideTitle.trim() && guideUrl.trim()) {
+      setGuides([...guides, {
+        id: Date.now(),
+        title: guideTitle,
+        url: guideUrl,
+        by: userPseudo
+      }]);
+      setGuideTitle('');
+      setGuideUrl('');
+    }
+  };
+
+  // Ajouter un Raid
+  const handleAddRaid = (e) => {
+    e.preventDefault();
+    if (newRaidName.trim()) {
+      setRaids([...raids, {
+        id: Date.now(),
+        name: newRaidName,
+        date: newRaidDate || 'À définir',
+        status: 'En préparation'
+      }]);
+      setNewRaidName('');
+      setNewRaidDate('');
+    }
   };
 
   const totalCurrent = resources.reduce((acc, res) => acc + res.current, 0);
   const totalMax = resources.reduce((acc, res) => acc + res.max, 0);
-  const globalProgress = Math.round((totalCurrent / totalMax) * 100);
+  const globalProgress = Math.round((totalCurrent / totalMax) * 100) || 0;
 
+  // --- ECRAN D'INSCRIPTION INITIAL ---
+  if (!isRegistered) {
+    return (
+      <div className="min-h-screen bg-stone-900 text-stone-100 font-serif flex flex-col justify-between">
+        <div className="relative bg-black h-80 flex items-center justify-center border-b-4 border-amber-600 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url("https://images.unsplash.com/photo-1597200381847-30ec200eeb9a?q=80&w=1200")' }}>
+          <div className="text-center px-4">
+            <div className="flex justify-center mb-3"><Beer className="w-16 h-16 text-amber-500 animate-pulse" /></div>
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-wider text-amber-500 uppercase">La Taverne d'Arcane Frontier</h1>
+            <p className="mt-2 text-stone-400 text-lg max-w-xl mx-auto italic font-sans">Chopes de bière, ragoûts chauds et légendes de serveurs. Installe-toi, voyageur.</p>
+          </div>
+        </div>
+
+        <div className="max-w-md w-full mx-auto px-4 py-12 flex-1 flex flex-col justify-center">
+          <div className="bg-stone-800/80 border-2 border-stone-700 rounded-lg p-6 md:p-8 shadow-xl backdrop-blur-sm">
+            <div className="flex items-center gap-3 mb-6 border-b border-stone-700 pb-4">
+              <Scroll className="w-8 h-8 text-amber-500" />
+              <h2 className="text-2xl font-bold text-amber-500 uppercase tracking-wide">Le Registre</h2>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-4 font-sans">
+              <div>
+                <label className="block text-sm font-semibold text-stone-400 mb-2 uppercase tracking-wider">Pseudo Minecraft exact</label>
+                <input
+                  type="text"
+                  value={userPseudo}
+                  onChange={(e) => setUserPseudo(e.target.value)}
+                  placeholder="Ex: Notch"
+                  className="w-full bg-stone-950 border border-stone-700 rounded px-4 py-3 text-stone-100 focus:outline-none focus:border-amber-500 placeholder-stone-600 text-lg"
+                  required
+                />
+              </div>
+              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold uppercase py-3 rounded tracking-wider transition-colors text-lg font-serif">
+                S'inscrire sur le registre
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- DASHBOARD PRINCIPAL ---
   return (
-    <div className="min-h-screen bg-[#0b0f14] text-[#94a3b8] font-sans antialiased selection:bg-amber-700 selection:text-amber-100">
+    <div className="min-h-screen bg-[#0b0f14] text-[#94a3b8] font-sans antialiased">
       
       {/* Header */}
       <header className="border-b border-stone-800 bg-[#0f141c] sticky top-0 z-50 px-4 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="bg-amber-500/10 p-2 rounded border border-amber-500/20">
-              <Beer className="w-6 h-6 text-amber-500" />
-            </div>
+            <Beer className="w-6 h-6 text-amber-500" />
             <div>
-              <h1 className="text-xl font-bold tracking-wider text-stone-100 uppercase font-serif">
-                La Taverne d'Arcane Frontier
-              </h1>
-              <p className="text-xs uppercase tracking-widest text-stone-500 font-semibold flex items-center gap-1">
-                Project <span className="text-stone-400">•</span> Arcane Frontier
-              </p>
+              <h1 className="text-xl font-bold tracking-wider text-stone-100 uppercase font-serif">La Taverne d'Arcane Frontier</h1>
+              <p className="text-xs uppercase tracking-widest text-stone-500 font-semibold">Project • Arcane Frontier</p>
             </div>
           </div>
-
-          {/* Pseudo magique modifiable */}
           <div className="flex items-center gap-2">
-            {isEditingPseudo ? (
-              <form onSubmit={handleSavePseudo} className="flex items-center gap-1">
-                <input 
-                  type="text" 
-                  value={tempPseudo} 
-                  onChange={(e) => setTempPseudo(e.target.value)}
-                  className="bg-stone-900 border border-amber-500/50 rounded px-2 py-1 text-xs text-stone-100 focus:outline-none"
-                  maxLength={16}
-                  autoFocus
-                />
-                <button type="submit" className="bg-amber-600 text-stone-950 p-1 rounded hover:bg-amber-500"><Check className="w-3.5 h-3.5" /></button>
-              </form>
-            ) : (
-              <div 
-                onClick={() => { setTempPseudo(userPseudo); setIsEditingPseudo(true); }}
-                className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-1.5 text-xs text-amber-400 font-bold cursor-pointer hover:bg-amber-500/20 transition"
-                title="Clique pour changer ton pseudo"
-              >
-                <Swords className="w-3.5 h-3.5" /> Aventurier : {userPseudo}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-1.5 text-xs text-amber-400 font-bold">
+              <Swords className="w-3.5 h-3.5" /> {userPseudo}
+            </div>
           </div>
         </div>
       </header>
@@ -154,12 +203,9 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide uppercase transition relative ${
-                  isActive ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'
-                }`}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide uppercase transition relative ${isActive ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                <Icon className="w-4 h-4" /> {tab.label}
                 {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500"></div>}
               </button>
             );
@@ -167,15 +213,15 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Dashboard */}
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         
-        {/* ONGLET PROJETS */}
+        {/* PROJETS */}
         {activeTab === 'projets' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Projets de Farm</h2>
-              <p className="text-sm text-stone-500 mt-1">Santé à toi, {userPseudo}. Ajuste les stocks récoltés pour la communauté.</p>
+              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Projets</h2>
+              <p className="text-sm text-stone-500 mt-1">Suis les quantités farmées. Ton nom s'inscrit sur le dernier ajout.</p>
             </div>
 
             <div className="bg-[#111722] border border-stone-800/80 rounded-lg shadow-xl overflow-hidden">
@@ -200,9 +246,9 @@ export default function App() {
                 {resources.map((res) => (
                   <div key={res.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#131a26]/40 transition">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-stone-700 rounded-full"></div>
                       <span className="font-medium text-stone-300">{res.name}</span>
-                      {res.by && <span className="text-[10px] text-cyan-400 bg-cyan-950/20 px-1.5 py-0.5 rounded font-mono"> par {res.by}</span>}
+                      {res.by && <span className="text-[10px] text-cyan-400 bg-cyan-950/20 px-1.5 py-0.5 rounded font-mono"> • {res.by}</span>}
                     </div>
 
                     <div className="flex items-center gap-6 justify-end">
@@ -220,119 +266,149 @@ export default function App() {
           </div>
         )}
 
-        {/* ONGLET TROUVAILLES (YouTube & Liens) */}
+        {/* TROUVAILLES (Lieux & Coordonnées) */}
         {activeTab === 'trouvailles' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Trouvailles & Partages</h2>
-              <p className="text-sm text-stone-500 mt-1">Partage des vidéos YouTube de builds, de machines Create ou des plans intéressants.</p>
+              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Trouvailles</h2>
+              <p className="text-sm text-stone-500 mt-1">Indiquez les structures, biomes ou donjons importants découverts avec leurs coordonnées.</p>
             </div>
 
-            {/* Formulaire d'ajout */}
-            <form onSubmit={handleAddTrouvaille} className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-              <div>
-                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Titre de la trouvaille</label>
-                <input 
-                  type="text" 
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="Ex: Tuto ferme à Enderman ultra simple"
-                  className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none"
-                  required
-                />
+            <form onSubmit={handleAddTrouvaille} className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Structure / Lieu trouvé</label>
+                  <input type="text" value={lieuNom} onChange={(e) => setLieuNom(e.target.value)} placeholder="Ex: Forteresse du Nether, Monument" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" required />
+                </div>
+                <div className="grid grid-cols-3 gap-2 md:col-span-2">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-400 mb-2">X</label>
+                    <input type="text" value={coordX} onChange={(e) => setCoordX(e.target.value)} placeholder="142" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm text-center focus:border-amber-500 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Y</label>
+                    <input type="text" value={coordY} onChange={(e) => setCoordY(e.target.value)} placeholder="64" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm text-center focus:border-amber-500 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Z</label>
+                    <input type="text" value={coordZ} onChange={(e) => setCoordZ(e.target.value)} placeholder="-850" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm text-center focus:border-amber-500 focus:outline-none" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Lien (URL YouTube ou autre)</label>
-                <input 
-                  type="url" 
-                  value={newUrl}
-                  onChange={(e) => setNewUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none"
-                  required
-                />
-              </div>
-              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 rounded text-sm uppercase tracking-wider flex items-center justify-center gap-2 font-serif">
-                <Plus className="w-4 h-4" /> Ajouter au grimoire
+              <button type="submit" className="bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 px-6 rounded text-sm uppercase tracking-wider font-serif flex items-center gap-2">
+                <MapPin className="w-4 h-4" /> Enregistrer le lieu
               </button>
             </form>
 
-            {/* Liste des trouvailles */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {trouvailles.map((t) => (
-                <div key={t.id} className="bg-[#111722] border border-stone-800/80 rounded-lg p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className={`p-2 rounded shrink-0 ${t.type === 'youtube' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}`}>
-                      {t.type === 'youtube' ? <Youtube className="w-5 h-5" /> : <Link className="w-5 h-5" />}
+              {trouvailles.length === 0 ? (
+                <p className="text-sm text-stone-600 italic">Aucune trouvaille partagée pour le moment.</p>
+              ) : (
+                trouvailles.map((t) => (
+                  <div key={t.id} className="bg-[#111722] border border-stone-800/80 rounded-lg p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20"><MapPin className="w-5 h-5" /></div>
+                      <div>
+                        <h4 className="font-bold text-stone-200">{t.name}</h4>
+                        <p className="text-xs font-mono text-amber-500 mt-1">Coords : X: {t.x} | Y: {t.y} | Z: {t.z}</p>
+                        <span className="text-[10px] text-stone-500 block mt-1">Découvert par {t.by}</span>
+                      </div>
                     </div>
-                    <div className="overflow-hidden">
-                      <h4 className="font-bold text-stone-200 truncate text-sm md:text-base">{t.title}</h4>
-                      <a href={t.url} target="_blank" rel="noopener noreferrer" className="text-xs text-amber-500 hover:underline truncate block mt-0.5">{t.url}</a>
-                    </div>
+                    <button onClick={() => setTrouvailles(trouvailles.filter(item => item.id !== t.id))} className="text-stone-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
                   </div>
-                  <button onClick={() => handleDeleteTrouvaille(t.id)} className="text-stone-600 hover:text-red-400 p-2 transition shrink-0">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
 
-        {/* ONGLET RAIDS */}
+        {/* RAIDS */}
         {activeTab === 'raids' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Tableau des Raids & Expéditions</h2>
-              <p className="text-sm text-stone-500 mt-1">Préparez vos armes. Voici les expéditions communautaires de la taverne.</p>
+              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Raids</h2>
+              <p className="text-sm text-stone-500 mt-1">Organisez les expéditions communautaires contre les boss du serveur.</p>
             </div>
 
-            <div className="bg-[#111722] border border-stone-800/80 rounded-lg overflow-hidden">
-              <div className="divide-y divide-stone-800/40">
-                {raids.map(raid => (
-                  <div key={raid.id} className="p-4 flex items-center justify-between gap-4 bg-[#111722]">
-                    <div className="flex items-center gap-3">
-                      <Shield className="w-5 h-5 text-amber-500" />
-                      <div>
-                        <span className="font-bold text-stone-200 block">{raid.name}</span>
-                        <span className="text-xs text-stone-500">Planifié pour : {raid.date}</span>
-                      </div>
-                    </div>
-                    <span className={`text-xs px-2.5 py-1 rounded font-bold border ${raid.status === 'Terminé' ? 'bg-emerald-950/30 text-emerald-400 border-emerald-800/30' : 'bg-amber-950/30 text-amber-400 border-amber-800/30'}`}>
-                      {raid.status}
-                    </span>
-                  </div>
-                ))}
+            <form onSubmit={handleAddRaid} className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Objectif / Boss</label>
+                <input type="text" value={newRaidName} onChange={(e) => setNewRaidName(e.target.value)} placeholder="Ex: L'Ender Dragon" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" required />
               </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Date / Heure prévue</label>
+                <input type="text" value={newRaidDate} onChange={(e) => setNewRaidDate(e.target.value)} placeholder="Ex: Samedi à 21h" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" />
+              </div>
+              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 rounded text-sm uppercase tracking-wider font-serif">Planifier</button>
+            </form>
+
+            <div className="bg-[#111722] border border-stone-800/80 rounded-lg overflow-hidden">
+              {raids.length === 0 ? (
+                <p className="p-5 text-sm text-stone-600 italic">Aucun raid de planifié.</p>
+              ) : (
+                <div className="divide-y divide-stone-800/40">
+                  {raids.map(raid => (
+                    <div key={raid.id} className="p-4 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <Shield className="w-5 h-5 text-amber-500" />
+                        <div>
+                          <span className="font-bold text-stone-200 block">{raid.name}</span>
+                          <span className="text-xs text-stone-500">Planifié : {raid.date}</span>
+                        </div>
+                      </div>
+                      <button onClick={() => setRaids(raids.filter(r => r.id !== raid.id))} className="text-stone-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* ONGLET GUIDE */}
+        {/* GUIDE (YouTube) */}
         {activeTab === 'guide' && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Le Guide de l'Explorateur</h2>
-              <p className="text-sm text-stone-500 mt-1">Les parchemins sacrés pour bien débuter sur Arcane Frontier.</p>
+              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Guide</h2>
+              <p className="text-sm text-stone-500 mt-1">Ajoutez et consultez les tutoriels YouTube indispensables pour maîtriser le serveur.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 space-y-3">
-                <h3 className="font-serif text-amber-500 font-bold uppercase tracking-wider border-b border-stone-800 pb-2">📜 Commandes Utiles</h3>
-                <p className="text-sm text-stone-300 font-mono bg-stone-950 p-2 rounded">/spawn - Retourner au camp de base</p>
-                <p className="text-sm text-stone-300 font-mono bg-stone-950 p-2 rounded">/home [nom] - Téléportation à votre lit</p>
-                <p className="text-sm text-stone-300 font-mono bg-stone-950 p-2 rounded">/tpa [pseudo] - Demande de téléportation</p>
+            <form onSubmit={handleAddGuide} className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Nom du guide / Sujet</label>
+                <input type="text" value={guideTitle} onChange={(e) => setGuideTitle(e.target.value)} placeholder="Ex: Débuter avec Create, Gérer l'énergie" className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" required />
               </div>
+              <div>
+                <label className="block text-xs font-bold uppercase text-stone-400 mb-2">Lien YouTube complet</label>
+                <input type="url" value={guideUrl} onChange={(e) => setGuideUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-stone-950 border border-stone-800 rounded p-2.5 text-stone-100 text-sm focus:border-amber-500 focus:outline-none" required />
+              </div>
+              <button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold py-2.5 rounded text-sm uppercase tracking-wider font-serif flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" /> Partager la vidéo
+              </button>
+            </form>
 
-              <div className="bg-[#111722] border border-stone-800/80 rounded-lg p-5 space-y-3">
-                <h3 className="font-serif text-amber-500 font-bold uppercase tracking-wider border-b border-stone-800 pb-2">⚔️ Règles de Bonne Conduite</h3>
-                <p className="text-sm text-stone-300">1. Pas de grief ni de vol dans les zones communautaires.</p>
-                <p className="text-sm text-stone-300">2. Enregistrez vos projets de farm majeurs sur cet outil pour éviter les doublons.</p>
-                <p className="text-sm text-stone-300">3. Partagez l'hydromel au comptoir de la taverne !</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {guides.length === 0 ? (
+                <p className="text-sm text-stone-600 italic">Aucun guide partagé.</p>
+              ) : (
+                guides.map((g) => (
+                  <div key={g.id} className="bg-[#111722] border border-stone-800/80 rounded-lg p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="p-2 rounded bg-red-500/10 text-red-500 border border-red-500/20"><Youtube className="w-5 h-5" /></div>
+                      <div className="overflow-hidden">
+                        <h4 className="font-bold text-stone-200 truncate">{g.title}</h4>
+                        <a href={g.url} target="_blank" rel="noopener noreferrer" className="text-xs text-amber-500 hover:underline truncate block mt-0.5">{g.url}</a>
+                        <span className="text-[10px] text-stone-500 block mt-1">Partagé par {g.by}</span>
+                      </div>
+                    </div>
+                    <button onClick={() => setGuides(guides.filter(item => item.id !== g.id))} className="text-stone-600 hover:text-red-400"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
