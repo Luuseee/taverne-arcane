@@ -1,128 +1,225 @@
 import React, { useState } from 'react';
-import { Shield, Users, Trophy, MessageSquare, Key, Swords, Beer, Scroll } from 'lucide-react';
+import { Shield, Users, Trophy, MessageSquare, Key, Swords, Beer, Scroll, Plus, RotateCw, Check, Minus } from 'lucide-react';
 
 export default function App() {
-  const [pseudo, setPseudo] = useState('');
-  const [status, setStatus] = useState('');
+  const [activeTab, setActiveTab] = useState('projets');
+  const [userPseudo, setUserPseudo] = useState('aky');
+  
+  // État pour les ressources de la Machine à XP
+  const [resources, setResources] = useState([
+    { id: 'fer', name: 'Fer', current: 0, max: 45, by: 'aky' },
+    { id: 'cuivre', name: 'Cuivre', current: 0, max: 18, by: '' },
+    { id: 'zinc', name: 'Zinc', current: 0, max: 18, by: '' },
+    { id: 'or', name: 'Or', current: 0, max: 3, by: '' },
+    { id: 'andesite', name: 'Andésite', current: 0, max: 40, by: '' },
+    { id: 'quartz', name: 'Quartz', current: 0, max: 6, by: '' },
+    { id: 'redstone', name: 'Redstone', current: 0, max: 50, by: '' },
+    { id: 'bois', name: 'Bois (bûches)', current: 0, max: 40, by: '' },
+    { id: 'varech', name: 'Varech séché', current: 0, max: 4, by: '' },
+    { id: 'verre', name: 'Verre', current: 0, max: 1, by: '' },
+  ]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (pseudo.trim()) {
-      setStatus('recherche');
-      setTimeout(() => {
-        setStatus('valide');
-      }, 2000);
-    }
+  const handleIncrement = (id) => {
+    setResources(resources.map(res => {
+      if (res.id === id && res.current < res.max) {
+        return { ...res, current: res.current + 1, by: userPseudo };
+      }
+      return res;
+    }));
   };
 
+  const handleDecrement = (id) => {
+    setResources(resources.map(res => {
+      if (res.id === id && res.current > 0) {
+        return { ...res, current: res.current - 1 };
+      }
+      return res;
+    }));
+  };
+
+  const handleComplete = (id) => {
+    setResources(resources.map(res => {
+      if (res.id === id) {
+        return { ...res, current: res.max, by: userPseudo };
+      }
+      return res;
+    }));
+  };
+
+  // Calcul de la progression globale
+  const totalCurrent = resources.reduce((acc, res) => acc + res.current, 0);
+  const totalMax = resources.reduce((acc, res) => acc + res.max, 0);
+  const globalProgress = Math.round((totalCurrent / totalMax) * 100);
+
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 font-serif selection:bg-amber-700 selection:text-amber-100">
-      {/* Hero Banner */}
-      <div className="relative bg-black h-80 flex items-center justify-center border-b-4 border-amber-600 bg-cover bg-center" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), url("https://images.unsplash.com/photo-1597200381847-30ec200eeb9a?q=80&w=1200")' }}>
-        <div className="text-center px-4">
-          <div className="flex justify-center mb-3">
-            <Beer className="w-16 h-16 text-amber-500 animate-pulse" />
+    <div className="min-h-screen bg-[#0b0f14] text-[#94a3b8] font-sans antialiased selection:bg-amber-700 selection:text-amber-100">
+      
+      {/* Top Navigation / Header */}
+      <header className="border-b border-stone-800 bg-[#0f141c] sticky top-0 z-50 px-4 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-500/10 p-2 rounded border border-amber-500/20">
+              <Beer className="w-6 h-6 text-amber-500" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-wider text-stone-100 uppercase font-serif">
+                La Taverne d'Arcane Fron
+              </h1>
+              <p className="text-xs uppercase tracking-widest text-stone-500 font-semibold flex items-center gap-1">
+                Project <span className="text-stone-400">•</span> Arcane Frontier
+              </p>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-wider text-amber-500 drop-shadow-md uppercase">
-            La Taverne d'Arcane Frontier
-          </h1>
-          <p className="mt-2 text-stone-400 text-lg md:text-xl max-w-xl mx-auto italic font-sans">
-            Chopes de bière, ragoûts chauds et légendes de serveurs. Installe-toi, voyageur.
-          </p>
+
+          <div className="flex items-center gap-2">
+            <button className="flex items-center gap-1.5 bg-stone-800/40 border border-stone-700/60 rounded px-3 py-1.5 text-xs text-stone-400 font-semibold hover:bg-stone-800 transition">
+              <Shield className="w-3.5 h-3.5 text-amber-500/80" /> 1
+            </button>
+            <button className="flex items-center gap-1.5 bg-stone-800/40 border border-stone-700/60 rounded px-3 py-1.5 text-xs text-stone-400 font-semibold hover:bg-stone-800 transition">
+              <RotateCw className="w-3.5 h-3.5" /> Sync
+            </button>
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded px-3 py-1.5 text-xs text-amber-400 font-bold">
+              <Swords className="w-3.5 h-3.5" /> {userPseudo}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Tabs Menu */}
+      <div className="bg-[#0f141c] border-b border-stone-800/60 px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto flex gap-1">
+          {[
+            { id: 'projets', label: 'Projets', icon: Swords },
+            { id: 'trouvailles', label: 'Trouvailles', icon: Scroll },
+            { id: 'raids', label: 'Raids', icon: Shield },
+            { id: 'guide', label: 'Guide', icon: Trophy },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium tracking-wide uppercase transition relative ${
+                  isActive ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+                {isActive && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500"></div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Column - Registration */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-stone-800/80 border-2 border-stone-700 rounded-lg p-6 md:p-8 shadow-xl backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-6 border-b border-stone-700 pb-4">
-              <Scroll className="w-8 h-8 text-amber-500" />
-              <h2 className="text-2xl font-bold text-amber-500 uppercase tracking-wide">Le Registre des Aventuriers</h2>
+      {/* Main Content Dashboard */}
+      <main className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        {activeTab === 'projets' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-serif font-bold text-stone-100 uppercase tracking-wide">Projets</h2>
+              <p className="text-sm text-stone-500 mt-1">Suis les quantités farmées. Ton nom s'inscrit sur le dernier ajout.</p>
             </div>
-            
-            <p className="text-stone-300 mb-6 font-sans leading-relaxed">
-              Inscris ton pseudo Minecraft ci-dessous pour annoncer ton arrivée dans la taverne et débloquer tes accès au serveur Arcane Frontier.
-            </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4 font-sans">
-              <div>
-                <label className="block text-sm font-semibold text-stone-400 mb-2 uppercase tracking-wider">
-                  Pseudo Minecraft exact
-                </label>
-                <input
-                  type="text"
-                  value={pseudo}
-                  onChange={(e) => setPseudo(e.target.value)}
-                  placeholder="Ex: Notch"
-                  className="w-full bg-stone-950 border border-stone-700 rounded px-4 py-3 text-stone-100 focus:outline-none focus:border-amber-500 transition-colors placeholder-stone-600 text-lg"
-                  required
-                />
+            {/* Project Card */}
+            <div className="bg-[#111722] border border-stone-800/80 rounded-lg shadow-xl overflow-hidden">
+              <div className="p-5 border-b border-stone-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-bold font-serif text-stone-200 tracking-wide uppercase">
+                    Machine à XP (Create)
+                  </h3>
+                  <span className="bg-cyan-950/40 text-cyan-400 border border-cyan-800/40 text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider">
+                    Fermes
+                  </span>
+                </div>
+                <button className="flex items-center gap-1.5 bg-[#1cd1a1]/10 hover:bg-[#1cd1a1]/20 border border-[#1cd1a1]/20 text-[#1cd1a1] font-bold text-xs uppercase px-3 py-1.5 rounded transition">
+                  <Plus className="w-3.5 h-3.5" /> Projet
+                </button>
               </div>
 
-              <button
-                type="submit"
-                disabled={status === 'recherche'}
-                className="w-full bg-amber-600 hover:bg-amber-700 text-stone-950 font-bold uppercase py-3 rounded tracking-wider transition-colors shadow-lg shadow-amber-900/20 disabled:opacity-50 text-lg font-serif"
-              >
-                {status === 'recherche' ? 'Vérification dans le grimoire...' : 'S\'inscrire sur le registre'}
-              </button>
-            </form>
-
-            {/* Status Feedback */}
-            {status === 'valide' && (
-              <div className="mt-6 bg-emerald-950/40 border border-emerald-500/30 rounded p-4 text-emerald-400 font-sans flex items-start gap-3 animate-fade-in">
-                <Shield className="w-5 h-5 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="block font-bold">Bienvenue, {pseudo} !</strong>
-                  Ton entrée a été gravée dans la pierre. Tu as désormais accès aux salons de la Taverne.
+              <div className="px-5 py-3 bg-[#0d121b] border-b border-stone-800/40">
+                <p className="text-sm text-stone-400 italic">
+                  Ferme à XP automatisée. Goulot : le brass (besoin d'un blaze pour le Blaze Burner).
+                </p>
+                {/* Progress Bar */}
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="flex-1 bg-stone-900 rounded-full h-1.5 overflow-hidden border border-stone-800/40">
+                    <div 
+                      className="bg-amber-500 h-full transition-all duration-300"
+                      style={{ width: `${globalProgress}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-xs font-bold text-amber-500 min-w-[24px] text-right">{globalProgress}%</span>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Lore / Rules Section */}
-          <div className="bg-stone-800/50 border border-stone-700/50 rounded-lg p-6 font-sans text-stone-400 text-sm space-y-3">
-            <h3 className="font-serif text-stone-200 uppercase tracking-wider font-bold mb-2 flex items-center gap-2">
-              <Swords className="w-4 h-4 text-amber-600" /> Les Lois de la Choppe
-            </h3>
-            <p>1. Laisse tes armes à l'entrée. Les bagarres se règlent dans l'arène, pas près du comptoir.</p>
-            <p>2. Respecte le tavernier et les autres clients. Les insultes gâchent l'hydromel.</p>
-          </div>
-        </div>
+              {/* Resource List Table */}
+              <div className="divide-y divide-stone-800/40">
+                {resources.map((res) => (
+                  <div key={res.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#131a26]/40 transition">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-stone-700 rounded-full"></div>
+                      <span className="font-medium text-stone-300 text-sm md:text-base">{res.name}</span>
+                      {res.by && (
+                        <span className="text-[10px] text-cyan-400 bg-cyan-950/20 px-1.5 py-0.5 rounded font-mono">
+                          • {res.by}
+                        </span>
+                      )}
+                    </div>
 
-        {/* Sidebar - Info widgets */}
-        <div className="space-y-6">
-          {/* Server Info */}
-          <div className="bg-stone-800/80 border-2 border-stone-700 rounded-lg p-6 shadow-xl text-center">
-            <h3 className="text-amber-500 font-bold uppercase tracking-wider mb-4 border-b border-stone-700 pb-2">
-              Statut de la Taverne
-            </h3>
-            <div className="flex items-center justify-center gap-2 text-emerald-400 font-sans font-bold text-lg mb-2">
-              <span className="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></span>
-              PORTES OUVERTES
-            </div>
-            <p className="text-xs text-stone-400 font-sans">IP: play.arcanefrontier.fr</p>
-          </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-6">
+                      <div className="flex items-center bg-stone-950/60 border border-stone-800/80 rounded overflow-hidden">
+                        <button 
+                          onClick={() => handleDecrement(res.id)}
+                          className="px-2.5 py-1.5 hover:bg-stone-900 text-stone-500 hover:text-stone-300 border-r border-stone-800/80 transition"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="px-4 text-sm font-bold font-mono text-stone-200 min-w-[65px] text-center">
+                          {res.current}/{res.max}
+                        </div>
+                        <button 
+                          onClick={() => handleIncrement(res.id)}
+                          className="px-2.5 py-1.5 hover:bg-stone-900 text-stone-500 hover:text-stone-300 border-l border-stone-800/80 transition"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
 
-          {/* Quick Stats */}
-          <div className="bg-stone-800/80 border-2 border-stone-700 rounded-lg p-6 shadow-xl space-y-4">
-            <h3 className="text-stone-300 font-bold uppercase tracking-wider border-b border-stone-700 pb-2 flex items-center gap-2 text-sm">
-              <Users className="w-4 h-4 text-amber-500" /> Comptoir des Légendes
-            </h3>
-            <div className="grid grid-cols-2 gap-4 text-center font-sans">
-              <div className="bg-stone-900/50 p-3 rounded border border-stone-700/30">
-                <div className="text-2xl font-bold text-amber-500">142</div>
-                <div className="text-xs text-stone-400 uppercase tracking-tight mt-1">Inscrits</div>
+                      <button 
+                        onClick={() => handleComplete(res.id)}
+                        className={`p-1.5 rounded border transition ${
+                          res.current === res.max 
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                            : 'border-stone-800/80 text-stone-600 hover:text-stone-400 hover:bg-stone-900'
+                        }`}
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="bg-stone-900/50 p-3 rounded border border-stone-700/30">
-                <div className="text-2xl font-bold text-amber-500">12</div>
-                <div className="text-xs text-stone-400 uppercase tracking-tight mt-1">En ligne</div>
+
+              <div className="p-4 bg-[#0d121b] border-t border-stone-800/60 flex justify-end">
+                <button className="text-xs font-semibold text-stone-500 hover:text-stone-400 tracking-wide uppercase">
+                  Masquer terminés
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
+
+        {activeTab !== 'projets' && (
+          <div className="py-12 text-center bg-[#111722] border border-stone-800/80 rounded-lg p-8">
+            <Scroll className="w-8 h-8 text-stone-600 mx-auto mb-3" />
+            <p className="text-sm text-stone-500 font-serif uppercase tracking-wider">Cette section de la taverne est encore calme...</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
