@@ -23,8 +23,8 @@ const QUICK_MATERIALS = [
 ];
 
 export default function App() {
-  // Session utilisateur persistante
-  const [isRegistered, setIsRegistered] = useState(() => localStorage.getItem('taverne_registered') === 'true');
+  // Changement ici : On force la reconnexon au chargement pour afficher l'onglet pseudo systématiquement
+  const [isRegistered, setIsRegistered] = useState(false);
   const [userPseudo, setUserPseudo] = useState(() => localStorage.getItem('taverne_pseudo') || '');
   
   // Navigation & Chargement
@@ -115,9 +115,8 @@ export default function App() {
   };
 
   /* ==========================================
-     LOGIQUE EXCLUSIVE : NOUVEAU SYSTÈME PROJETS/CHANTIERS
+     LOGIQUE EXCLUSIVE : SYSTÈME PROJETS/CHANTIERS
      ========================================== */
-  
   const syncProjetToCloud = async (updatedProjet) => {
     await supabase.from('projets_state').update({
       name: updatedProjet.name,
@@ -231,7 +230,7 @@ export default function App() {
 
 
   /* ==========================================
-     LOGIQUE CONSERVÉE : COFFRES, RAIDS & GUIDES
+     LOGIQUE COFFRES, RAIDS & GUIDES SECONDAIRES
      ========================================== */
   const handleAddTrouvaille = async (e) => {
     e.preventDefault();
@@ -280,10 +279,9 @@ export default function App() {
     await supabase.from('guides').delete().eq('id', id);
   };
 
-  // Matrice fixe pour le double coffre commun (54 slots)
   const doubleChestSlots = Array.from({ length: 54 }, (_, i) => trouvailles[i] || null);
 
-  // ÉCRAN DE CONNEXION AVENTURIER
+  // ÉCRAN INITIAL DE REQUÊTE PSEUDO (LA TAVERNE)
   if (!isRegistered) {
     return (
       <div className="min-h-screen bg-[#0d0907] text-[#e7dbcf] flex flex-col items-center justify-center p-4" style={{ backgroundImage: 'radial-gradient(circle at center, #1c130e 0%, #0d0907 100%)' }}>
@@ -356,13 +354,10 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* =======================================================
-                ONGLET 1 : NOUVEAUX CHANTIERS PARFAITS (HIÉRARCHIQUES)
-                ======================================================= */}
+            {/* ONGLET 1 : CHANTIERS PARFAITS (HIÉRARCHIQUES) */}
             {activeTab === 'chantiers' && (
               <div className="space-y-6 animate-fadeIn">
                 
-                {/* Formulaire : Créer un projet global */}
                 <form onSubmit={handleCreateProjet} className="bg-[#120d0a] border border-[#352318] rounded-xl p-4 shadow-lg space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#e58219] font-serif">
                     <FolderPlus className="w-4 h-4" /> Ouvrir un nouveau chantier de construction majeur
@@ -374,7 +369,6 @@ export default function App() {
                   </div>
                 </form>
 
-                {/* Listing des projets */}
                 <div className="space-y-4">
                   {projets.length === 0 ? (
                     <div className="text-center py-12 bg-[#120d0a] rounded-xl border border-dashed border-stone-800 text-stone-600 font-serif italic text-xs">Aucun projet de construction planifié. Créez-en un ci-dessus !</div>
@@ -386,7 +380,6 @@ export default function App() {
                       return (
                         <div key={p.id} className={`bg-[#120d0a] border rounded-xl overflow-hidden shadow-md transition-all ${isFinished ? 'border-emerald-950/60 opacity-80' : 'border-[#2a1d14]'}`}>
                           
-                          {/* Entête cliquable d'un projet */}
                           <div className="p-4 bg-[#18110d] flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none" onClick={() => setExpandedProjet(isExpanded ? null : p.id)}>
                             <div className="flex items-center gap-3">
                               <div onClick={(e) => { e.stopPropagation(); handleToggleProjetStatus(p.id); }} className={`p-1 rounded-full border transition-colors ${isFinished ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400' : 'bg-stone-950 border-stone-700 text-stone-500 hover:text-amber-500'}`} title={isFinished ? "Remettre en cours" : "Marquer comme construit/fini"}>
@@ -411,11 +404,8 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Liste interne des ressources du projet */}
                           {isExpanded && (
                             <div className="p-4 border-t border-[#231810] bg-[#0d0907] space-y-4">
-                              
-                              {/* Outils d'ajout si le projet est encore actif */}
                               {!isFinished && (
                                 <div className="bg-[#120d0a] border border-[#2b1c12] p-3 rounded-lg space-y-3">
                                   <div className="text-[10px] font-bold font-mono uppercase text-stone-500 tracking-wider flex items-center gap-1">
@@ -439,7 +429,6 @@ export default function App() {
                                 </div>
                               )}
 
-                              {/* Jauges de récolte */}
                               <div className="space-y-2">
                                 <span className="text-[10px] uppercase font-bold text-stone-500 font-mono tracking-wider">Matériaux requis ({p.resources.length}) :</span>
                                 {p.resources.length === 0 ? (
@@ -483,7 +472,6 @@ export default function App() {
                                   </div>
                                 )}
                               </div>
-
                             </div>
                           )}
                         </div>
@@ -491,13 +479,10 @@ export default function App() {
                     })
                   )}
                 </div>
-
               </div>
             )}
 
-            {/* =======================================================
-                ONGLET 2 : DOUBLE COFFRE COMMUN (CONSERVÉ ET INTACT)
-                ======================================================= */}
+            {/* ONGLET 2 : DOUBLE COFFRE COMMUN */}
             {activeTab === 'coffres' && (
               <div className="space-y-6 animate-fadeIn">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -553,9 +538,7 @@ export default function App() {
               </div>
             )}
 
-            {/* =======================================================
-                ONGLET 3 : RAIDS & BOSS (CONSERVÉ ET INTACT)
-                ======================================================= */}
+            {/* ONGLET 3 : RAIDS & BOSS */}
             {activeTab === 'raids' && (
               <div className="space-y-4 text-xs animate-fadeIn">
                 <form onSubmit={handleAddRaid} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl flex flex-col sm:flex-row items-end gap-3">
@@ -588,9 +571,7 @@ export default function App() {
               </div>
             )}
 
-            {/* =======================================================
-                ONGLET 4 : BIBLIOTHÈQUE / GUIDES (CONSERVÉ ET INTACT)
-                ======================================================= */}
+            {/* ONGLET 4 : BIBLIOTHÈQUE / GUIDES */}
             {activeTab === 'guides' && (
               <div className="space-y-6 text-xs animate-fadeIn">
                 <form onSubmit={handleAddGuide} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
