@@ -2,17 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Tab / page fade-in ─────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity:0; transform:translateY(6px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 .tab-fade { animation: fadeIn 0.18s ease-out both; }
 
-@keyframes bellRing {
-  0%,100% { transform: rotate(0deg); }
-  20% { transform: rotate(-15deg); }
-  40% { transform: rotate(15deg); }
-  60% { transform: rotate(-10deg); }
-  80% { transform: rotate(10deg); }
+/* ── Loading bar ────────────────────────────────────── */
+@keyframes loadProgress {
+  0%   { width:12%; }
+  50%  { width:82%; }
+  100% { width:12%; }
 }
-.bell-ring { animation: bellRing 0.5s ease-in-out; }
+.loading-bar { animation: loadProgress 1.8s ease-in-out infinite; }
+
+/* ── Auth particle float ────────────────────────────── */
+@keyframes floatUp {
+  0%   { transform:translateY(0) scale(1);    opacity:0.8; }
+  100% { transform:translateY(-110vh) scale(0.4); opacity:0; }
+}
+.particle { position:absolute; border-radius:50%; pointer-events:none; animation:floatUp linear infinite; }
+
+/* ── Announcement ticker ────────────────────────────── */
+@keyframes marquee {
+  from { transform:translateX(100vw); }
+  to   { transform:translateX(-100%); }
+}
+.marquee-track { animation:marquee 22s linear infinite; white-space:nowrap; display:inline-block; }
+
+/* ── Screen shake (Obliterator easter egg) ──────────── */
+@keyframes shake {
+  0%,100% { transform:translate(0,0) rotate(0); }
+  10% { transform:translate(-6px,-3px) rotate(-1deg); }
+  20% { transform:translate(6px, 3px) rotate(1deg); }
+  30% { transform:translate(-6px, 3px) rotate(0); }
+  40% { transform:translate(6px,-3px) rotate(1deg); }
+  50% { transform:translate(-4px, 6px) rotate(-1deg); }
+  60% { transform:translate(4px,-6px) rotate(0); }
+  70% { transform:translate(-6px, 3px) rotate(-1deg); }
+  80% { transform:translate(6px,-3px) rotate(1deg); }
+  90% { transform:translate(-4px,0) rotate(0); }
+}
+.screen-shake { animation:shake 0.9s ease-in-out; }
+
+/* ── Button micro-animations ────────────────────────── */
+button { transition: transform 0.1s ease, opacity 0.1s ease; }
+button:hover:not(:disabled) { transform: scale(1.03); }
+button:active:not(:disabled) { transform: scale(0.97); }
+
+/* ── Tooltip ────────────────────────────────────────── */
+[data-tip] { position:relative; }
+[data-tip]::after {
+  content: attr(data-tip);
+  position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%);
+  background:#1a130f; border:1px solid #3e2a1e; color:#e7dbcf;
+  font-size:10px; padding:3px 8px; border-radius:6px; white-space:nowrap;
+  pointer-events:none; opacity:0; transition:opacity 0.15s; z-index:200;
+}
+[data-tip]:hover::after { opacity:1; }
+
+/* ── Glassmorphism ──────────────────────────────────── */
+.glass { backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
