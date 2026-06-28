@@ -7,12 +7,16 @@ import {
   ChevronDown, ChevronUp, FolderPlus, CheckCircle2
 } from 'lucide-react';
 
-// Configuration d'accès Supabase (Production)
+// ==========================================
+// CONFIGURATION DE LA CONNEXION CLOUD (SUPABASE)
+// ==========================================
 const SUPABASE_URL = "https://pdndmtktluaggvupgsej.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_I_zL7n0t8G-BO4jFUr4FBA_qpLWH90B";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Matériaux fréquents pour l'ajout ultra-rapide dans un projet
+// ==========================================
+// LISTE DES RACCOURCIS MATÉRIAUX (BOUTONS RAPIDES)
+// ==========================================
 const QUICK_MATERIALS = [
   { name: "Plaques d'Acier", max: 64 },
   { name: "Tuyaux en Fluide", max: 32 },
@@ -23,80 +27,114 @@ const QUICK_MATERIALS = [
 ];
 
 export default function App() {
-  // Changement ici : On force la reconnexon au chargement pour afficher l'onglet pseudo systématiquement
+  // ==========================================
+  // ÉTATS DE CONNEXION / SÉCURITÉ / NAVIGATION
+  // ==========================================
   const [isRegistered, setIsRegistered] = useState(false);
   const [userPseudo, setUserPseudo] = useState(() => localStorage.getItem('taverne_pseudo') || '');
-  
-  // Navigation & Chargement
   const [activeTab, setActiveTab] = useState('chantiers');
   const [loading, setLoading] = useState(true);
   
-  // Données centralisées
+  // ==========================================
+  // STOCKS DE DONNÉES SYNCHRONISÉES (TABLES)
+  // ==========================================
   const [projets, setProjets] = useState([]);
   const [trouvailles, setTrouvailles] = useState([]);
   const [raids, setRaids] = useState([]);
   const [guides, setGuides] = useState([]);
 
-  // États de saisie - Onglet Chantiers (Nouveau Système Structuré)
+  // ==========================================
+  // ÉTATS DES FORMULAIRES (SAISIES UTILISATEUR)
+  // ==========================================
+  // Onglet 1 : Chantiers
   const [newProjetName, setNewProjetName] = useState('');
   const [newProjetDesc, setNewProjetDesc] = useState('');
   const [expandedProjet, setExpandedProjet] = useState(null);
   const [resName, setResName] = useState('');
   const [resMax, setResMax] = useState(64);
 
-  // Formulaires secondaires (Coffres, Raids, Guides)
+  // Onglet 2 : Coffres & Structures
   const [lieuNom, setLieuNom] = useState('');
-  const [coordX, setCoordX] = useState(''); const [coordY, setCoordY] = useState(''); const [coordZ, setCoordZ] = useState('');
-  const [itemName, setItemName] = useState(''); const [itemRarity, setItemRarity] = useState('Epic'); const [itemLocation, setItemLocation] = useState('');
-  const [newRaidName, setNewRaidName] = useState(''); const [newRaidDate, setNewRaidDate] = useState('');
-  const [guideTitle, setGuideTitle] = useState(''); const [guideUrl, setGuideUrl] = useState('');
+  const [coordX, setCoordX] = useState(''); 
+  const [coordY, setCoordY] = useState(''); 
+  const [coordZ, setCoordZ] = useState('');
+  const [itemName, setItemName] = useState(''); 
+  const [itemRarity, setItemRarity] = useState('Epic'); 
+  const [itemLocation, setItemLocation] = useState('');
 
-  // Récupération globale initiale
-  useEffect(() => {
-    async function loadData() {
-      if (!isRegistered) return;
-      setLoading(true);
-      try {
-        // Chargement et formatage des projets
-        const { data: cData } = await supabase.from('projets_state').select('*');
-        if (cData) {
-          const formatted = cData.map(item => {
-            let itemsList = [];
-            try {
-              if (item.category && item.category.startsWith('[{')) {
-                itemsList = JSON.parse(item.category);
-              }
-            } catch (e) { itemsList = []; }
+  // Onglet 3 : Raids
+  const [newRaidName, setNewRaidName] = useState(''); 
+  const [newRaidDate, setNewRaidDate] = useState('');
 
-            return {
-              id: item.id,
-              name: item.name,
-              desc: item.by && !item.by.includes('_') ? item.by : "Aucune description",
-              status: item.current === 999 ? 'Terminé' : 'En Cours',
-              resources: itemsList,
-              createdBy: item.by || 'Inconnu'
-            };
-          });
-          setProjets(formatted);
-        }
+  // Onglet 4 : Guides
+  const [guideTitle, setGuideTitle] = useState(''); 
+  const [guideUrl, setGuideUrl] = useState('');
 
-        const { data: tData } = await supabase.from('trouvailles').select('*');
-        if (tData) setTrouvailles(tData);
+  // ==========================================
+  // CHARGEMENT GLOBAL DES TABLES DEPUIS LE CLOUD
+  // ==========================================
+  async function loadData() {
+    setLoading(true);
+    try {
+      // 1. Récupération des projets de construction
+      const { data: cData, error: cErr } = await supabase
+        .from('projets_state')
+        .select('*')
+        .order('id', { ascending: false });
+        
+      if (cErr) console.error("Erreur Table Projets:", cErr);
+      
+      if (cData) {
+        const formatted = cData.map(item => {
+          let itemsList = [];
+          try {
+            if (item.category && item.category.startsWith('[{')) {
+              itemsList = JSON.parse(item.category);
+            }
+          } catch (e) { 
+            itemsList = []; 
+          }
 
-        const { data: rData } = await supabase.from('raids').select('*');
-        if (rData) setRaids(rData);
-
-        const { data: gData } = await supabase.from('guides').select('*');
-        if (gData) setGuides(gData);
-      } catch (err) {
-        console.error("Erreur d'acquisition des tables Supabase :", err);
+          return {
+            id: item.id,
+            name: item.name,
+            desc: item.by && !item.by.includes('_') ? item.by : "Aucune description",
+            status: item.current === 999 ? 'Terminé' : 'En Cours',
+            resources: itemsList,
+            createdBy: item.by || 'Inconnu'
+          };
+        });
+        setProjets(formatted);
       }
-      setLoading(false);
+
+      // 2. Récupération du Double Coffre Commun / Trouver
+      const { data: tData } = await supabase.from('trouvailles').select('*');
+      if (tData) setTrouvailles(tData);
+
+      // 3. Récupération des Raids programmés
+      const { data: rData } = await supabase.from('raids').select('*');
+      if (rData) setRaids(rData);
+
+      // 4. Récupération de la bibliothèque de Guides
+      const { data: gData } = await supabase.from('guides').select('*');
+      if (gData) setGuides(gData);
+
+    } catch (err) {
+      console.error("Erreur critique de synchronisation database :", err);
     }
-    loadData();
+    setLoading(false);
+  }
+
+  // Déclencheur automatique dès que le pseudo est validé
+  useEffect(() => {
+    if (isRegistered) {
+      loadData();
+    }
   }, [isRegistered]);
 
-  // Connexion de l'aventurier
+  // ==========================================
+  // GESTION DU SYSTÈME DE COMPTE ET TAVERNE
+  // ==========================================
   const handleRegister = async (e) => {
     e.preventDefault();
     const clean = userPseudo.trim();
@@ -104,6 +142,8 @@ export default function App() {
 
     localStorage.setItem('taverne_registered', 'true');
     localStorage.setItem('taverne_pseudo', clean);
+    
+    // Ajout à la table des aventuriers en tâche de fond
     await supabase.from('aventuriers').insert([{ pseudo: clean }], { ignoreDuplicates: true });
     setIsRegistered(true);
   };
@@ -114,51 +154,66 @@ export default function App() {
     setUserPseudo('');
   };
 
-  /* ==========================================
-     LOGIQUE EXCLUSIVE : SYSTÈME PROJETS/CHANTIERS
-     ========================================== */
+  // ==========================================
+  // INTERACTION DIRECTE TABLE : PROJETS_STATE
+  // ==========================================
+  
+  // Envoi des modifications d'un projet existant vers Supabase
   const syncProjetToCloud = async (updatedProjet) => {
-    await supabase.from('projets_state').update({
-      name: updatedProjet.name,
-      category: JSON.stringify(updatedProjet.resources),
-      current: updatedProjet.status === 'Terminé' ? 999 : 0,
-      by: updatedProjet.desc
-    }).eq('id', updatedProjet.id);
+    try {
+      await supabase.from('projets_state').update({
+        name: updatedProjet.name,
+        category: JSON.stringify(updatedProjet.resources),
+        current: updatedProjet.status === 'Terminé' ? 999 : 0,
+        max: 100, 
+        by: updatedProjet.desc
+      }).eq('id', updatedProjet.id);
+    } catch (err) {
+      console.error("Échec de la mise à jour cloud du projet :", err);
+    }
   };
 
+  // Action : Créer un nouveau projet vierge
   const handleCreateProjet = async (e) => {
     e.preventDefault();
     if (!newProjetName.trim()) return;
 
-    const tempId = Date.now();
-    const newProjObj = {
-      id: tempId,
-      name: newProjetName.trim(),
-      desc: newProjetDesc.trim() || "Pas de description",
-      status: "En Cours",
-      resources: [],
-      createdBy: userPseudo
-    };
+    const descText = newProjetDesc.trim() || "Pas de description";
+    const nameText = newProjetName.trim();
 
-    setProjets(prev => [newProjObj, ...prev]);
-    setExpandedProjet(tempId);
-    setNewProjetName('');
-    setNewProjetDesc('');
-
-    const { data } = await supabase.from('projets_state').insert([{
-      name: newProjObj.name,
-      category: JSON.stringify([]),
+    // Envoi sécurisé à Supabase
+    const { data, error } = await supabase.from('projets_state').insert([{
+      name: nameText,
+      category: JSON.stringify([]), 
       current: 0,
       max: 100,
-      by: newProjObj.desc
+      by: descText
     }]).select();
 
+    if (error) {
+      console.error("Erreur de création Supabase :", error);
+      alert("Erreur de liaison Cloud : le projet n'a pas pu s'enregistrer.");
+      return;
+    }
+
     if (data && data[0]) {
-      setProjets(prev => prev.map(p => p.id === tempId ? { ...p, id: data[0].id } : p));
+      const createdProj = {
+        id: data[0].id,
+        name: data[0].name,
+        desc: data[0].by,
+        status: "En Cours",
+        resources: [],
+        createdBy: userPseudo
+      };
+      
+      setProjets(prev => [createdProj, ...prev]);
       setExpandedProjet(data[0].id);
+      setNewProjetName('');
+      setNewProjetDesc('');
     }
   };
 
+  // Action : Ajouter un matériau requis dans un chantier
   const handleAddResource = (projetId, name, maxQty) => {
     if (!name.trim()) return;
 
@@ -179,6 +234,7 @@ export default function App() {
     setResName('');
   };
 
+  // Action : Ajuster la quantité récoltée (+1, -1, +10, -10)
   const handleUpdateResQty = (projetId, resId, delta) => {
     setProjets(prev => prev.map(p => {
       if (p.id === projetId) {
@@ -199,6 +255,7 @@ export default function App() {
     }));
   };
 
+  // Action : Enlever un matériau d'un projet
   const handleDeleteResource = (projetId, resId) => {
     setProjets(prev => prev.map(p => {
       if (p.id === projetId) {
@@ -210,6 +267,7 @@ export default function App() {
     }));
   };
 
+  // Action : Basculer un projet entre "En cours" et "Terminé (Construit)"
   const handleToggleProjetStatus = (projetId) => {
     setProjets(prev => prev.map(p => {
       if (p.id === projetId) {
@@ -222,21 +280,22 @@ export default function App() {
     }));
   };
 
+  // Action : Supprimer définitivement un chantier
   const handleDeleteProjet = async (projetId) => {
     if(!confirm("Supprimer définitivement ce chantier et toutes ses ressources ?")) return;
     setProjets(prev => prev.filter(p => p.id !== projetId));
     await supabase.from('projets_state').delete().eq('id', projetId);
   };
 
-
-  /* ==========================================
-     LOGIQUE COFFRES, RAIDS & GUIDES SECONDAIRES
-     ========================================== */
+  // ==========================================
+  // INTERACTION DIRECTE TABLE : TROUVAILLES (COFFRES)
+  // ==========================================
   const handleAddTrouvaille = async (e) => {
     e.preventDefault();
     if (!lieuNom.trim()) return;
     const newLieu = { id: Date.now(), type: 'lieu', name: lieuNom, coords: `X: ${coordX||'?'} | Y: ${coordY||'?'} | Z: ${coordZ||'?'}`, by: userPseudo, rarity: 'Structure' };
-    setTrouvailles(p => [...p, newLieu]); setLieuNom(''); setCoordX(''); setCoordY(''); setCoordZ('');
+    setTrouvailles(p => [...p, newLieu]); 
+    setLieuNom(''); setCoordX(''); setCoordY(''); setCoordZ('');
     await supabase.from('trouvailles').insert([newLieu]);
   };
 
@@ -244,7 +303,8 @@ export default function App() {
     e.preventDefault();
     if (!itemName.trim()) return;
     const newItem = { id: Date.now(), type: 'item', name: itemName, coords: itemLocation ? `Rangement: ${itemLocation}` : 'Loot Aléatoire', by: userPseudo, rarity: itemRarity };
-    setTrouvailles(p => [...p, newItem]); setItemName(''); setItemLocation('');
+    setTrouvailles(p => [...p, newItem]); 
+    setItemName(''); setItemLocation('');
     await supabase.from('trouvailles').insert([newItem]);
   };
 
@@ -253,11 +313,15 @@ export default function App() {
     await supabase.from('trouvailles').delete().eq('id', id);
   };
 
+  // ==========================================
+  // INTERACTION DIRECTE TABLE : RAIDS & BOSS
+  // ==========================================
   const handleAddRaid = async (e) => {
     e.preventDefault();
     if (!newRaidName.trim()) return;
     const newRaid = { id: Date.now(), name: newRaidName, date: newRaidDate || 'À définir', status: 'En préparation' };
-    setRaids(p => [...p, newRaid]); setNewRaidName(''); setNewRaidDate('');
+    setRaids(p => [...p, newRaid]); 
+    setNewRaidName(''); setNewRaidDate('');
     await supabase.from('raids').insert([newRaid]);
   };
 
@@ -266,11 +330,15 @@ export default function App() {
     await supabase.from('raids').delete().eq('id', id);
   };
 
+  // ==========================================
+  // INTERACTION DIRECTE TABLE : GUIDES (BIBLIOTHÈQUE)
+  // ==========================================
   const handleAddGuide = async (e) => {
     e.preventDefault();
     if (!guideTitle.trim() || !guideUrl.trim()) return;
     const newGuide = { id: Date.now(), title: guideTitle, url: guideUrl, by: userPseudo };
-    setGuides(p => [...p, newGuide]); setGuideTitle(''); setGuideUrl('');
+    setGuides(p => [...p, newGuide]); 
+    setGuideTitle(''); setGuideUrl('');
     await supabase.from('guides').insert([newGuide]);
   };
 
@@ -279,9 +347,12 @@ export default function App() {
     await supabase.from('guides').delete().eq('id', id);
   };
 
+  // Génération de la grille virtuelle fixe à 54 slots (Format Double Coffre Minecraft)
   const doubleChestSlots = Array.from({ length: 54 }, (_, i) => trouvailles[i] || null);
 
-  // ÉCRAN INITIAL DE REQUÊTE PSEUDO (LA TAVERNE)
+  // ==========================================
+  // RENDU VISUEL INTERFACE D'IDENTIFICATION (TAVERNE)
+  // ==========================================
   if (!isRegistered) {
     return (
       <div className="min-h-screen bg-[#0d0907] text-[#e7dbcf] flex flex-col items-center justify-center p-4" style={{ backgroundImage: 'radial-gradient(circle at center, #1c130e 0%, #0d0907 100%)' }}>
@@ -303,10 +374,13 @@ export default function App() {
     );
   }
 
+  // ==========================================
+  // RENDU VISUEL DU PANEL PRINCIPAL DE LA GUILDE
+  // ==========================================
   return (
     <div className="min-h-screen bg-[#090605] text-stone-300 font-sans antialiased">
       
-      {/* HEADER DE LA GUILDE */}
+      {/* SECTION HAUTE : HEADER GLOBAL */}
       <header className="bg-[#120d0a] border-b border-[#291b12] px-4 lg:px-8 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -325,7 +399,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* NAVIGATION INTERNE (4 ONGLETS) */}
+      {/* SECTION CENTRE : MENU DES ONGLETS */}
       <div className="bg-[#120d0a] border-b border-[#291b12]/60 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto flex space-x-1 py-1">
           {[
@@ -346,7 +420,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* RENDER PRINCIPAL DE L'ONGLET ACTIF */}
+      {/* SECTION BASSE : AFFICHAGE DU CONTENU DYNAMIQUE */}
       <main className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
         {loading ? (
           <div className="text-center py-24 text-xs font-mono text-[#e58219] uppercase tracking-widest flex items-center justify-center gap-2">
@@ -354,10 +428,11 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* ONGLET 1 : CHANTIERS PARFAITS (HIÉRARCHIQUES) */}
+            {/* CONTENU ONGLET 1 : CHANTIERS & SUIVI DES MATÉRIAUX */}
             {activeTab === 'chantiers' && (
-              <div className="space-y-6 animate-fadeIn">
+              <div className="space-y-6">
                 
+                {/* Formulaire de création de chantier */}
                 <form onSubmit={handleCreateProjet} className="bg-[#120d0a] border border-[#352318] rounded-xl p-4 shadow-lg space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#e58219] font-serif">
                     <FolderPlus className="w-4 h-4" /> Ouvrir un nouveau chantier de construction majeur
@@ -369,6 +444,7 @@ export default function App() {
                   </div>
                 </form>
 
+                {/* Listing interactif des chantiers */}
                 <div className="space-y-4">
                   {projets.length === 0 ? (
                     <div className="text-center py-12 bg-[#120d0a] rounded-xl border border-dashed border-stone-800 text-stone-600 font-serif italic text-xs">Aucun projet de construction planifié. Créez-en un ci-dessus !</div>
@@ -380,9 +456,10 @@ export default function App() {
                       return (
                         <div key={p.id} className={`bg-[#120d0a] border rounded-xl overflow-hidden shadow-md transition-all ${isFinished ? 'border-emerald-950/60 opacity-80' : 'border-[#2a1d14]'}`}>
                           
+                          {/* Barre d'en-tête cliquable du projet */}
                           <div className="p-4 bg-[#18110d] flex flex-wrap items-center justify-between gap-3 cursor-pointer select-none" onClick={() => setExpandedProjet(isExpanded ? null : p.id)}>
                             <div className="flex items-center gap-3">
-                              <div onClick={(e) => { e.stopPropagation(); handleToggleProjetStatus(p.id); }} className={`p-1 rounded-full border transition-colors ${isFinished ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400' : 'bg-stone-950 border-stone-700 text-stone-500 hover:text-amber-500'}`} title={isFinished ? "Remettre en cours" : "Marquer comme construit/fini"}>
+                              <div onClick={(e) => { e.stopPropagation(); handleToggleProjetStatus(p.id); }} className={`p-1 rounded-full border transition-colors ${isFinished ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400' : 'bg-stone-950 border-stone-700 text-stone-500 hover:text-amber-500'}`} title={isFinished ? "Remettre en cours" : "Marquer comme construit"}>
                                 <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
                               </div>
                               <div>
@@ -395,21 +472,22 @@ export default function App() {
                             </div>
 
                             <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => handleDeleteProjet(p.id)} className="text-stone-600 hover:text-red-400 p-1.5 rounded transition-colors" title="Supprimer tout le projet">
+                              <button onClick={() => handleDeleteProjet(p.id)} className="text-stone-600 hover:text-red-400 p-1.5 rounded transition-colors" title="Supprimer le projet">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
-                              <div onClick={() => setExpandedProjet(isExpanded ? null : p.id)} className="text-stone-500 hover:text-stone-300 p-1 bg-[#0c0806] rounded border border-stone-800">
+                              <div className="text-stone-500 p-1 bg-[#0c0806] rounded border border-stone-800">
                                 {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                               </div>
                             </div>
                           </div>
 
+                          {/* Tiroir d'administration des ressources internes */}
                           {isExpanded && (
                             <div className="p-4 border-t border-[#231810] bg-[#0d0907] space-y-4">
                               {!isFinished && (
                                 <div className="bg-[#120d0a] border border-[#2b1c12] p-3 rounded-lg space-y-3">
                                   <div className="text-[10px] font-bold font-mono uppercase text-stone-500 tracking-wider flex items-center gap-1">
-                                    <Package className="w-3 h-3 text-[#e58219]" /> Raccourcis d'ajout rapide de ressources pour ce projet :
+                                    <Package className="w-3 h-3 text-[#e58219]" /> Raccourcis d'ajout de ressources :
                                   </div>
                                   <div className="flex flex-wrap gap-1">
                                     {QUICK_MATERIALS.map((mat, idx) => (
@@ -419,7 +497,7 @@ export default function App() {
                                     ))}
                                   </div>
                                   <div className="pt-2 border-t border-[#1f140d] flex items-center gap-2 text-xs">
-                                    <input type="text" value={resName} onChange={e => setResName(e.target.value)} placeholder="Autre matériau spécifique..." className="flex-1 bg-[#070504] border border-[#312015] rounded p-1.5 text-white focus:outline-none" />
+                                    <input type="text" value={resName} onChange={e => setResName(e.target.value)} placeholder="Matériau spécifique personnalisé..." className="flex-1 bg-[#070504] border border-[#312015] rounded p-1.5 text-white focus:outline-none" />
                                     <div className="flex items-center gap-1 text-stone-500">
                                       <span>Qté:</span>
                                       <input type="number" value={resMax} onChange={e => setResMax(e.target.value)} className="w-14 bg-[#070504] border border-[#312015] rounded p-1.5 text-center text-white" />
@@ -430,9 +508,9 @@ export default function App() {
                               )}
 
                               <div className="space-y-2">
-                                <span className="text-[10px] uppercase font-bold text-stone-500 font-mono tracking-wider">Matériaux requis ({p.resources.length}) :</span>
+                                <span className="text-[10px] uppercase font-bold text-stone-500 font-mono tracking-wider">Progression des composants requis ({p.resources.length}) :</span>
                                 {p.resources.length === 0 ? (
-                                  <p className="text-[11px] text-stone-600 italic pl-1">Aucune ressource assignée à ce chantier pour le moment.</p>
+                                  <p className="text-[11px] text-stone-600 italic pl-1">Aucun matériau configuré.</p>
                                 ) : (
                                   <div className="space-y-2 divide-y divide-[#1e130c]/40">
                                     {p.resources.map((r) => {
@@ -446,7 +524,7 @@ export default function App() {
                                           </div>
                                           <div className="flex-1 space-y-0.5">
                                             <div className="flex justify-between text-[10px] font-mono font-bold text-stone-500">
-                                              <span>{pct}% complété</span>
+                                              <span>{pct}% récolté</span>
                                               <span className="text-stone-400">{r.current} / {r.max}</span>
                                             </div>
                                             <div className="w-full bg-[#070504] h-1.5 rounded-full border border-[#21160e]">
@@ -482,53 +560,53 @@ export default function App() {
               </div>
             )}
 
-            {/* ONGLET 2 : DOUBLE COFFRE COMMUN */}
+            {/* CONTENU ONGLET 2 : DOUBLE COFFRE INTERACTIF MC */}
             {activeTab === 'coffres' && (
-              <div className="space-y-6 animate-fadeIn">
+              <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <form onSubmit={handleAddTrouvaille} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl space-y-3 text-xs">
-                    <h4 className="font-serif font-bold text-[#e58219] uppercase border-b border-[#241810] pb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Marquer un lieu stratégique</h4>
-                    <input type="text" value={lieuNom} onChange={e => setLieuNom(e.target.value)} placeholder="Ex: Cité Ancienne, Donjon de Glace..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white focus:outline-none" required />
+                    <h4 className="font-serif font-bold text-[#e58219] uppercase border-b border-[#241810] pb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Enregistrer des coordonnées</h4>
+                    <input type="text" value={lieuNom} onChange={e => setLieuNom(e.target.value)} placeholder="Ex: Monument Sous-Marin, Ruine..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white focus:outline-none" required />
                     <div className="grid grid-cols-3 gap-2 text-center font-mono">
                       <input type="text" value={coordX} onChange={e => setCoordX(e.target.value)} placeholder="X" className="bg-[#070504] border border-[#38261c] rounded p-2 text-white" />
                       <input type="text" value={coordY} onChange={e => setCoordY(e.target.value)} placeholder="Y" className="bg-[#070504] border border-[#38261c] rounded p-2 text-white" />
                       <input type="text" value={coordZ} onChange={e => setCoordZ(e.target.value)} placeholder="Z" className="bg-[#070504] border border-[#38261c] rounded p-2 text-white" />
                     </div>
-                    <button type="submit" className="w-full bg-[#e58219] text-stone-950 font-bold py-2 rounded-lg font-serif uppercase tracking-wider">Consigner</button>
+                    <button type="submit" className="w-full bg-[#e58219] text-stone-950 font-bold py-2 rounded-lg font-serif uppercase tracking-wider">Ajouter la carte</button>
                   </form>
 
                   <form onSubmit={handleAddItem} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl space-y-3 text-xs">
-                    <h4 className="font-serif font-bold text-purple-400 uppercase border-b border-[#241810] pb-2 flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Déclarer un Butin / Relique</h4>
-                    <input type="text" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="Ex: Épée Calamiteuse, Crâne de Wither..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white focus:outline-none" required />
+                    <h4 className="font-serif font-bold text-purple-400 uppercase border-b border-[#241810] pb-2 flex items-center gap-1.5"><Package className="w-3.5 h-3.5" /> Déclarer un Butin Mythique / Item</h4>
+                    <input type="text" value={itemName} onChange={e => setItemName(e.target.value)} placeholder="Ex: Crâne de Wither, Disque..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white focus:outline-none" required />
                     <div className="grid grid-cols-2 gap-2">
                       <select value={itemRarity} onChange={e => setItemRarity(e.target.value)} className="bg-[#070504] border border-[#38261c] rounded-lg p-2 text-stone-200">
                         <option value="Rare">Rare 🟦</option>
                         <option value="Epic">Épique 🟪</option>
                         <option value="Legendary">Mythique 🟧</option>
                       </select>
-                      <input type="text" value={itemLocation} onChange={e => setItemLocation(e.target.value)} placeholder="N° de Coffre ou Rangée" className="bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" />
+                      <input type="text" value={itemLocation} onChange={e => setItemLocation(e.target.value)} placeholder="Emplacement ou N° de coffre" className="bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" />
                     </div>
-                    <button type="submit" className="w-full bg-purple-700 text-white font-bold py-2 rounded-lg font-serif uppercase tracking-wider hover:bg-purple-600">Enregistrer</button>
+                    <button type="submit" className="w-full bg-purple-700 text-white font-bold py-2 rounded-lg font-serif uppercase tracking-wider hover:bg-purple-600">Mettre en Coffre</button>
                   </form>
                 </div>
 
+                {/* Grille Double Coffre d'aspect rétro */}
                 <div className="bg-[#bababa] border-4 border-t-[#eaeaea] border-l-[#eaeaea] border-b-[#444] border-r-[#444] p-4 rounded max-w-4xl mx-auto shadow-2xl">
                   <div className="text-[#2b2b2b] font-mono text-xs font-black uppercase mb-3 flex items-center justify-between">
                     <span>🧰 Vue Double Coffre Commun (Synchro Cloud)</span>
-                    <span className="text-[10px] text-stone-600 font-sans font-normal">Survoler pour inspecter</span>
                   </div>
                   <div className="grid grid-cols-9 gap-1 bg-[#808080] p-1.5 border-2 border-t-[#333] border-l-[#333] border-b-[#fff] border-r-[#fff]">
                     {doubleChestSlots.map((slot, idx) => (
-                      <div key={idx} className="aspect-square bg-[#8c8c8c] border-2 border-t-[#404040] border-l-[#404040] border-b-[#e0e0e0] border-r-[#e0e0e0] relative group flex items-center justify-center hover:bg-[#a1a1a1] transition-all cursor-help p-1">
+                      <div key={idx} className="aspect-square bg-[#8c8c8c] border-2 border-t-[#404040] border-l-[#404040] border-b-[#e0e0e0] border-r-[#e0e0e0] relative group flex items-center justify-center hover:bg-[#a1a1a1] transition-all p-1">
                         {slot ? (
                           <>
                             <span className="text-base select-none">{slot.type === 'item' ? '💎' : '🗺️'}</span>
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50 bg-[#130b18]/95 border border-purple-900 rounded-lg p-2.5 shadow-2xl text-[11px] font-mono min-w-[190px] text-stone-200">
                               <div className="font-bold text-amber-400">{slot.name}</div>
                               <div className="text-stone-400 mt-0.5">{slot.coords}</div>
-                              <div className="text-[9px] text-stone-500 border-t border-purple-900/40 pt-1 mt-1">Par: {slot.by}</div>
+                              <div className="text-[9px] text-stone-500 border-t border-purple-900/40 pt-1 mt-1">Trouvé par: {slot.by}</div>
                             </div>
-                            <button onClick={() => handleDeleteTrouvaille(slot.id)} className="absolute -top-1 -right-1 bg-red-700 hover:bg-red-600 text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white/20 shadow">✕</button>
+                            <button onClick={() => handleDeleteTrouvaille(slot.id)} className="absolute -top-1 -right-1 bg-red-700 hover:bg-red-600 text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white/20">✕</button>
                           </>
                         ) : null}
                       </div>
@@ -538,30 +616,30 @@ export default function App() {
               </div>
             )}
 
-            {/* ONGLET 3 : RAIDS & BOSS */}
+            {/* CONTENU ONGLET 3 : PLANIFICATION DES RAIDS */}
             {activeTab === 'raids' && (
-              <div className="space-y-4 text-xs animate-fadeIn">
+              <div className="space-y-4 text-xs">
                 <form onSubmit={handleAddRaid} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl flex flex-col sm:flex-row items-end gap-3">
                   <div className="flex-1 w-full">
-                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Nom du Boss de Raid</label>
-                    <input type="text" value={newRaidName} onChange={e => setNewRaidName(e.target.value)} placeholder="Ex: Ender Dragon, Léviathan..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" required />
+                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Cible / Boss de Raid</label>
+                    <input type="text" value={newRaidName} onChange={e => setNewRaidName(e.target.value)} placeholder="Ex: Wither, Dragon, Boss Custom..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" required />
                   </div>
                   <div className="flex-1 w-full">
-                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Date / Heure programmée</label>
-                    <input type="text" value={newRaidDate} onChange={e => setNewRaidDate(e.target.value)} placeholder="Ex: Samedi soir à 21h00" className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" />
+                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Date & Horaire de l'assaut</label>
+                    <input type="text" value={newRaidDate} onChange={e => setNewRaidDate(e.target.value)} placeholder="Ex: Vendredi soir à 21h" className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" />
                   </div>
                   <button type="submit" className="bg-[#e58219] hover:bg-[#cd7211] text-stone-950 font-serif font-bold py-2 px-5 rounded-lg uppercase tracking-wide h-9">Planifier</button>
                 </form>
 
                 <div className="bg-[#120d0a] border border-[#2b1c13] rounded-xl divide-y divide-[#241810] overflow-hidden">
                   {raids.length === 0 ? (
-                    <p className="p-5 text-stone-600 italic font-serif">Aucun assaut militaire ou combat de boss n'est programmé.</p>
+                    <p className="p-5 text-stone-600 italic font-serif">Aucun assaut militaire de guilde programmé pour le moment.</p>
                   ) : (
                     raids.map(r => (
                       <div key={r.id} className="p-4 flex items-center justify-between hover:bg-[#16100d] transition-colors">
                         <div>
                           <span className="font-serif font-bold text-stone-200 text-sm block">{r.name}</span>
-                          <span className="text-stone-500 font-mono text-[11px]">Départ planifié : {r.date}</span>
+                          <span className="text-stone-500 font-mono text-[11px]">Planification : {r.date}</span>
                         </div>
                         <button onClick={() => handleDeleteRaid(r.id)} className="text-stone-700 hover:text-red-400 p-2 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
@@ -571,31 +649,31 @@ export default function App() {
               </div>
             )}
 
-            {/* ONGLET 4 : BIBLIOTHÈQUE / GUIDES */}
+            {/* CONTENU ONGLET 4 : BIBLIOTHÈQUE ET ARCHIVES */}
             {activeTab === 'guides' && (
-              <div className="space-y-6 text-xs animate-fadeIn">
+              <div className="space-y-6 text-xs">
                 <form onSubmit={handleAddGuide} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                   <div>
-                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Nom du grimoire / vidéo</label>
-                    <input type="text" value={guideTitle} onChange={e => setGuideTitle(e.target.value)} placeholder="Ex: Tuto automatisation Create..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" required />
+                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Nom du Guide / Grimoire</label>
+                    <input type="text" value={guideTitle} onChange={e => setGuideTitle(e.target.value)} placeholder="Ex: Guide Create, Wiki Forge..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" required />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Adresse Internet (URL)</label>
+                    <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Lien Web complet (URL)</label>
                     <input type="url" value={guideUrl} onChange={e => setGuideUrl(e.target.value)} placeholder="https://..." className="w-full bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white" required />
                   </div>
-                  <button type="submit" className="bg-[#e58219] text-stone-950 font-serif font-bold py-2 rounded-lg uppercase tracking-wider">Partager l'archive</button>
+                  <button type="submit" className="bg-[#e58219] text-stone-950 font-serif font-bold py-2 rounded-lg uppercase tracking-wider">Partager</button>
                 </form>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {guides.length === 0 ? (
-                    <p className="col-span-2 text-center text-stone-600 italic font-serif py-4">Aucun guide partagé pour le moment.</p>
+                    <p className="col-span-2 text-center text-stone-600 italic font-serif py-4">La bibliothèque est vide.</p>
                   ) : (
                     guides.map((g) => (
                       <div key={g.id} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl flex items-center justify-between hover:border-[#3e2a1d] transition-all">
                         <div className="space-y-1 truncate mr-2">
                           <h5 className="font-bold text-stone-200 text-sm font-serif truncate">{g.title}</h5>
                           <a href={g.url} target="_blank" rel="noreferrer" className="text-amber-500 hover:underline text-[11px] font-mono flex items-center gap-0.5 truncate">
-                            <ChevronRight className="w-3 h-3 flex-shrink-0" /> Visiter le lien
+                            <ChevronRight className="w-3 h-3 flex-shrink-0" /> Ouvrir l'archive externe
                           </a>
                         </div>
                         <button onClick={() => handleDeleteGuide(g.id)} className="text-stone-700 hover:text-red-400 p-1.5 flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
