@@ -11,7 +11,7 @@ import {
 
 // ── Supabase ──────────────────────────────────────────────────────────────
 const SUPABASE_URL  = "https://pdndmtktluaggvupgsej.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_I_zL7n0t8G-BO4jFUr4FBA_qpLWH90B";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkbmRtdGt0bHVhZ2d2dXBnc2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2Mzk5MjEsImV4cCI6MjA5ODIxNTkyMX0.qQT9lrd2hMH1JUD_tm9Odef1B9mMdlFXYNvjXquTm50";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── Constantes ────────────────────────────────────────────────────────────
@@ -529,7 +529,7 @@ export default function App() {
     }]);
     if (error) {
       console.error('Insert projet:', error);
-      showToast('Erreur de liaison Cloud — vérifiez la connexion.', 'error');
+      alert("Erreur Supabase : " + error.message + " | Code : " + error.code + " | Details : " + error.details);
       return;
     }
     setNewProjetName('');
