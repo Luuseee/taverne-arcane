@@ -78,101 +78,244 @@ const DAILY_TIPS = [
   "Les gemmes Apotheosis combinées en Geode donnent des bonus de set passif très puissants",
 ];
 
-// ── Guide intégré (11 sections) ───────────────────────────────────────────
+// ── Guide intégré (12 sections — niveau Wikipedia) ───────────────────────
 const GUIDE = [
-  { title:"Démarrage & Survie", icon:"🏕️", content:[
-    { t:'tip',  text:"Priorité absolue Jour 1 : construis un abri AVANT la nuit. Les mobs nocturnes sont bien plus dangereux que vanilla." },
-    { t:'h',    text:"Les 3 Jauges de Survie" },
-    { t:'list', items:["🍖 Faim : descend plus vite que vanilla. Mange régulièrement, surtout après le combat.","💧 Soif : descend en permanence. Ne bois JAMAIS d'eau brute (rivière, lac) — infections garanties.","🌡️ Température : descend la nuit, dans les grottes et sous la pluie. Monte dans les zones arides."]},
-    { t:'warn', text:"Boire de l'eau brute cause maladies et chute de température. Fais bouillir l'eau dans une marmite ou utilise des potions d'eau purifiée." },
-    { t:'h',    text:"Premiers Craftings Essentiels" },
-    { t:'list', items:["Vérifie EMI (touche E) AVANT de crafter — les recettes sont massivement modifiées","Couverture en laine → combat la perte de chaleur la nuit","Marmite + eau de source → eau purifiée buvable","Ne mange jamais cru : malus de faim supplémentaire","Toujours avoir de la nourriture cuite × 20 avant d'explorer"]},
-    { t:'info', text:"Le pack désactive le Nether et l'End classiques. L'endgame se déroule dans la Voidsent Forest, une dimension alternative accessible en mid-game." },
+  { title:"Démarrage & Survie Complète", icon:"🏕️", content:[
+    { t:'warn', text:"Ne creusez JAMAIS le sol du spawn — risque de tomber dans une cave et mourir sans équipement." },
+    { t:'h',    text:"Premières 5 Minutes Critiques" },
+    { t:'list', items:["Regardez autour immédiatement, identifiez le biome (détermine la température de départ)","Ramassez du bois ×32 minimum avant tout autre action","Craftez un établi en première priorité absolue","Outils bois PUIS pierre immédiatement — ne restez JAMAIS en outils bois","Trouvez une source d'eau sûre avant de vous installer"] },
+    { t:'h',    text:"Système de Soif — Jauge Bleue" },
+    { t:'info', text:"Jauge bleue sous la faim — se vide en 10-15 min (temps normal), 5 min en désert ou à proximité de lave. L'eau brute de rivière cause nausée 30s + 2 dégâts directs." },
+    { t:'list', items:["✅ Eau bouillie : seau d'eau + four (méthode principale)","✅ Eau purifiée : seau + filtre à eau (plus rapide)","✅ Jus de fruits : pommes ou baies directement dans le crafting","✅ Lait de vache — Potions de soin (hydratent aussi)","❌ Eau brute (rivière/lac) : nausée 30s + 2 dégâts — JAMAIS","❌ Eau de swamp : nausée + poison simultané"] },
+    { t:'recipe', text:"🔧 Filtre à eau : Gravier + Sable + Charbon en colonne verticale 3×1. Gourde : Cuir ×3 + Ficelle ×2 en forme de U (indispensable pour stocker l'eau purifiée)." },
+    { t:'h',    text:"Système de Température — Barre Colorée" },
+    { t:'info', text:"Barre colorée en haut à droite, de -40°C à +80°C. Surveille-la en PERMANENCE — elle peut te tuer en quelques dizaines de secondes." },
+    { t:'list', items:["❄️ Taïga : -15°C | Toundra : -25°C | Montagnes : -20°C | Nuit universelle : -10°C","🔥 Désert : +35°C | Lave à proximité : +20°C (stack avec biome chaud)","Froid extrême → Slowness III puis Mining Fatigue II puis dégâts de gel continus","Chaud extrême → Weakness II puis dégâts de surchauffe progressifs"] },
+    { t:'h',    text:"Régulation de Température" },
+    { t:'list', items:["Contre le froid → feu de camp à proximité, armure en Cuir (fourrure), torche tenue en main, soupe chaude","Contre le chaud → armure légère, eau à proximité, ombre (arbre/abri), altitude élevée (vent)"] },
+    { t:'h',    text:"Crafts Prioritaires Jour 1" },
+    { t:'recipe', text:"🔧 Gourde : Cuir ×3 + Ficelle ×2 (U) | Filtre à eau : Gravier + Sable + Charbon (colonne) | Sac de couchage : Laine ×3 + Cuir ×2 | Couverture : Laine ×4 | Thermomètre : Fer ×1 + Redstone ×1 + Verre ×1" },
+    { t:'h',    text:"Abri d'Urgence — Standards Minimaux" },
+    { t:'warn', text:"Minimum 5×5×3 blocs. Porte en FER dès que possible — les mobs enfoncent les portes en bois. Torches PARTOUT (dans chaque coin) : spawn dans le noir possible même à l'intérieur." },
+    { t:'h',    text:"Alimentation — Priorités" },
+    { t:'warn', text:"Viande crue = nausée SYSTÉMATIQUE. Cuire ABSOLUMENT TOUT avant de manger. Farmers Delight permet des repas avec buffs durables (objectif semaine 1)." },
+    { t:'list', items:["1. Pain (Blé ×3) — facile à produire, sans risque","2. Steak (Bœuf cuit) — très haute saturation","3. Poulet Rôti — bon rapport farm/saturation","4. Recettes Farmers Delight — buffs permanents dès semaine 1"] },
   ]},
-  { title:"Particularités du Pack", icon:"⚗️", content:[
-    { t:'info', text:"Project: Arcane Frontier est un pack expert RPG sur Minecraft 1.20.1 Forge (~280 mods). Tu mourras souvent au début — c'est normal et voulu." },
-    { t:'h',    text:"Différences Majeures vs Vanilla" },
-    { t:'list', items:["🚫 Nether & End supprimés — aucun portail Nether standard ne fonctionne","🌌 Voidsent Forest : la dimension d'endgame, remplace Nether/End comme zone finale","🔧 1000+ recettes modifiées — toujours checker EMI/JEI avant de crafter","⚔️ Better Combat : combat directionnel, chaque arme a un arc d'impact différent","🌙 Event Moons : nuits spéciales où tous les mobs sont renforcés"]},
-    { t:'warn', text:"Ne tente JAMAIS d'ouvrir un portail Nether vanilla — la dimension est remplacée par d'autres zones du pack." },
-    { t:'h',    text:"World Tiers (Système de Progression)" },
-    { t:'list', items:["Tier I : départ, mobs normaux, loot basique","Tier II : mobs améliorés, premiers affixes intéressants","Tier III : mobs dangereux, bons affixes, donjons difficiles","Tier IV : pré-endgame, Voidsent Forest accessible","Tier V : endgame complet, mobs max level, boss ultimes"]},
-    { t:'h',    text:"Events Spéciaux" },
-    { t:'list', items:["🌙 Event Moons : tous les mobs +50% HP et dégâts pendant la nuit lunaire","☣️ Blights : corruption de biome qui s'étend — neutralise-les rapidement","🐉 Dragon Events : apparitions aléatoires de dragons sur la carte","⚡ Boss Invasions : boss de raid qui attaquent les bases non protégées"]},
+
+  { title:"Minage Niveau Expert", icon:"⛏️", content:[
+    { t:'warn', text:"Ne descendez JAMAIS en mine sans : seau d'eau (pockets de lave), eau purifiée ×10, armure complète. Les caves d'Alex contiennent des boss surprises." },
+    { t:'h',    text:"Carte Complète des Minerais — Minecraft 1.20.1 Forge" },
+    { t:'toptier', text:"⭐ Diamant : pic absolu Y-59, zone optimale Y-64 à Y-54. JAMAIS au-dessus de Y-50. Fortune III sur la pioche — obligatoire." },
+    { t:'list', items:["Fer : pic Y15 (triangle), Y232 en surface/grottes, éviter Y0-Y10 (trop de lave)","Cuivre : pic Y48, commun Y0-Y96","Or : pic Y-16, Badlands ×4 bonus de spawn, Y256 dans les Badlands","Diamant : pic Y-59, zone optimale Y-64 à Y-54 (jamais au-dessus de Y-50)","Redstone : pic Y-59, zone Y-64 à Y-32","Lapis : pic Y0, zone Y-32 à Y64","Émeraude : pic Y-16, UNIQUEMENT dans les montagnes (Stony/Jagged/Frozen Peaks)","Anciens Débris : Y15 Nether (inaccessible dans ce pack)"] },
+    { t:'h',    text:"Minerais Exclusifs du Modpack" },
+    { t:'list', items:["Nickel : pic Y20, Y-10 à Y40, gris métallique → acier et alliages","Aluminium : pic Y64 (surface!), Y32 à Y96, argenté brillant → Mekanism et Create","Quartz : pic Y30, Y10 à Y60, blanc translucide → Create (non-Nether)","Zinc : pic Y15, Y-5 à Y30, grisâtre → OBLIGATOIRE pour Brass Create","Osmium : pic Y-20, Y-40 à Y10, bleu-gris → Mekanism","Argent : pic Y15, Y-10 à Y30 → bijoux Curios et magie","Plomb : pic Y-10, Y-30 à Y10, gris foncé → batteries et protection radiation"] },
+    { t:'h',    text:"Techniques de Minage Optimales" },
+    { t:'list', items:["Branches optimisées : tunnel 1×2 central + branches 1×2 tous les 3 blocs = couverture maximale sans overlap","Strip mining Y-59 : rangées 1×2 avec espacement 3 entre chaque (optimal diamants)","Grotte mining : suivre les grottes naturelles = plus rapide mais dangereux (mid-game)","Quarry Create : automatique, lent à setup mais passif et rentable endgame"] },
+    { t:'recipe', text:"🔧 Vein Miner : enchantement sur pioche (livre en donjon ou Apotheosis). Activer avec touche V tenue pendant le minage → mine TOUT le filon d'un coup. Consomme énormément de durabilité — avoir Mending absolument." },
+    { t:'h',    text:"Priorité d'Enchantements Pioche (dans l'ordre)" },
+    { t:'toptier', text:"⭐ Ordre optimal : 1. Efficacité V (vitesse) → 2. Fortune III (×2-4 minerais) OU Toucher de Soie → 3. Solidité III → 4. Mending (réparation auto XP) → 5. Vein Miner → 6. Aqua Affinity (sous l'eau)" },
+    { t:'h',    text:"Outils Spéciaux" },
+    { t:'list', items:["Pioche en Aluminium : légère, rapide, parfaite pour le minage quotidien","Pioche en Osmium : très durable, lente, pour les longues sessions","Excavator Create : mine 3×3 automatiquement en rotation — idéal pour grands chantiers"] },
+    { t:'warn', text:"Dangers du minage : pockets de lave (toujours un seau d'eau), caves d'Alex (mobs surprises), chutes dans le vide, suffocation (ne jamais creuser le bloc directement au-dessus de sa tête)." },
   ]},
-  { title:"Combat (Better Combat)", icon:"⚔️", content:[
-    { t:'tip',  text:"Better Combat change les règles fondamentales : chaque arme a un arc d'attaque unique. Positionne-toi en conséquence — le spam-click est pénalisé." },
-    { t:'h',    text:"Armes et leurs Arcs d'Attaque" },
-    { t:'list', items:["Épées : attaque horizontale large (efficace contre plusieurs mobs côte à côte)","Haches : attaque verticale puissante (meilleure contre un seul ennemi fort)","Marteaux : frappe au sol avec zone d'effet, repousse les mobs","Dagues : rapides, courte portée, excellent backstab (dégâts × 1.5 en dos)","Lances/Pioches : longue portée, attaque directe en ligne"]},
-    { t:'warn', text:"PIÈGE : spam-clicker comme en vanilla ne fonctionne plus. Le cooldown pénalise les clicks trop rapides — laisse la barre se recharger." },
-    { t:'h',    text:"Conseils Tactiques" },
-    { t:'list', items:["La parade (touche de bloc) réduit les dégâts et crée une fenêtre de contre","Les attaques de dos font significativement plus de dégâts — contourne les gros mobs","Combo optimal : attaque légère × 3 puis attaque lourde","Changer d'arme selon le type de mob (armure physique vs magique)","Utiliser l'environnement : repousser les mobs dans le vide ou la lave"]},
-    { t:'info', text:"Les affixes Apotheosis comme 'Leeching' ou 'Berserking' changent radicalement le style de jeu. Adapte tes tactiques à tes affixes." },
+
+  { title:"Combat Exhaustif — Better Combat", icon:"⚔️", content:[
+    { t:'tip',  text:"Better Combat change tout : chaque arme a une animation 3D unique, une géométrie d'attaque, et un timing de combo. Le spam-click est pénalisé — respectez les timings." },
+    { t:'h',    text:"Toutes les Armes et leurs Mécaniques" },
+    { t:'list', items:["⚔️ Épée courte : arc 120° horizontal, portée 2.5 blocs, combo 3 coups (rapide-rapide-fort), DPS élevé mono-cible","🗡️ Longsword : arc 140°, portée 3 blocs, combo 2 coups (fort-fort), plus lente mais gros dégâts","🔱 Lance/Spear : ligne directe 180°, portée 4.5 blocs (PLUS LONGUE DU JEU), 1 coup fort — parfaite pour garder la distance","🔨 Masse : AoE 360°, portée 2 blocs, très lente, ignore 20% de défense — idéale contre armures lourdes","🗡️ Dagues : arc 90°, portée 1.5 blocs, DUAL WIELD natif (clic droit = main gauche), combo 4 coups ultra-rapide + saignement auto","🪓 Hache : arc 100°, portée 2.5 blocs, désactive les boucliers 3s, fort dégât unique","🔨 Grand Marteau : AoE 360° énorme, portée 2 blocs, extrêmement lente, stun au sol 0.5s — pour boss","⚰️ Faux/Scythe : AoE 360°, portée 3.5 blocs, récolte plantes en attaquant, excellent en agriculture-combat","⚔️ Katana : combo 5 coups très rapide, arc 110°, saignement sur critique — requires timing précis","🔱 Trident : portée 3 blocs, lance (Loyauté III pour retour), AoE en eau, électrise sous pluie avec Channeling"] },
+    { t:'h',    text:"Mécaniques Avancées de Combat" },
+    { t:'list', items:["Parry : bloquer au timing parfait → stun ennemi 1.5s + 0 dégât reçu","Sprint Attack : sprint + attaque → knockback ×2","Crouch Attack : shift + attaque → attaque basse (touche mobs baissés)","Jump Attack : attaque pendant saut → dégâts +50%"] },
+    { t:'info', text:"Stamina : barre orange sous la vie. Chaque attaque coûte 10-20 stamina selon l'arme. Se régénère en 2s sans attaque. À 0 = attaques -50% dégâts." },
+    { t:'h',    text:"Slots Curios — Détail Complet" },
+    { t:'list', items:["Tête : casque magique, amulette vision nocturne, couronne de stats","Cou/Amulette : bonus vita (+4-20 PV max), colliers mana (+50-200), médaillons protection","Dos : cape de vol (Elytra alternative), cape magique, second sac à dos (Traveler's Backpack)","Torse/Ceinture : porte-outil (accès rapide 4-8 outils), baudrier de potions","Mains/Gant : anneaux ×2 (bonus variés — vitesse, dégâts, résistance, mana)","Jambes/Charme : bonus passifs (régénération, résistance à la chute)","Pieds/Chaussure : talismans (vitesse, triple saut, chute ralentie)"] },
+    { t:'h',    text:"Potions de Combat Essentielles" },
+    { t:'toptier', text:"⭐ Kit boss : Force II (dégâts +20%) + Résistance II (-20% dégâts reçus) + Vitesse II (+40% mouvement) + Régénération II + Absorption IV (4 cœurs bonus absorbables). Toujours tout boire AVANT l'engagement." },
+    { t:'h',    text:"Enchantements Armes — Référence Complète" },
+    { t:'list', items:["Sharpness V : +12.5 dégâts (tous types de mobs)","Smite V : +20.5 dégâts vs morts-vivants","Bane of Arthropods V : +20.5 dégâts vs arthropodes (araignées)","Fire Aspect II : feu 4 secondes sur l'ennemi","Knockback II : recul ×3","Looting III : loot ×3-4","Sweeping Edge III : AoE +75% efficacité","Unbreaking III : durabilité ×4","Mending : réparation automatique via XP collecté"] },
+    { t:'h',    text:"Enchantements Armure — Référence Complète" },
+    { t:'list', items:["Protection IV : -16% tous dégâts","Fire Protection IV : -32% dégâts feu","Blast Protection IV : -32% dégâts explosion","Projectile Protection IV : -32% dégâts projectiles","Feather Falling IV : -48% dégâts chutes (PRIORITÉ sur bottes)","Thorns III : renvoie 45% dégâts aux attaquants","Depth Strider III : vitesse en eau ×3","Frost Walker II : crée de la glace sous les pieds en eau","Soul Speed III : vitesse ×2 sur soul sand","Swift Sneak III : vitesse accroupi ×3"] },
+    { t:'h',    text:"Stratégies Avancées" },
+    { t:'list', items:["Kiting : reculer entre les attaques avec lance/arc — empêche la riposte","Stagger lock : enchaîner parfaitement les attaques pour empêcher la riposte adverse","Room clearing : masse en AoE → finir à l'épée les survivants","Cheese spots : hauteur hors portée des mobs au sol (4 blocs minimum)"] },
   ]},
-  { title:"Minage", icon:"⛏️", content:[
-    { t:'warn', text:"Les grottes profondes sont DANGEREUSES : température qui chute, mobs spéciaux du pack, structures pièges. Prépare-toi sérieusement." },
-    { t:'h',    text:"Préparation au Mining" },
-    { t:'list', items:["Eau purifiée × 10 minimum avant chaque session","Armure avec résistance au froid pour les couches profondes","Torches × 64+ et équipement de survie complet","Potions de résistance et régénération","Pickaxe Fortune III minimum pour le late game"]},
-    { t:'h',    text:"Distribution des Minerais (Modifiée)" },
-    { t:'list', items:["Fer : Y=0–60 (similaire vanilla)","Or : Y=-32 à -64 (plus profond qu'en vanilla)","Diamant : Y=-64 à -80 (zones extrêmement profondes)","Minerais de mods : checker EMI pour la distribution exacte","Astuce : strip-mine en Y=-57 ET Y=-80 pour couvrir les deux paliers"]},
-    { t:'tip',  text:"Construis une station de minage avec Create (Mechanical Drill + convoyeur) pour automatiser l'extraction et doubler le rendement via le Millstone." },
+
+  { title:"Apotheosis Niveau Maître", icon:"💎", content:[
+    { t:'tip',  text:"Apotheosis est le système de progression d'équipement central. Maîtriser les raretés, affixes et gemmes te donnera un avantage décisif sur TOUS les combats." },
+    { t:'h',    text:"Système de Raretés — Référence Complète" },
+    { t:'list', items:["Ordinary (gris) : 0 affix — reforge avec Mundane Stone (cobblestone broyée)","Common (blanc) : 1 affix mineur — reforge avec Mundane Stone","Uncommon (vert) : 2 affixes mineurs — reforge avec Smooth Stone","Rare (bleu) : 1 majeur + 2 mineurs — reforge avec Infused Stone (stone + lapis + redstone au mixer)","Epic (violet) : 2 majeurs + 2 mineurs — reforge avec Prismatic Web (boss araignée de cave)","Mythic (rouge) : 3 majeurs + 2 mineurs — reforge avec Dimensional Shard (donjons profonds)","Legendary (doré) : 3 majeurs + 3 mineurs + stats de base boostées — reforge avec Cosmic Crystal (boss endgame)"] },
+    { t:'recipe', text:"🔧 Reforging Table : Bois ×4 + Fer ×2 + Grindstone ×1. Usage : objet + matériau rareté cible + Sigil of Rebirth (ou Gem Dust ×8) → clic → consomme 5-50 niveaux XP selon rareté → affixes aléatoires. Répéter jusqu'aux affixes souhaités." },
+    { t:'recipe', text:"🔧 Sigil of Rebirth : Blaze Powder ×4 + Diamond ×1 + Nether Star fragment. Salvaging Table : Bois ×4 + Fer ×4 → détruire objet = récupérer matériau rareté + Gem Dust proportionnel." },
+    { t:'h',    text:"Toutes les Gemmes et leurs Effets" },
+    { t:'list', items:["Citrine (jaune) — arme : +dégâts physiques 5-15% | armure : +résistance physique","Ruby (rouge) — arme : +dégâts feu 10-20% | armure : +résistance feu 15-25%","Sapphire (bleu) — arme : +spell power 10-20% | armure : +mana max 50-150","Emerald (vert) — arme : soin 2-5% dégâts infligés | armure : soin 1-3% dégâts subis","Amethyst (violet) — arme : +vitesse attaque 5-10% | armure : +vitesse mouvement 5-15%","Topaz (orange) — arme : +XP dropped 10-30% | armure : +XP gained 5-15%","Onyx (noir) — arme : +critiques 5-15% et +dégâts crit 15-30% | armure : +évasion 3-8%","Pearl (blanc) — arme : +dégâts magiques 10-20% | armure : +résistance magique 10-20%","Voidstone (violet sombre) — arme : ignore 5-15% armure | armure : absorption passive 2-8%"] },
+    { t:'info', text:"Sockets par rareté : Common 0, Uncommon 1, Rare 2, Epic 3, Mythic 4, Legendary 5. Comment socketter : clic droit avec la gemme sur l'objet (les sockets sont des ronds gris visibles sur l'item)." },
+    { t:'h',    text:"Tous les Affixes Majeurs Offensifs" },
+    { t:'list', items:["Execute : dégâts +50-150% contre ennemis sous 25% PV","Volatile : explosion AoE au kill (8-20 dégâts zone)","Leeching : vol de vie 3-8% des dégâts infligés","Grievous : saignement 2-6/s pendant 5s","Thunderstruck : foudre aléatoire au hit (10% chance)","Converging : projectiles supplémentaires ×1-3","Recurrent : réduction cooldown sorts 5-20%","Accelerating : vitesse attaque +2-8% par hit pendant 3s (stack ×5 max)"] },
+    { t:'h',    text:"Tous les Affixes Majeurs Défensifs" },
+    { t:'list', items:["Rebounding : renvoie 10-30% des dégâts reçus","Adaptable : réduit le dernier type de dégât reçu de 5-15%","Blessed : régénération passive 0.5-2 PV/s","Indestructible : durabilité infinie sur l'objet","Warding : bouclier magique 5-20 PV toutes les 30s","Chilling : ralentit l'attaquant 1-3s au hit reçu (25% chance)"] },
+    { t:'h',    text:"World Tiers — Progression de Difficulté" },
+    { t:'list', items:["Tier 0 : défaut, loot Ordinary-Uncommon","Tier 1 : CTRL+T, +25% difficulté, loot jusqu'à Rare","Tier 2 : +50% difficulté, loot jusqu'à Epic (débloquer avec stuff Rare+)","Tier 3 : +100% difficulté, loot jusqu'à Mythic (débloquer avec stuff Epic+)","Tier 4 : +200% difficulté, loot jusqu'à Legendary (débloquer avec stuff Mythic+)"] },
+    { t:'toptier', text:"⭐ Apotheosis Enchanting avancé : Bibliothèque infinie (Bookshelf + Arcane Crystal) sans limite de niveau. Anvil amélioré = répare sans pénalité, combine sans limite. Table enchantement niveau 100+ = 15+ bibliothèques magiques en cercle." },
   ]},
-  { title:"Fermes à XP", icon:"⭐", content:[
-    { t:'tip',  text:"L'XP est CRITIQUE : enchanting, reforge Apotheosis, niveaux de magie Iron's Spells. Build une ferme XP tôt dans ta progression." },
-    { t:'warn', text:"RÈGLE ABSOLUE : les mobs tués par l'environnement (lave, chute, feu, piston) ne donnent AUCUN XP. Le coup de grâce doit venir du joueur." },
-    { t:'h',    text:"Meilleures Sources d'XP Early" },
-    { t:'list', items:["Ferme à Zombies/Squelettes : spawn dans le noir, kill zone accessible","Spawner naturel en grotte : rapide à setup, bon rendement","Donjons explorés activement : XP + loot (mais risque élevé)","Mobs rares (affixes Apotheosis) : 3–5× plus d'XP par kill"]},
-    { t:'h',    text:"Apotheosis Spawner Upgrades" },
-    { t:'list', items:["Les spawners peuvent être modifiés avec Apotheosis","Spawn Amplifier : augmente le taux et nombre de spawns","Mob Soul : change le type de mob d'un spawner","Les spawners upgradés sont les meilleures fermes XP du pack","Looting III sur ton arme double presque le rendement XP"]},
+
+  { title:"Iron's Spells — Niveau Archimage", icon:"🔮", content:[
+    { t:'tip',  text:"Iron's Spells offre 9 écoles complètes avec des dizaines de sorts. Spécialise-toi dans 2-3 écoles max pour être vraiment efficace. La gestion de mana est l'art principal." },
+    { t:'h',    text:"EVOCATION — Destruction à Distance" },
+    { t:'list', items:["Fireball : boule de feu directe, 12-30 dégâts, cooldown 3s","Chain Lightning : foudre rebondissante ×3-5 cibles, 8-20 dégâts/cible","Arcane Barrage : projectiles magiques rapides ×3-6, 5-12 dégâts chacun","Flamethrower : cône de feu continu 3-8 dégâts/s (drain mana très rapide)","Meteor : météore du ciel après 2s délai, 30-80 dégâts AoE","Magma Bomb : explosion lave AoE, 20-50 dégâts + lava pool permanent"] },
+    { t:'h',    text:"CONJURATION — Invocations" },
+    { t:'list', items:["Summon Vex : invoque 1-3 vex combattants pendant 60s (très efficace)","Summon Wolves : 1-4 loups permanents jusqu'à mort","Raise Dead : réanime cadavre ennemi récent comme allié 30s","Conjure Sword : épée magique flottante qui attaque automatiquement","Planar Binding : dimension pocket temporaire pour stocker mobs capturés"] },
+    { t:'h',    text:"EVOKER — Contrôle de Foule" },
+    { t:'list', items:["Slow : ralentit cible -60% vitesse 5-15s","Blindness : aveugle cible 3-8s","Hex : maudit cible → reçoit +25-50% dégâts 10s","Silence : empêche les capacités 3-8s","Confusion : cible attaque aléatoirement 5-10s"] },
+    { t:'h',    text:"PALADIN — Soin et Protection" },
+    { t:'list', items:["Healing Circle : soin AoE 5-20 PV/s pendant 5-10s autour du lanceur","Divine Shield : bouclier absorbant 20-100 dégâts pendant 10s","Holy Lance : projectile sacré 15-40 dégâts, bonus ×2 vs morts-vivants","Smite : frappe divine 30-80 dégâts + stun 1s","Aura of Purity : immunité aux debuffs 5-15s en permanence"] },
+    { t:'h',    text:"BARD — Soutien d'Équipe" },
+    { t:'list', items:["Haste Aura : vitesse attaque +20-40% pour tous alliés proches 15s","Resistance Aura : dégâts reçus -15-30% tous alliés 15s","Strength Aura : dégâts +15-30% tous alliés 15s","Song of Recall : téléporte tous les alliés proches au lanceur","Battle Hymn : tous les alliés régénèrent 2-5 PV/s pendant 20s"] },
+    { t:'h',    text:"DRUID — Nature" },
+    { t:'list', items:["Summon Wolf Pack : 3-6 loups sauvages temporaires 30s","Thornwall : mur d'épines 3-5 blocs, blesse qui passe 5-15 dégâts","Entangle : racines immobilisent cible 3-8s","Nature's Grasp : zone ralentissante d'herbes 10s","Verdant Bloom : régénère l'environnement + soin passif 2-4 PV/s 20s"] },
+    { t:'h',    text:"NECROMANCER — Maîtrise de la Mort" },
+    { t:'list', items:["Army of the Dead : invoque 3-8 squelettes/zombies pendant 60s","Soul Harvest : absorbe l'âme d'un mort récent → +10-30% prochain sort","Bone Spear : lance d'os perforante 20-50 dégâts, pénètre plusieurs mobs","Death Mark : marque cible — meurt dans les 10s si PV < 15%","Lich Form : transformation 15s — immunité complète + sorts renforcés ×2"] },
+    { t:'h',    text:"HEXBLADE — Assassinat" },
+    { t:'list', items:["Mark of Death : prochain coup = critique garanti ×3 dégâts","Curse of Weakness : cible inflige -30-50% dégâts 10s","Shadow Step : téléportation instantanée derrière la cible","Void Tendrils : tire la cible vers toi + ralentissement","Nether Grasp : pull à distance + dégâts 10-25"] },
+    { t:'h',    text:"BLOOD — Vampirisme" },
+    { t:'list', items:["Blood Slash : drain vie 10-30 dégâts + soin 50% des dégâts infligés","Sanguine Step : dash rapide + saignement aux ennemis traversés","Leech : vol de vie passif +3-8% tous dégâts pendant 15s","Blood Pact : échange 30% PV max contre +50% dégâts sorts 20s","Crimson Veil : intouchable 2-3s au coût de 30% PV actuels"] },
+    { t:'h',    text:"Progression des Grimoires" },
+    { t:'list', items:["Niv 1 — Flimsy Journal : 5 slots sorts, Mana 100, Regen 2/s","Niv 2 — Worn Notebook : 10 slots, Mana 150, Regen 3/s","Niv 3 — Leather Journal : 15 slots, Mana 200, Regen 5/s","Niv 4 — Arcane Journal : 20 slots, Mana 300, Regen 8/s","Niv 5 — Mystic Tome : 25 slots, Mana 500, Regen 12/s"] },
+    { t:'recipe', text:"🔧 Flimsy Journal : Papier ×3 + Plume ×1 + Encre ×1. Inscription Table : Bois ×4 + Fer ×2 + Plume ×2 + Encre ×2." },
+    { t:'h',    text:"Sources de Sorts" },
+    { t:'list', items:["Wizard Towers : bibliothèque au sommet (sorts communs tous disponibles)","Coffres de donjons : 5-10% chance par coffre","Trading mage villageois : émeraudes (prix variable)","Crafting : parchemin vierge + matériaux spécifiques du sort","Boss drops : sorts rares/uniques exclusifs"] },
+    { t:'h',    text:"Builds Optimaux" },
+    { t:'toptier', text:"⭐ Pure Mage : Mystic Tome complet, armure tisserande Mythic, 500+ mana, Spell Power 200+, Evocation + Blood + Necromancer." },
+    { t:'list', items:["Support/Healer : Paladin + Bard full, auras permanentes, Healing Circle toujours rechargé","Mêlée Soutien : Mirror Image actif, Summon Vex permanent, 1 sort de soin, reste épée","Hexblade Assassin : Shadow Step + Mark of Death + Blood Slash + Void Tendrils"] },
   ]},
-  { title:"Apotheosis & Affixes", icon:"💎", content:[
-    { t:'tip',  text:"Apotheosis est LE mod de progression d'équipement du pack. Maîtriser ses mécaniques te donne un avantage décisif sur tous les combats difficiles." },
-    { t:'h',    text:"Système d'Affixes" },
-    { t:'list', items:["Les items peuvent avoir 0 à 4 affixes selon leur rareté","Rareté : Commun < Uncommon < Rare < Epic < Legendary < Mythic","Offensifs : +dégâts, lifesteal, poison, feu, foudre...","Défensifs : +armure, réduction des dégâts, thorns, regen...","Utilitaires : vitesse, saut, régénération, fortune..."]},
-    { t:'h',    text:"Le Système de Reforge" },
-    { t:'list', items:["Anvil de Reforge (Apotheosis) : re-roll les affixes d'un item","Coût : lapis lazuli × N selon la rareté de l'item","Peut réduire la rareté si malchanceux — risque calculé","Un item Mythic avec bons affixes est souvent meilleur qu'un Legendary rerollé"]},
-    { t:'h',    text:"Gemmes & Socketing" },
-    { t:'list', items:["Les gemmes s'insèrent dans les sockets via l'enclume runique","Gemmes offensives : Ruby (feu), Emerald (dégâts), Topaz (foudre)","Gemmes défensives : Diamond (armure), Pearl (résistance)","Les Geodes combinent plusieurs gemmes pour des effets de set","Priorité : socket tes armes AVANT tes armures en early game"]},
-    { t:'warn', text:"Ne détruisez pas un item Legendary avec de bons affixes pour en espérer un autre — les légendaires sont rares. Reforge-le à la place." },
+
+  { title:"Create — Encyclopédie Complète", icon:"⚙️", content:[
+    { t:'tip',  text:"Create est le mod d'automatisation central. Respectez la progression : Bases mécaniques → Brass → Automatisation complète. Chaque étape est un prérequis." },
+    { t:'h',    text:"ÉTAPE 1 — Bases Mécaniques" },
+    { t:'list', items:["Shaft : transmission de rotation sur un axe","Cogwheel petit : rapport 1:1 de transmission","Large Cogwheel : rapport 2:1 (divise RPM par 2, double le couple)","Gearbox : change la direction de rotation à 90°","Encased Chain Drive : transmission longue distance sans perte de RPM","Clutch : on/off mécanique (coupe la rotation)","Gearshift : inverse la direction de rotation"] },
+    { t:'h',    text:"ÉTAPE 2 — Sources de Rotation" },
+    { t:'list', items:["Waterwheel : 16 RPM, besoin d'eau coulante adjacente, simple à installer","Large Waterwheel : 24 RPM, plus de couple, meilleur early game","Hand Crank : manuel 32 RPM tant que tourné — pour tests uniquement","Windmill Bearing + Voiles : 4-128 RPM selon nombre de voiles (8-32 optimal), bloquer = stop","Furnace Engine : sur four/blast furnace actif, 16 RPM base + bonus selon carburant"] },
+    { t:'h',    text:"ÉTAPE 3 — Traitement Basique" },
+    { t:'list', items:["Mechanical Press : presse vers le bas sur Basin → fabrique sheets/crushed ores","Basin : réceptacle de traitement pour Press et Mixer","Mechanical Mixer : tourne dans Basin → mélange/fond/chauffe les matériaux","Millstone : broie minerais et grains (ore doubling early game)","Fan : pousse/tire items, chauffe (lave en dessous), refroidit (eau), lave (eau + savon)"] },
+    { t:'h',    text:"ÉTAPE 4 — Brass / Laiton (ÉTAPE CLÉ)" },
+    { t:'warn', text:"Le Brass (Laiton) débloque TOUTE l'automatisation intelligente. C'est le passage obligatoire du milieu de jeu — priorité absolue." },
+    { t:'recipe', text:"🔧 Brass au Mixer : Copper Ingot ×1 + Zinc Ingot ×1 → Brass Ingot ×1 (nécessite chaleur Blaze). Blaze Burner : Blaze Rod ×1 + Fer ×3 → capturer flamme de Blaze (sous-sol Battle Tower)." },
+    { t:'list', items:["Trouver le spawner de Blaze au sous-sol d'une Battle Tower","Tenir le Blaze Burner et approcher une flamme de Blaze pour la capturer","Placer le Blaze Burner sous le Basin avec le Mixer actif","Alternative : Heated Mixer avec Lava Tank en dessous (moins efficace)"] },
+    { t:'h',    text:"ÉTAPE 5 — Composants Brass (Automatisation Intelligente)" },
+    { t:'list', items:["Brass Funnel : filtre items par type (configurable par clic droit)","Brass Tunnel : distribue items sur belt selon règles personnalisables","Deployer : bras mécanique qui 'utilise' items sur des blocs","Mechanical Arm : transporte items entre machines, rayon 5 blocs, filtrable","Portable Storage Interface : accède à l'inventaire d'un véhicule en mouvement"] },
+    { t:'h',    text:"ÉTAPE 6 — Crafting Mécanique" },
+    { t:'recipe', text:"🔧 Precision Mechanism : Gold Ingot + Gold Sheet + Clock + Large Cogwheel + Cogwheel dans Mechanical Crafters — composant requis pour trains et machines avancées." },
+    { t:'list', items:["Mechanical Crafters : réseau formant une grille de craft mécanique alimentée en rotation","Séquencer la disposition pour la recette voulue, connecter via Shafts","Precision Mechanism requis pour trains, contraptions, automatisation avancée"] },
+    { t:'h',    text:"ÉTAPE 7 — Transport Avancé" },
+    { t:'list', items:["Belts : transport horizontal/incliné, vitesse proportionnelle aux RPM","Chutes : vertical vers le bas, passif (aucune rotation nécessaire)","Elevators : vertical vers le haut (nécessite rotation)","Contraption : structure entière sur minecart = mobile, mine en avançant"] },
+    { t:'h',    text:"ÉTAPE 8 — Stockage et Tri" },
+    { t:'list', items:["Vault : grand stockage 1-4 blocs, jusqu'à 32 stacks par bloc","Chest + Funnel filtré : tri automatique par type d'item","Linked Controller : accès à distance à un inventaire"] },
+    { t:'h',    text:"Schéma Ferme XP Automatique" },
+    { t:'list', items:["1. Spawner dans cage (Silk Touch ou naturel)","2. Système de dégâts auto (Deployer + épée OU Fan + lave à distance OU chute 22 blocs)","3. Items tombent sur Belt vers Vault","4. XP flotte vers joueur AFK dans la zone","5. Enchanteresse alimentée en livres automatiquement via bras"] },
+    { t:'toptier', text:"⭐ Calcul RPM optimal : Broyeur/Moulin = 64+ RPM | Press = 32+ RPM | Mixer = 64+ RPM | Drill = 128+ RPM. En dessous = underperformance. Vérifier la jauge de stress (rouge = manque de couple → ajouter sources)." },
   ]},
-  { title:"Magie (Iron's Spells)", icon:"🔮", content:[
-    { t:'tip',  text:"Iron's Spells offre 9 écoles de magie. Spécialise-toi dans 2–3 maximum pour être vraiment efficace plutôt que de tout débloquer." },
-    { t:'h',    text:"Les 9 Écoles de Magie" },
-    { t:'list', items:["🔥 Fire Magic : dégâts de zone, boules de feu. Meilleure école DPS en AoE early","❄️ Ice Magic : ralentir, geler, contrôle de foule. Très utile contre les boss mobiles","⚡ Lightning Magic : dégâts rapides en ligne, arcs électriques. Bon DPS mono-cible","🌿 Nature Magic : soins, invocations, buffs. Indispensable pour le rôle support","💀 Blood Magic : sacrifice HP pour la puissance. Risqué mais très fort en late game","🌑 Void/Dark Magic : debuffs, malédictions, dégâts sur la durée","✨ Holy/Light Magic : soins puissants, +dégâts aux undead, buffs d'armure","🌀 Ender Magic : téléportation, manipulation de l'espace, mobilité","💪 Augment Magic : renforce les autres écoles, buffs personnels passifs"]},
-    { t:'warn', text:"La Mana est limitée ! N'utilise pas tes sorts puissants en début de donjon — garde-les pour les boss." },
-    { t:'h',    text:"Démarrage Magie" },
-    { t:'list', items:["Trouver un Spellbook (loot de donjon ou craft avancé)","Équiper un Focus Item dans la main off pour +puissance des sorts","Les sorts consomment de la Mana (régén naturelle lente)","Priorité early : 1 sort offensif + 1 sort de mobilité","Les Mana Potions sont très précieuses — farm les ingrédients"]},
+
+  { title:"Sophisticated Backpacks — Master", icon:"🎒", content:[
+    { t:'tip',  text:"Sophisticated Backpacks est INDISPENSABLE dans un pack de 280 mods. Investis dedans dès que possible — un bon sac change radicalement le confort de jeu." },
+    { t:'h',    text:"Paliers Complets — Stats Exactes" },
+    { t:'list', items:["Cuir : 18 slots, 1 upgrade, 1 tank slot — Craft : Cuir ×7 en U","Cuivre : 27 slots, 2 upgrades, 2 tanks","Fer : 36 slots, 3 upgrades, 3 tanks","Or : 45 slots, 4 upgrades, 4 tanks","Diamant : 54 slots, 5 upgrades, 5 tanks","Netherite : 63 slots, 6 upgrades, 6 tanks"] },
+    { t:'recipe', text:"🔧 Upgrade de Tier : sac actuel + métal ×6 + Tier Upgrade (métal ×4 + Planche ×4 + Fer ×1). Ex: Cuir→Cuivre = sac Cuir + Cuivre ×6 + Tier Upgrade Cuivre." },
+    { t:'h',    text:"Guide Complet de Tous les Upgrades" },
+    { t:'list', items:["Stack Upgrade Niv 1/2/3 : ×2/×4/×8 items par case (empilable ×2 dans un seul sac)","Filter Upgrade : whitelist/blacklist items, NBT matching, tag matching","Void Upgrade : détruit items en excès — ATTENTION sans filtre strict = perte garantie","Feeding Upgrade : mange automatiquement quand faim < 14 (configurable par item)","Magnet Upgrade : attire items au sol rayon 4-8 blocs (whitelist configurable)","Refilling Upgrade : remplace outil cassé depuis le sac automatiquement","Tank Upgrade : stocke 4000-16000 mB de liquide (configurable)","Compacting Upgrade : 9 items → 1 bloc automatiquement (ex: 9 fer → bloc fer)","Pickup Upgrade : ramasse SEULEMENT les items en whitelist","Crafting Upgrade : interface de craft directement dans le sac","Smelting Upgrade : fond items à la volée dans le sac (lent)","Smoking Upgrade : cuisine aliments à la volée","Blast Upgrade : blast furnace dans le sac pour minerais"] },
+    { t:'warn', text:"Ne JAMAIS activer Void Upgrade sans filtre strict configuré — vous perdrez définitivement des items précieux sans aucun avertissement." },
+    { t:'h',    text:"Builds Optimaux" },
+    { t:'toptier', text:"⭐ Sac Mineur (Diamant+) : Stack ×2 (fer, cobble, minerais communs) + Filter (minerais précieux only) + Void (cobble excess) + Magnet. Gestion inventaire mine entièrement automatique." },
+    { t:'list', items:["Sac Combattant (Fer+) : Feeding (steak/pain) + Refilling (épée/arc remplacement) + Magnet + Stack (flèches/potions)","Sac Fermier (Or+) : Compacting (tout en blocs) + Stack ×2 + Void (herbe/dirt) + Pickup (récoltes only)","Sac Mage (Diamant+) : Tank (mana potion) + Feeding + Stack (matériaux magie) + Filter (sorts/grimoires only)"] },
+    { t:'info', text:"Accéder aux upgrades : Shift+Clic droit sur le sac → onglet engrenage à droite → slots upgrades. Touche B (défaut) pour ouvrir sans tenir le sac en main." },
   ]},
-  { title:"Sacs (Sophisticated)", icon:"🎒", content:[
-    { t:'tip',  text:"Sophisticated Backpacks est INDISPENSABLE pour gérer l'inventaire massif d'un pack avec ~280 mods. Investis dedans dès que possible." },
-    { t:'h',    text:"Progression des Sacs" },
-    { t:'list', items:["Leather Backpack : +18 slots, portable sur le dos","Iron Backpack : +36 slots + 3 emplacements d'upgrades","Gold Backpack : +54 slots + 6 upgrades","Diamond Backpack : +72 slots + 9 upgrades","Netherite Backpack : +90 slots + 12 upgrades (endgame)"]},
-    { t:'h',    text:"Upgrades Essentiels" },
-    { t:'list', items:["Pickup Upgrade : auto-collecte les items au sol selon filtre configuré","Filter Upgrade : contrôle quels items entrent dans le sac","Sorting Upgrade : trie automatiquement le contenu du sac","Crafting Upgrade : crafting directement dans le sac (sans établi séparé)","Feeding Upgrade : mange automatiquement depuis le sac quand la faim descend","Smelting Upgrade : fond les minerais automatiquement lors de la collecte"]},
-    { t:'warn', text:"Ne mets jamais ton sac principal dans un autre sac (boucle infinie) — risque de lag serveur ou crash client." },
+
+  { title:"Boss — Stratégies Complètes", icon:"💀", content:[
+    { t:'warn', text:"TOUS les boss sont significativement plus dangereux que dans leurs mods d'origine. Kit minimum : armure Epic Protection IV + arme Epic + 20 potions de soin." },
+    { t:'h',    text:"OBLITERATOR — Boss de Fin de Zone" },
+    { t:'list', items:["PV : 800-1200 selon World Tier","Phase 1 (100-60% PV) : mêlée lourde 30-50 dégâts, charge ligne droite, 2-4 clones à 80% PV","⚠️ Les clones sont IMMORTELS (dégâts reçus = 0) — l'original a une légère aura dorée","Phase 2 (60-30% PV) : vitesse +50%, 4-8 clones supplémentaires, projectiles d'énergie 20-35 dégâts","Phase 3 (<30% PV) : berserk total, tous les clones actifs, projectiles rapides"] },
+    { t:'toptier', text:"⭐ Stratégie Obliterator : Mirror Image OBLIGATOIRE (les clones attaquent vos leurres). Summon Vex pour cibler automatiquement l'original. Focus l'original UNIQUEMENT — ne jamais perdre de temps sur les clones. Healing Circle en phase 3." },
+    { t:'h',    text:"IGNIS — Boss de Feu Volcanique" },
+    { t:'list', items:["PV : 600-900, immunisé au feu et à la lave","Phase 1 : mêlée de feu 25-40 dégâts, lance boules de feu 15-25 dégâts","Phase 2 (<50% PV) : météores après 3-6s délai (zone rouge au sol → FUIR), aura feu 5 dégâts/s à <5 blocs"] },
+    { t:'toptier', text:"⭐ Stratégie Ignis : Fire Resistance OBLIGATOIRE (potion 8 min). Rester à distance (arc/sorts). Surveiller le SOL en permanence en phase 2. Freeze (Iron's Spells) interrompt les météores." },
+    { t:'h',    text:"DRAGONS SUPERCHARGED — Cristaux et Phases" },
+    { t:'list', items:["PV : 1000-2000, aura dégâts magiques 15-30/s dans rayon 8 blocs","Capacités aléatoires : Foudre (sol toutes les 5s), Acide (-10% défense/hit), Poison (zone 20s), Glace (gèle 2s)","Cristaux de regen : chaque cristal actif = +5 PV/s au dragon"] },
+    { t:'warn', text:"DÉTRUIRE TOUS LES CRISTAUX EN PREMIER avant d'engager le dragon — flèches ou sorts à distance. C'est la priorité absolue." },
+    { t:'toptier', text:"⭐ Stratégie Dragon : armure Blast + Projectile Protection, mouvement constant, sorts de contrôle (Freeze/Slow), arc Infinity pour phase aérienne." },
+    { t:'h',    text:"LICH — Nécromancien Téléporteur" },
+    { t:'list', items:["PV : 500-700, téléporte toutes les 8s aléatoirement","Phase 1 : projectiles d'os 10-20 dégâts, invoque squelettes ×3-6","Phase 2 (<50% PV) : squelettes wither (25 dégâts + wither), Soul Storm (zone noire 30 dégâts/s)"] },
+    { t:'toptier', text:"⭐ Stratégie Lich : AoE permanent pour les squelettes (masse/faux ou sorts AoE). Immunité Wither (potion ou armure). Ne pas rester à portée mêlée (téléportation = risque encerclement)." },
+    { t:'h',    text:"ROYAL GUARDIAN — Armure Impénétrable" },
+    { t:'list', items:["PV : 700-1000, défense 80% (quasi-impénétrable)","Charge dévastatrice : 60-100 dégâts si touché (animation élan 1.5s → esquiver LATÉRALEMENT)","Attaque bouclier : renvoie au loin | Frappe sol : AoE 3 blocs 40 dégâts"] },
+    { t:'toptier', text:"⭐ Stratégie Royal Guardian : masse ou hache (ignore la défense), attaquer dans le dos (+30% dégâts), esquiver LATÉRALEMENT (jamais en face), potions de force obligatoires." },
+    { t:'h',    text:"EVENT MOONS — Nuits Spéciales" },
+    { t:'list', items:["Bloodmoon (rouge) : toutes les 7-14 nuits aléatoirement, mobs ×5 spawn, agressivité max → SE BARRICADER","Blue Moon (bleue) : rare, loot qualité +2 raretés, mobs légèrement plus forts → exploiter pour Epic/Mythic","Harvest Moon (orange) : ressources naturelles ×2, aucun danger → idéal pour farm bois/nourriture"] },
+    { t:'h',    text:"BLIGHTS — Mobs Améliorés Aléatoires" },
+    { t:'list', items:["Aura rouge = force | Aura bleue = vitesse | Aura verte = régénération | Aura violette = résistance","Stats : PV ×2-4, Dégâts ×1.5-3, Vitesse ×1.2-2 | Drops : toujours qualité supérieure","Stratégie : rouge → kiter | bleu → stagger lock | vert → dégâts max (outpace regen) | violet → sorts perçants"] },
+    { t:'warn', text:"Fuir sans honte si pas prêt — un Blight peut one-shot en early game. Revenez préparé." },
   ]},
-  { title:"Create", icon:"⚙️", content:[
-    { t:'tip',  text:"Create est le mod d'automatisation central du pack. La progression Andésite → Laiton → Précision est OBLIGATOIRE pour progresser vers l'endgame." },
-    { t:'h',    text:"Progression Create (3 Phases)" },
-    { t:'list', items:["Phase 1 — Andésite : premiers mécanismes, roues à eau, moulins basiques","Phase 2 — Laiton (Brass) : Mixer, Deployer, Intelligence Mécanique, automatisation complexe","Phase 3 — Précision : Trains, Contraptions avancées, automatisation totale"]},
-    { t:'h',    text:"Machines Clés" },
-    { t:'list', items:["Millstone : broyer des matériaux en poudre (ore doubling early game)","Mechanical Press : estamper des plaques, comprimer des blocs","Mixer : mélanger fluides et solides (indispensable pour craft le laiton)","Depot + Mechanical Arm : bras robotique pour déplacer et assembler","Basin : contenant pour les recettes liquides et mélanges","Encased Fan : souffler/aspirer/filtrer/chauffer des items"]},
-    { t:'warn', text:"ATTENTION aux Stress Units : dépasser la capacité de tes sources stoppe TOUT le réseau. Surveille le ratio avec le Network Analyzer." },
+
+  { title:"Exploration Complète", icon:"🗺️", content:[
+    { t:'tip',  text:"L'exploration est la source principale de loot, sorts et matériaux rares. Chaque structure a ses spécificités — lisez ce guide AVANT de vous y aventurer." },
+    { t:'h',    text:"BATTLE TOWERS — Structure et Loot" },
+    { t:'list', items:["Structure : tour de pierre 5-7 étages (25-40 blocs hauteur), entourée de spawns de mobs","Étage 1 : zombies/squelettes + coffre Ordinary/Common","Étage 2 : mobs armés + coffre Common/Uncommon","Étage 3 : mobs Elite + coffre Uncommon/Rare","Étage 4 : mobs Blight + coffre Rare/Epic","Étage 5 : boss de tour + coffre Epic/Mythic","⭐ Sous-sol : spawner de Blaze — SOURCE CRITIQUE pour le Blaze Burner Create"] },
+    { t:'warn', text:"Ne DÉTRUISEZ PAS le spawner de Blaze — capturez la flamme avec le Blaze Burner. C'est la source principale de chaleur Create si le Nether est inaccessible." },
+    { t:'list', items:["Approche : arriver par les côtés, éliminer les mobs extérieurs d'abord, monter étage par étage","Loot notable : armures jusqu'à Epic, sorts Iron's Spells rares, matériaux Apotheosis, livres enchantement"] },
+    { t:'h',    text:"WIZARD TOWERS — Sorts et Magie" },
+    { t:'list', items:["Structure : tour bleue/violette 4-6 étages + 2-4 mages gardiens (Fireball + Chain Lightning + Mirror Image)","Bibliothèque complète au sommet : tous les sorts communs disponibles","Loot unique : Arcane Journal (grimoire tier 4), sorts exclusifs (Meteor, Lich Form), Prismatic Web (Epic reforge)"] },
+    { t:'h',    text:"AQUAMIRAE — Zones Sous-Marines Profondes" },
+    { t:'list', items:["Structures à Y-40 à Y-60 dans les océans profonds","Prérequis : potion Respiration (ou enchantement Respiration III + Aqua Affinity)","Catfish Géant : 400 PV, morsure 40 dégâts, lent","Anglerfish : 200 PV, rapide, leurre lumineux, paralysie 3s","Crab Géant : armure naturelle, pinces 35 dégâts, faiblesse = attaquer le dessous","Dangers : pression eau (descente trop rapide), visibilité quasi-nulle, courants déstabilisants","Loot exclusif : Coraux Magiques, Perles Abyssales, Armure des Profondeurs, sorts aquatiques"] },
+    { t:'h',    text:"ALEX'S CAVES — Par Type de Grotte" },
+    { t:'list', items:["Abyssal Chasm : cristaux lumineux, mobs aveugles mais sensibles au son → se déplacer doucement","Primordial Caves : dinosaures miniatures, fossiles craftables, préhistorique","Toxic Caves : air toxique → potion résistance poison OBLIGATOIRE, matériaux chimiques","Magnetic Caves : fer flottant, boussole inutile, abondance en fer","Crystal Caverns : cristaux colorés immenses, mobs cristallins, très lumineux","Infested Caves : araignées géantes, toiles, NE PAS MARCHER SUR LES ŒUFS au sol"] },
+    { t:'h',    text:"VOIDSENT FOREST — Zone Endgame" },
+    { t:'warn', text:"Accessible uniquement après World Tier 3. Mobs niveau 80-120 en permanence. Ne pas y entrer sans armure Epic complète Protection IV + 30 potions." },
+    { t:'list', items:["Biome sombre, arbres noirs 30-50 blocs, brume violette -20% visibilité","Mobs drop exclusivement Epic/Mythic/Legendary","Boss : Void Wraith (immunité physique → sorts obligatoires), Shadow Drake (invisible phase 2), Arcane Colossus (absorbe sorts → utiliser physique)","Ressources : Void Crystal (craft Legendary), Arcane Dust (sorts légendaires), Shadowwood (construction endgame)","Préparation minimale : armure Epic P.IV complète, arme Epic+, grimoire 20+ sorts, waystone à l'entrée"] },
   ]},
-  { title:"Boss & Dangers", icon:"💀", content:[
-    { t:'warn', text:"TOUS les boss de ce pack sont significativement plus dangereux que dans leurs mods d'origine. Prépare-toi sérieusement avant chaque tentative." },
-    { t:'h',    text:"Boss Notables" },
-    { t:'list', items:["⚡ Obliterator : génère des clones immortels. Identifie le vrai par son ombre. Tue les clones EN DERNIER ou ils se régénèrent","☄️ Ignis : invoque des météores constants. Reste en mouvement. Couvre-toi contre les chutes","🐉 Dragons Supercharged : 3 phases (normal → chargé → fury). Potions feu OBLIGATOIRES","💀 Lich (Apotheosis) : invoque des serviteurs, immunité aux sorts en phase 2","🕷️ Spiders of Arachne : venin multi-stacks, grille de toiles ralentissante"]},
-    { t:'h',    text:"Checklist Avant un Boss" },
-    { t:'list', items:["Potions de Régénération II × 5 minimum","Potions de Résistance au Feu (pour les boss de feu/dragons)","Nourriture haute saturation × 20","Eau purifiée × 10","Équipement réparé avec bons affixes et gemmes sockettées","Un plan d'évacuation si ça tourne mal"]},
-    { t:'tip',  text:"Pour l'Obliterator : focus les clones UN PAR UN. Ne tue jamais deux clones simultanément. Laisse le vrai pour la toute fin du combat." },
+
+  { title:"Autres Mods — Encyclopédie", icon:"📚", content:[
+    { t:'h',    text:"CURIOS API — Slots et Équipement Détaillé" },
+    { t:'list', items:["Tête : casques magiques, lunettes vision nocturne, couronnes de stats","Cou : amulettes de vie (+4-20 PV max), colliers mana (+50-200), médaillons protection","Dos : capes (Elytra alternatif, vol magique), second sac à dos (Traveler's Backpack)","Ceinture : porte-outils (accès rapide 4-8 outils), baudriers de potions","Mains : anneaux ×2 (bonus variés — vitesse, dégâts, résistance, mana)","Jambes : charmes (régénération passive, résistance à la chute)","Pieds : talismans (vitesse, triple saut, chute ralentie)"] },
+    { t:'h',    text:"ALEX'S MOBS — Mobs Importants et Utilité" },
+    { t:'list', items:["Mimicube : ressemble à un cube inerte → items aléatoires au kill (parfois très rares)","Endergrade : scarabée end-like → cristaux de téléportation au kill","Warped Toad : engloutit et téléporte aléatoirement — DANGER en donjon","Bison : cuir premium ×6-12, viande premium, laine si shearé","Skelewag : squelette rapide avec dague, très dangereux en groupe","Raccoon : vole des items dans l'inventaire si trop proche — garder ses distances","Capuchin : singe domesticable (noix), peut équiper des arcs et tirer"] },
+    { t:'h',    text:"FARMERS DELIGHT — Recettes et Buffs Durables" },
+    { t:'list', items:["Stuffed Pumpkin : Citrouille + viande ×4 + légumes ×2 → Resistance II 10min + saturation haute","Honey Glazed Ham : Jambon + Miel ×4 → Strength I 8min","Roast Chicken : Poulet + herbes ×3 → Regeneration I 5min","Vegetable Soup : Légumes ×5 + bol → saturation haute (pas de buff mais très efficace)","Fish Stew : Poisson ×2 + légumes + bol → Water Breathing 3min","Melon Juice : Melon ×4 + bol → Fire Resistance 2min"] },
+    { t:'recipe', text:"🔧 Cooking Pot : chaudron sur feu → ingrédients + bol = repas auto. Skillet : sur feu, cuisson rapide single item. Cutting Board : découper viandes en portions." },
+    { t:'h',    text:"SERENE SEASONS — Gestion des Saisons" },
+    { t:'list', items:["Printemps : températures douces, cultures vite, mobs neutres","Été : chaleur +15°C, cultures max vitesse, sécheresse possible","Automne : température neutre, feuilles colorées, mobs légèrement plus actifs la nuit","Hiver : froid -20°C, neige partout, cultures STOPPÉES — stocker en automne"] },
+    { t:'warn', text:"Hiver : préparez en automne vos stocks de nourriture ×3 et matériaux de chauffage. Les cultures ne poussent plus du tout en hiver." },
+    { t:'h',    text:"JADE — Configuration Optimale" },
+    { t:'list', items:["Touche H pour ouvrir la config JADE","Activer : PV des mobs, information bloc, drops aperçu, progrès de minage","Désactiver si encombré : redstone info, fluid info (sauf si besoin spécifique)"] },
+    { t:'h',    text:"WAYSTONES — Réseau de Téléportation" },
+    { t:'list', items:["Trouver dans les villages (toujours à l'entrée du village) — activer par clic droit","Toutes les Waystones activées accessibles depuis n'importe quelle Waystone","Coût téléportation : court = 0 XP, long = 1-5 niveaux selon distance","Warp Stone : item one-use vers n'importe quelle Waystone (craft ou drop boss)","Global Waystone : visible par tous les joueurs du serveur automatiquement"] },
+    { t:'recipe', text:"🔧 Waystone craft : Marble ×6 + Ether Dust ×2 + Ender Pearl ×1 (vérifier dans EMI — recette potentiellement modifiée)." },
   ]},
-  { title:"Performance & Conseils", icon:"🖥️", content:[
-    { t:'h',    text:"Optimisation FPS" },
-    { t:'list', items:["Render distance : 6–8 chunks maximum recommandé pour ~280 mods","Désactive les ombres dynamiques en début de partie si FPS < 30","Sodium/Rubidium (inclus) : ajuste les paramètres dans Video Settings","Réduis les particules : Options → Video Settings → Particles → Minimal","Entity Culling (inclus) : améliore significativement les FPS avec beaucoup d'entités"]},
-    { t:'h',    text:"Mémoire RAM Java" },
-    { t:'list', items:["Minimum : 8 Go alloués à Java (en dessous = crashes fréquents)","Recommandé : 10–12 Go pour les sessions longues","N'alloue pas plus de 16 Go (les pauses du GC deviennent problématiques)","Utilise les flags JVM optimisés (Aikar's Flags) dans ton launcher"]},
-    { t:'warn', text:"Si le serveur lag : identifie quelle machine Create surconsomme avec le Network Analyzer et optimise ou déconnecte temporairement." },
-    { t:'tip',  text:"Bookmark cette app sur ton téléphone pour consulter le guide et les coordonnées sans alt-tab depuis Minecraft." },
+
+  { title:"Progression Roadmap", icon:"📋", content:[
+    { t:'tip',  text:"Suivez cette roadmap dans l'ordre — chaque phase débloque la suivante. Brûler les étapes = mort garantie dans les zones endgame." },
+    { t:'h',    text:"PHASE 1 — Les Premiers Pas (Jours 1-3)" },
+    { t:'list', items:["✅ Outils pierre puis fer","✅ Abri sécurisé (porte en fer, torches partout)","✅ Eau purifiée en stock ×20","✅ Livre de quêtes ouvert et suivi","✅ Sac Cuir crafté et porté","✅ Température maîtrisée (thermomètre actif)","⭐ Bonus : premier donjon vidé, Flimsy Journal + 2 sorts, armure cuir complète"] },
+    { t:'warn', text:"Erreurs à éviter Phase 1 : aller sous terre sans eau, négliger la température, ignorer le livre de quêtes." },
+    { t:'h',    text:"PHASE 2 — L'Établissement (Jours 4-10)" },
+    { t:'list', items:["✅ Armure fer complète + outils fer enchantés","✅ Sac Cuivre avec Stack Upgrade","✅ Sorts de base (Mirror Image EN PRIORITÉ)","✅ Première Battle Tower vidée (Blaze spawner capturé)","✅ Premiers diamants trouvés","⭐ Bonus : Create basique actif, affixes Rare, réseau Waystones, cuisine Farmers Delight"] },
+    { t:'h',    text:"PHASE 3 — La Puissance (Semaines 2-3)" },
+    { t:'list', items:["✅ Create Brass débloqué (Blaze Burner actif)","✅ Armure diamant complète","✅ Sac Fer avec 3 upgrades","✅ World Tier 1 → 2","✅ Grimoire 10+ sorts","✅ Reforges Rare sur arme principale","⭐ Bonus : ferme XP auto Create, armure Epic en cours, premier dragon tué"] },
+    { t:'h',    text:"PHASE 4 — La Maîtrise (Mois 1)" },
+    { t:'list', items:["✅ Armure Epic complète","✅ Arme Mythic","✅ Create full automatisé (fermes multiples)","✅ Sac Diamant 5 upgrades","✅ World Tier 3","✅ Grimoire 20 sorts","✅ Tous les Curios slots remplis","⭐ Bonus : première pièce Legendary, Voidsent Forest explorée"] },
+    { t:'h',    text:"PHASE 5 — L'Endgame" },
+    { t:'toptier', text:"⭐ Objectifs finaux : armure Legendary complète, armes Legendary avec affixes parfaits, World Tier max, Voidsent Forest maîtrisée, TOUS les boss vaincus, grimoire 25 sorts complet, Create empire total, sac Netherite optimisé." },
+  ]},
+
+  { title:"Performance & Technique", icon:"🖥️", content:[
+    { t:'tip',  text:"Bien configurer Java et les paramètres graphiques est indispensable pour jouer confortablement avec 280 mods simultanément." },
+    { t:'h',    text:"Configuration RAM Optimale" },
+    { t:'list', items:["Minimum : 6 Go alloués à Java","Recommandé : 8 Go pour les sessions normales","Optimal : 10 Go pour les sessions longues","Maximum utile : 10 Go — au-delà est contre-productif (GC pauses plus longues et fréquentes)"] },
+    { t:'recipe', text:"🔧 Configurer RAM : Launcher → Installations → Modifier → JVM Args → remplacer -Xmx2G par -Xmx8G" },
+    { t:'h',    text:"Paramètres Graphiques Prioritaires à Baisser" },
+    { t:'list', items:["Render Distance : 8-10 chunks maximum (jamais plus avec ce pack)","Entity Distance : 75%","Smooth Lighting : désactiver","Dynamic Lights : désactiver si < 60 FPS","Particles : minimal","Sky et Clouds : désactiver si nécessaire"] },
+    { t:'h',    text:"Mods d'Optimisation Compatibles" },
+    { t:'list', items:["✅ Embeddium : remplacement Sodium pour Forge (recommandé)","✅ Rubidium : alternative à Embeddium","✅ Oculus : shaders compatibles Forge","✅ Entity Culling : ne render pas les entités hors champ"] },
+    { t:'warn', text:"NE PAS AJOUTER : Sodium (Fabric uniquement, incompatible Forge), OptiFine (conflits multiples avec les mods du pack)." },
+    { t:'h',    text:"Commandes Serveur Utiles" },
+    { t:'list', items:["/forge tps → TPS du serveur (optimal = 20)","/kill @e[type=minecraft:item,r=50] → nettoyer items au sol","/time set day → passer la nuit","/weather clear → désactiver la pluie"] },
+    { t:'h',    text:"Backups et Version" },
+    { t:'list', items:["Copier le dossier saves/nom_monde régulièrement","Backup AVANT chaque MAJ du pack (incompatibilités possibles)","Version serveur = exactement même version que client CurseForge"] },
+    { t:'toptier', text:"⭐ JVM Args avancés : -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 (ajouter après -Xmx8G dans les JVM arguments du launcher)." },
   ]},
 ];
 
@@ -213,11 +356,13 @@ function playBell() {
 
 // ── Composant Guide Content ───────────────────────────────────────────────
 function GuideBlock({ block }) {
-  if (block.t === 'tip')  return <div className="border-l-4 border-amber-500 bg-amber-900/20 px-4 py-2.5 rounded-r text-amber-200 text-xs leading-relaxed">💡 {block.text}</div>;
-  if (block.t === 'warn') return <div className="border-l-4 border-red-500 bg-red-900/20 px-4 py-2.5 rounded-r text-red-300 text-xs leading-relaxed font-semibold">⚠️ {block.text}</div>;
-  if (block.t === 'info') return <div className="border-l-4 border-blue-500 bg-blue-900/20 px-4 py-2.5 rounded-r text-blue-200 text-xs leading-relaxed">ℹ️ {block.text}</div>;
-  if (block.t === 'h')    return <h4 className="text-stone-100 font-bold font-serif text-sm mt-4 mb-1 flex items-center gap-1"><ChevronRight className="w-3.5 h-3.5 text-amber-500"/>{block.text}</h4>;
-  if (block.t === 'list') return <ul className="space-y-1.5 pl-2">{block.items.map((it,i)=><li key={i} className="text-xs text-stone-300 flex gap-2"><span className="text-amber-600 mt-0.5">•</span><span>{it}</span></li>)}</ul>;
+  if (block.t === 'tip')    return <div className="border-l-4 border-amber-500 bg-amber-950/30 px-4 py-2.5 rounded-r text-amber-200 text-xs leading-relaxed">💡 {block.text}</div>;
+  if (block.t === 'warn')   return <div className="border-l-4 border-red-500 bg-red-950/30 px-4 py-2.5 rounded-r text-red-200 text-xs leading-relaxed font-semibold">⚠️ {block.text}</div>;
+  if (block.t === 'info')   return <div className="border-l-4 border-blue-500 bg-blue-950/30 px-4 py-2.5 rounded-r text-blue-200 text-xs leading-relaxed">ℹ️ {block.text}</div>;
+  if (block.t === 'recipe') return <div className="border-l-4 border-green-500 bg-green-950/30 px-4 py-2.5 rounded-r text-green-200 text-xs leading-relaxed">{block.text}</div>;
+  if (block.t === 'toptier')return <div className="border-l-4 border-purple-500 bg-purple-950/30 px-4 py-2.5 rounded-r text-purple-200 text-xs leading-relaxed font-semibold">{block.text}</div>;
+  if (block.t === 'h')      return <h4 className="text-stone-100 font-bold font-serif text-sm mt-4 mb-1 flex items-center gap-1"><ChevronRight className="w-3.5 h-3.5 text-amber-500"/>{block.text}</h4>;
+  if (block.t === 'list')   return <ul className="space-y-1.5 pl-2">{block.items.map((it,i)=><li key={i} className="text-xs text-stone-300 flex gap-2"><span className="text-amber-600 mt-0.5">•</span><span>{it}</span></li>)}</ul>;
   return null;
 }
 
@@ -272,8 +417,12 @@ export default function App() {
   const [tropheeTier, setTropheeTier] = useState('I');
 
   // ── Guide ──
-  const [activeSection, setActiveSection] = useState(0);
-  const [guideSearch,   setGuideSearch]   = useState('');
+  const [activeSection,  setActiveSection]  = useState(0);
+  const [guideSearch,    setGuideSearch]    = useState('');
+  const [readSections,   setReadSections]   = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem('taverne_guide_read') || '[]')); } catch { return new Set(); }
+  });
+  const [copyDone,       setCopyDone]       = useState(false);
 
   // ── Annonces (GM) ──
   const [newAnnonce,    setNewAnnonce]    = useState('');
@@ -656,10 +805,44 @@ export default function App() {
     .filter(c => filterDim === 'Tous' || c.dim === filterDim)
     .filter(c => filterCType === 'Tous' || c.type === filterCType);
 
+  const guideQ = guideSearch.trim().toLowerCase();
   const guideSectionsFiltered = GUIDE.filter(s =>
-    !guideSearch.trim() || s.title.toLowerCase().includes(guideSearch.toLowerCase()) ||
-    s.content.some(b => (b.text||'').toLowerCase().includes(guideSearch.toLowerCase()) || (b.items||[]).some(i => i.toLowerCase().includes(guideSearch.toLowerCase())))
+    !guideQ || s.title.toLowerCase().includes(guideQ) ||
+    s.content.some(b =>
+      (b.text||'').toLowerCase().includes(guideQ) ||
+      (b.items||[]).some(it => it.toLowerCase().includes(guideQ))
+    )
   );
+
+  function guideWordCount(section) {
+    return section.content.reduce((acc, b) => {
+      const t = (b.text||'') + (b.items||[]).join(' ') + (b.text ? '' : '');
+      return acc + t.split(/\s+/).filter(Boolean).length;
+    }, 0);
+  }
+
+  function markRead(idx) {
+    setReadSections(prev => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      localStorage.setItem('taverne_guide_read', JSON.stringify([...next]));
+      return next;
+    });
+  }
+
+  function copySection(idx) {
+    const s = GUIDE[idx];
+    const lines = [`# ${s.icon} ${s.title}`, ''];
+    s.content.forEach(b => {
+      if (b.t === 'h')    lines.push(`\n## ${b.text}`);
+      else if (b.text)    lines.push(b.text);
+      else if (b.items)   b.items.forEach(it => lines.push(`• ${it}`));
+    });
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      setCopyDone(true);
+      setTimeout(() => setCopyDone(false), 1800);
+    });
+  }
 
   // ── ÉCRAN DE CONNEXION ───────────────────────────────────────────────────
   if (!isRegistered) {
@@ -1289,25 +1472,44 @@ export default function App() {
         )}
 
         {/* ═══════════════════════════════════════════════════════
-            GUIDE INTÉGRÉ
+            GUIDE INTÉGRÉ — NIVEAU WIKIPEDIA
         ═══════════════════════════════════════════════════════ */}
         {!loading && activeTab === 'guides' && (
           <div className="tab-fade flex flex-col md:flex-row gap-4" style={{minHeight:'70vh'}}>
-            <aside className="md:w-56 flex-shrink-0 space-y-1">
-              <div className="relative mb-3">
+
+            {/* Sidebar */}
+            <aside className="md:w-60 flex-shrink-0 space-y-1">
+              {/* Barre de recherche */}
+              <div className="relative mb-2">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500"/>
-                <input type="text" value={guideSearch} onChange={e=>{setGuideSearch(e.target.value);}}
+                <input type="text" value={guideSearch} onChange={e=>setGuideSearch(e.target.value)}
                   placeholder="Rechercher dans le guide..."
-                  className="w-full bg-[#0d0907] border border-[#2b1c13] rounded-lg py-2 pl-8 pr-3 text-xs text-white focus:outline-none focus:border-amber-600"/>
+                  className="w-full bg-[#0d0907] border border-[#2b1c13] rounded-lg py-2 pl-8 pr-8 text-xs text-white focus:outline-none focus:border-amber-600"/>
                 {guideSearch && <button onClick={()=>setGuideSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"><X className="w-3.5 h-3.5"/></button>}
               </div>
+
+              {/* Progression globale sections lues */}
+              <div className="px-1 pb-2">
+                <div className="flex justify-between text-[10px] text-stone-500 mb-1">
+                  <span className="uppercase tracking-wider">Sections lues</span>
+                  <span className="font-mono text-amber-500">{readSections.size}/{GUIDE.length}</span>
+                </div>
+                <div className="w-full bg-[#0d0907] h-1.5 rounded-full overflow-hidden border border-[#211610]">
+                  <div className="h-full bg-gradient-to-r from-amber-700 to-amber-400 rounded-full transition-all"
+                    style={{width:`${Math.round(readSections.size/GUIDE.length*100)}%`}}/>
+                </div>
+              </div>
+
+              {/* Liste des sections */}
               {(guideSearch ? guideSectionsFiltered : GUIDE).map((s,i)=>{
                 const realIdx = GUIDE.indexOf(s);
+                const isRead = readSections.has(realIdx);
                 return (
                   <button key={i} onClick={()=>{setActiveSection(realIdx); setGuideSearch('');}}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${activeSection===realIdx?'bg-amber-900/50 text-amber-200 border border-amber-700/60':'text-stone-400 hover:text-stone-200 hover:bg-[#1a130f]'}`}>
-                    <span>{s.icon}</span>
-                    <span className="leading-tight">{s.title}</span>
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${activeSection===realIdx?'bg-amber-900/50 text-amber-200 border border-amber-700/60':'text-stone-400 hover:text-stone-200 hover:bg-[#1a130f]'}`}>
+                    <span className="flex-shrink-0">{s.icon}</span>
+                    <span className="leading-tight flex-1">{s.title}</span>
+                    {isRead && <span className="text-emerald-500 flex-shrink-0 text-[10px]">✓</span>}
                   </button>
                 );
               })}
@@ -1315,22 +1517,51 @@ export default function App() {
                 <p className="text-stone-600 text-xs italic px-3 py-2">Aucun résultat.</p>
               )}
             </aside>
-            <div className="flex-1 bg-[#120d0a] border border-[#2a1d14] rounded-xl p-5 space-y-3 overflow-y-auto">
-              <h2 className="text-lg font-black font-serif text-stone-100 flex items-center gap-2 pb-2 border-b border-[#241810]">
-                <span>{GUIDE[activeSection].icon}</span>
-                <span>{GUIDE[activeSection].title}</span>
-              </h2>
-              <div className="space-y-3">
+
+            {/* Contenu principal */}
+            <div className="flex-1 bg-[#120d0a] border border-[#2a1d14] rounded-xl overflow-hidden flex flex-col">
+
+              {/* En-tête section */}
+              <div className="px-5 pt-5 pb-3 border-b border-[#241810] flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black font-serif text-stone-100 flex items-center gap-2">
+                    <span>{GUIDE[activeSection].icon}</span>
+                    <span>{GUIDE[activeSection].title}</span>
+                    {readSections.has(activeSection) && <span className="text-emerald-400 text-sm">✓</span>}
+                  </h2>
+                  <p className="text-[10px] text-stone-600 font-mono mt-0.5">
+                    ~{guideWordCount(GUIDE[activeSection])} mots · Section {activeSection+1}/{GUIDE.length}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button onClick={()=>copySection(activeSection)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#1a130f] border border-[#352018] text-stone-400 hover:text-stone-200 text-[11px] font-medium transition-colors">
+                    <Copy className="w-3 h-3"/>
+                    {copyDone ? 'Copié !' : 'Copier'}
+                  </button>
+                  <button onClick={()=>markRead(activeSection)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all ${readSections.has(activeSection)?'bg-emerald-900/40 border-emerald-700/60 text-emerald-300':'bg-[#1a130f] border-[#352018] text-stone-400 hover:text-stone-200'}`}>
+                    <CheckCircle2 className="w-3 h-3"/>
+                    {readSections.has(activeSection) ? 'Lu ✓' : 'Marquer lu'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Corps */}
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {GUIDE[activeSection].content.map((block,i)=>(
                   <GuideBlock key={i} block={block}/>
                 ))}
               </div>
-              <div className="flex justify-between pt-4 border-t border-[#1e130c]">
-                <button disabled={activeSection===0} onClick={()=>setActiveSection(s=>s-1)}
+
+              {/* Navigation bas */}
+              <div className="px-5 py-3 border-t border-[#1e130c] flex justify-between items-center">
+                <button disabled={activeSection===0} onClick={()=>{setActiveSection(s=>s-1); markRead(activeSection);}}
                   className="text-xs text-stone-500 hover:text-stone-300 disabled:opacity-30 flex items-center gap-1">
                   ← {activeSection > 0 ? GUIDE[activeSection-1].title : ''}
                 </button>
-                <button disabled={activeSection===GUIDE.length-1} onClick={()=>setActiveSection(s=>s+1)}
+                <span className="text-[10px] text-stone-700 font-mono">{activeSection+1}/{GUIDE.length}</span>
+                <button disabled={activeSection===GUIDE.length-1} onClick={()=>{markRead(activeSection); setActiveSection(s=>s+1);}}
                   className="text-xs text-stone-500 hover:text-stone-300 disabled:opacity-30 flex items-center gap-1">
                   {activeSection < GUIDE.length-1 ? GUIDE[activeSection+1].title : ''} →
                 </button>
