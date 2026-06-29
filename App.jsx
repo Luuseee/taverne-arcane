@@ -467,9 +467,47 @@ const ACHIEVEMENTS = [
 
 const PowerLevelCtx = React.createContext(1);
 
-// ── ProfileDrawer ─────────────────────────────────────────────────────────
+// ── Helpers Clicker ───────────────────────────────────────────────────────
+function fmt(n) {
+  n = Math.floor(n);
+  if (n >= 1e12) return (n/1e12).toFixed(1)+'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(1)+'K';
+  return n.toString();
+}
+
+const CAT_SKINS = [
+  { id:'default', emoji:'',    name:'Classique',   rarity:'common',    weight:50, color:'#6ee7b7' },
+  { id:'pirate',  emoji:'🏴‍☠️', name:'Pirate',      rarity:'rare',      weight:25, color:'#60a5fa' },
+  { id:'mage',    emoji:'🧙',  name:'Mage Arcane', rarity:'epic',      weight:15, color:'#c084fc' },
+  { id:'robot',   emoji:'🤖',  name:'Cyber-Chat',  rarity:'legendary', weight:8,  color:'#fbbf24' },
+  { id:'dragon',  emoji:'🐉',  name:'Dragon Divin',rarity:'divine',    weight:2,  color:'#f97316' },
+];
+
+function genDailyQuests() {
+  const d = new Date().getDate(), m = new Date().getMonth();
+  const seed = d + m*31;
+  const pool = [
+    { type:'clicks',   target: 300+seed*5,        reward:1500, desc:`Cliquer ${(300+seed*5).toLocaleString('fr-FR')} fois` },
+    { type:'crystals', target: 2000+seed*80,       reward:2000, desc:`Gagner ${fmt(2000+seed*80)} crystaux` },
+    { type:'crits',    target: 5+Math.floor(seed/8),reward:1200,desc:`Faire ${5+Math.floor(seed/8)} critiques` },
+    { type:'combo10',  target: 1,                  reward:3000, desc:'Atteindre combo ×10' },
+    { type:'upgrades', target: 1+Math.floor(seed/15),reward:1800,desc:`Acheter ${1+Math.floor(seed/15)} upgrade(s)` },
+    { type:'event',    target: 1,                  reward:5000, desc:'Survivre un Événement Arcanique' },
+  ];
+  const idxs = [(seed*7)%pool.length, (seed*13+2)%pool.length, (seed*17+5)%pool.length];
+  const unique = [...new Set(idxs)];
+  while (unique.length < 3) { let n=(unique[unique.length-1]+1)%pool.length; if(!unique.includes(n)) unique.push(n); }
+  return unique.slice(0,3).map((i,idx) => ({ ...pool[i], id:`q${idx}`, progress:0, done:false }));
+}
+
+// ── ProfileDrawer amélioré ────────────────────────────────────────────────
 function ProfileDrawer({ pseudo, onClose }) {
   const [data, setData] = useState(null);
+  const [reactions, setReactions] = useState({ '👍':0, '❤️':0, '🔥':0, '⚔️':0 });
+  const [myReaction, setMyReaction] = useState(null);
+
   useEffect(() => {
     supabase.from('clicker_scores').select('*').eq('pseudo', pseudo).single()
       .then(({ data: d }) => setData(d));
@@ -477,36 +515,48 @@ function ProfileDrawer({ pseudo, onClose }) {
 
   const badge = data ? ([...BADGES].reverse().find(b => (data.niveau||1) >= b.min) ?? BADGES[0]) : null;
 
+  const inferredAchs = data ? ACHIEVEMENTS.filter(a => {
+    const s = { totalClicks:data.total_clics||0, allTime:data.crystaux||0, upgradeCount:15, level:data.niveau||1, critCount:99, maxCombo:10, prestige:data.prestige||0, eventCount:1, lateNight:false, foundSpider:false, hasTrans:data.niveau>=50, cps:data.cps||0 };
+    return a.check(s);
+  }) : [];
+
+  function handleReact(emoji) {
+    if (myReaction === emoji) {
+      setMyReaction(null); setReactions(r => ({...r,[emoji]:Math.max(0,r[emoji]-1)}));
+    } else {
+      if (myReaction) setReactions(r => ({...r,[myReaction]:Math.max(0,r[myReaction]-1)}));
+      setMyReaction(emoji); setReactions(r => ({...r,[emoji]:r[emoji]+1}));
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[500] flex items-start justify-end" onClick={onClose}>
-      <div className="portal-open mt-16 mr-2 w-80 bg-[#120d0a]/98 border border-[#3a2a1c] rounded-2xl shadow-2xl overflow-hidden"
+      <div className="portal-open mt-16 mr-2 w-80 bg-[#120d0a]/98 border border-[#3a2a1c] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh]"
         onClick={e => e.stopPropagation()}>
-        <div className="bg-gradient-to-r from-amber-900/40 to-red-900/30 p-5 border-b border-[#2a1d14]">
+        <div className="bg-gradient-to-r from-amber-900/40 to-red-900/30 p-5 border-b border-[#2a1d14] flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-600 to-amber-900 border-2 border-amber-500/50 flex items-center justify-center text-2xl font-black text-stone-950 font-serif">
               {pseudo.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-black text-white text-base font-serif truncate">{pseudo}</div>
-              {badge && <div className={`text-xs font-bold ${badge.color}`}>{badge.emoji} {badge.name}</div>}
+              {badge && <div className={`text-xs font-bold ${badge.color} ${badge.rainbow?'rainbow-text':''}`}>{badge.emoji} {badge.name}</div>}
             </div>
             <button onClick={onClose} className="text-stone-600 hover:text-stone-300 text-lg leading-none">✕</button>
           </div>
-          {data?.citation && (
-            <p className="mt-3 text-[11px] text-stone-400 italic border-l-2 border-amber-700/50 pl-2">"{data.citation}"</p>
-          )}
+          {data?.citation && <p className="mt-3 text-[11px] text-stone-400 italic border-l-2 border-amber-700/50 pl-2">"{data.citation}"</p>}
         </div>
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-3 overflow-y-auto flex-1">
           {data ? (
             <>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { label:'Niveau',    value: data.niveau||1,                    color:'text-amber-400' },
-                  { label:'Prestige',  value: data.prestige > 0 ? `★×${data.prestige}` : '—', color:'text-yellow-300' },
-                  { label:'Crystaux',  value: (data.crystaux||0).toLocaleString('fr-FR'), color:'text-blue-300' },
-                  { label:'CPS',       value: (data.cps||0).toLocaleString('fr-FR'),      color:'text-purple-300' },
-                  { label:'Clics',     value: (data.total_clics||0).toLocaleString('fr-FR'), color:'text-stone-300' },
-                  { label:'Maj',       value: data.updated_at ? new Date(data.updated_at).toLocaleDateString('fr-FR') : '—', color:'text-stone-500' },
+                  { label:'Niveau',   value: data.niveau||1,                  color:'text-amber-400' },
+                  { label:'Prestige', value: data.prestige>0?`★×${data.prestige}`:'—', color:'text-yellow-300' },
+                  { label:'Crystaux', value: fmt(data.crystaux||0),           color:'text-blue-300' },
+                  { label:'CPS',      value: fmt(data.cps||0),                color:'text-purple-300' },
+                  { label:'Clics',    value: fmt(data.total_clics||0),        color:'text-stone-300' },
+                  { label:'Actif',    value: data.updated_at ? new Date(data.updated_at).toLocaleDateString('fr-FR') : '—', color:'text-stone-500' },
                 ].map(s => (
                   <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-lg p-2.5 text-center">
                     <div className={`text-sm font-black font-mono ${s.color}`}>{s.value}</div>
@@ -514,6 +564,29 @@ function ProfileDrawer({ pseudo, onClose }) {
                   </div>
                 ))}
               </div>
+              <div>
+                <div className="text-[10px] text-stone-500 uppercase tracking-wider mb-2 font-mono">Réactions</div>
+                <div className="flex gap-2">
+                  {['👍','❤️','🔥','⚔️'].map(emoji => (
+                    <button key={emoji} onClick={() => handleReact(emoji)}
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border text-sm transition-all ${myReaction===emoji?'bg-amber-900/50 border-amber-600':'bg-[#0d0907] border-[#211610] hover:border-[#3a2a1c]'}`}>
+                      {emoji}{reactions[emoji]>0 && <span className="text-[9px] text-stone-400 font-mono">{reactions[emoji]}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {inferredAchs.length > 0 && (
+                <div>
+                  <div className="text-[10px] text-stone-500 uppercase tracking-wider mb-2 font-mono">Succès visibles ({inferredAchs.length})</div>
+                  <div className="flex flex-wrap gap-1">
+                    {inferredAchs.slice(0,12).map(a => (
+                      <div key={a.id} title={a.desc} className="flex items-center gap-1 bg-emerald-900/20 border border-emerald-700/40 rounded-lg px-2 py-1 text-[10px] text-emerald-300 font-bold">
+                        {a.icon} {a.name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="text-center text-stone-600 text-xs py-4 font-mono">Chargement…</div>
@@ -524,9 +597,9 @@ function ProfileDrawer({ pseudo, onClose }) {
   );
 }
 
-// ── SpiderChatClicker v3 ──────────────────────────────────────────────────
+// ── SpiderChatClicker v4 ─ Ultra-Dopamine ────────────────────────────────
 function SpiderChatClicker({ userPseudo }) {
-  const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key) ?? 'null') ?? def; } catch { return def; } };
+  const load = (k, def) => { try { return JSON.parse(localStorage.getItem(k) ?? 'null') ?? def; } catch { return def; } };
 
   // ── Core state ──
   const [crystals,    setCrystals]    = useState(() => load('sc_crystals', 0));
@@ -540,12 +613,16 @@ function SpiderChatClicker({ userPseudo }) {
   const [editCit,     setEditCit]     = useState(false);
   const [maxCombo,    setMaxCombo]    = useState(() => load('sc_maxcombo', 1));
   const [foundSpider, setFoundSpider] = useState(() => load('sc_spider',   false));
+  const [streak,      setStreak]      = useState(() => load('sc_streak',   0));
 
   // ── UI state ──
   const [flyParticles,  setFlyParticles]  = useState([]);
+  const [floatNums,     setFloatNums]     = useState([]);
+  const [shockwaves,    setShockwaves]    = useState([]);
   const [clicking,      setClicking]      = useState(false);
   const [milestone,     setMilestone]     = useState(null);
   const [critFlash,     setCritFlash]     = useState(false);
+  const [megaFlash,     setMegaFlash]     = useState(false);
   const [levelUpAnim,   setLevelUpAnim]   = useState(null);
   const [combo,         setCombo]         = useState(1);
   const [comboKey,      setComboKey]      = useState(0);
@@ -556,35 +633,100 @@ function SpiderChatClicker({ userPseudo }) {
   const [spiderEgg,     setSpiderEgg]     = useState(false);
   const [activeView,    setActiveView]    = useState('clicker');
   const [leaderboard,   setLeaderboard]   = useState([]);
+  const [myRank,        setMyRank]        = useState(null);
   const [lbTab,         setLbTab]         = useState('crystaux');
   const [lbLoading,     setLbLoading]     = useState(false);
   const [profilePseudo, setProfilePseudo] = useState(null);
+  const [idleMsg,       setIdleMsg]       = useState(null);
+  const [clickSpeed,    setClickSpeed]    = useState(0);
+  const [cpsHistory,    setCpsHistory]    = useState([]);
+  const [heatLevel,     setHeatLevel]     = useState(0);
 
-  const lastClickRef   = useRef(0);
-  const comboTimerRef  = useRef(null);
-  const seenMsRef      = useRef(new Set(load('sc_milestones', [])));
-  const seenAchRef     = useRef(new Set(load('sc_achievements', [])));
-  const nextEventRef   = useRef(load('sc_nextevent', Date.now() + 5*60*1000));
-  const spiderKeyRef   = useRef('');
-  const prevLevelRef   = useRef(null);
+  // ── MEGA CLIC ──
+  const [megaCharge, setMegaCharge] = useState(0);
+  const [megaReady,  setMegaReady]  = useState(false);
+  const [megaFiring, setMegaFiring] = useState(false);
+
+  // ── Gacha / skins ──
+  const [gachaBoxes,    setGachaBoxes]    = useState(() => load('sc_gboxes', 0));
+  const [unlockedSkins, setUnlockedSkins] = useState(() => load('sc_skins',  ['default']));
+  const [activeSkin,    setActiveSkin]    = useState(() => load('sc_skin',   'default'));
+  const [gachaResult,   setGachaResult]   = useState(null);
+  const [showGacha,     setShowGacha]     = useState(false);
+
+  // ── Daily quests ──
+  const [dailyQuests, setDailyQuests] = useState(() => {
+    const today = new Date().toDateString();
+    const d = load('sc_ddate', ''); const q = load('sc_dquests', null);
+    if (d === today && q) return q;
+    return genDailyQuests();
+  });
+
+  // ── Refs ──
+  const lastClickRef    = useRef(0);
+  const comboTimerRef   = useRef(null);
+  const seenMsRef       = useRef(new Set(load('sc_milestones', [])));
+  const seenAchRef      = useRef(new Set(load('sc_achievements', [])));
+  const nextEventRef    = useRef(load('sc_nextevent', Date.now() + 5*60*1000));
+  const spiderKeyRef    = useRef('');
+  const prevLevelRef    = useRef(null);
+  const clickBtnRef     = useRef(null);
+  const clickTimesRef   = useRef([]);
+  const gachaThreshRef  = useRef(load('sc_gthresh', 500));
+  const cpsHistRef      = useRef([]);
 
   // ── Derived ──
   const prestigeMult     = Math.pow(2, prestige);
-  const totalClickAdd    = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0) * u.clickAdd, 0);
-  const cps              = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0) * u.cps, 0) * prestigeMult;
+  const totalClickAdd    = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0)*u.clickAdd, 0);
+  const cps              = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0)*u.cps, 0) * prestigeMult;
   const evMult           = arcanicEvent ? 10 : 1;
-  const crystalsPerClick = (1 + totalClickAdd) * prestigeMult * combo * evMult;
+  const streakMult       = 1 + Math.min(streak * 0.02, 0.5);
+  const crystalsPerClick = (1 + totalClickAdd) * prestigeMult * combo * evMult * streakMult;
   const level            = Math.min(100, Math.floor(Math.sqrt(Math.max(0, allTime) / 1000)) + 1);
   const levelTitle       = ([...LEVEL_TITLES].reverse().find(t => level >= t.min) ?? LEVEL_TITLES[0]).title;
   const badge            = [...BADGES].reverse().find(b => level >= b.min) ?? BADGES[0];
-  const upgradeCount     = Object.values(purchased).reduce((a, v) => a + (v > 0 ? 1 : 0), 0);
+  const upgradeCount     = Object.values(purchased).reduce((a,v) => a+(v>0?1:0), 0);
   const lateNight        = new Date().getHours() < 4;
   const hasTrans         = (purchased['transcendance']||0) > 0;
-  const nextLevelAt      = Math.pow(level, 2) * 1000;
-  const prevLevelAt      = level > 1 ? Math.pow(level-1, 2) * 1000 : 0;
-  const levelPct         = Math.min(100, ((allTime - prevLevelAt) / (nextLevelAt - prevLevelAt)) * 100);
-
+  const nextLevelAt      = Math.pow(level,2)*1000;
+  const prevLevelAt      = level>1 ? Math.pow(level-1,2)*1000 : 0;
+  const levelPct         = level>=100 ? 100 : Math.min(100, ((allTime-prevLevelAt)/(nextLevelAt-prevLevelAt))*100);
   const stats = { totalClicks, allTime, upgradeCount, level, critCount, maxCombo, prestige, eventCount, lateNight, foundSpider, hasTrans, cps };
+  const skinData = CAT_SKINS.find(s => s.id === activeSkin) || CAT_SKINS[0];
+  const auraColor = clickSpeed>=8?'#ffffff':clickSpeed>=6?'#ef4444':clickSpeed>=4?'#f97316':clickSpeed>=2?'#fbbf24':'#dc2626';
+  const maxCpsH = Math.max(1, ...cpsHistory);
+  const sparkPts = cpsHistory.map((v,i) => `${(i/Math.max(cpsHistory.length-1,1))*100},${100-(v/maxCpsH)*100}`).join(' ');
+
+  // ── Idle bonus + streak on mount ──
+  useEffect(() => {
+    const lastSave = load('sc_lastsave', null);
+    const savedCps = load('sc_cps_snapshot', 0);
+    if (lastSave && savedCps > 0) {
+      const elapsed = Math.min((Date.now()-lastSave)/1000, 3600);
+      if (elapsed > 60) {
+        const bonus = Math.floor(savedCps * elapsed * 0.5);
+        if (bonus > 0) {
+          setCrystals(c => c+bonus); setAllTime(t => t+bonus);
+          setIdleMsg({ bonus, elapsed: Math.floor(elapsed) });
+          setTimeout(() => setIdleMsg(null), 4000);
+        }
+      }
+    }
+    const today = new Date().toDateString();
+    const lastDate = load('sc_lastdate', '');
+    const yesterday = new Date(Date.now()-86400000).toDateString();
+    if (lastDate !== today) {
+      setStreak(lastDate===yesterday ? s=>s+1 : 1);
+      localStorage.setItem('sc_lastdate', today);
+    }
+    const d = load('sc_ddate','');
+    if (d !== today) {
+      const nq = genDailyQuests();
+      setDailyQuests(nq);
+      localStorage.setItem('sc_ddate', today);
+      localStorage.setItem('sc_dquests', JSON.stringify(nq));
+    }
+  }, []);
 
   // ── Level up detection ──
   useEffect(() => {
@@ -612,29 +754,70 @@ function SpiderChatClicker({ userPseudo }) {
     localStorage.setItem('sc_citation',     JSON.stringify(citation));
     localStorage.setItem('sc_spider',       JSON.stringify(foundSpider));
     localStorage.setItem('sc_achievements', JSON.stringify([...achievements]));
-  }, [crystals, allTime, purchased, prestige, totalClicks, critCount, eventCount, maxCombo, level, citation, foundSpider, achievements]);
+    localStorage.setItem('sc_streak',       JSON.stringify(streak));
+    localStorage.setItem('sc_gboxes',       JSON.stringify(gachaBoxes));
+    localStorage.setItem('sc_skins',        JSON.stringify(unlockedSkins));
+    localStorage.setItem('sc_skin',         JSON.stringify(activeSkin));
+    localStorage.setItem('sc_gthresh',      JSON.stringify(gachaThreshRef.current));
+    localStorage.setItem('sc_dquests',      JSON.stringify(dailyQuests));
+    localStorage.setItem('sc_lastsave',     JSON.stringify(Date.now()));
+    localStorage.setItem('sc_cps_snapshot', JSON.stringify(Math.round(cps*evMult)));
+  }, [crystals, allTime, purchased, prestige, totalClicks, critCount, eventCount, maxCombo, level, citation, foundSpider, achievements, streak, gachaBoxes, unlockedSkins, activeSkin, dailyQuests, cps, evMult]);
 
   // ── CPS tick ──
   useEffect(() => {
     if (cps === 0) return;
     const id = setInterval(() => {
-      const gain = (cps * evMult) / 20;
-      setCrystals(c => c + gain);
-      setAllTime(t => t + gain);
+      const gain = (cps*evMult)/20;
+      setCrystals(c => c+gain); setAllTime(t => t+gain);
     }, 50);
     return () => clearInterval(id);
   }, [cps, evMult]);
 
-  // ── Arcanic Event timer ──
+  // ── CPS history sparkline ──
+  useEffect(() => {
+    const id = setInterval(() => {
+      const v = Math.round(cps*evMult);
+      cpsHistRef.current = [...cpsHistRef.current, v].slice(-20);
+      setCpsHistory([...cpsHistRef.current]);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cps, evMult]);
+
+  // ── Click speed tracking ──
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = Date.now();
+      clickTimesRef.current = clickTimesRef.current.filter(t => now-t < 1000);
+      const spd = clickTimesRef.current.length;
+      setClickSpeed(spd);
+      setHeatLevel(Math.min(1, spd/10));
+    }, 100);
+    return () => clearInterval(id);
+  }, []);
+
+  // ── MEGA CLIC charge ──
+  useEffect(() => {
+    if (megaReady || megaFiring) return;
+    const id = setInterval(() => {
+      setMegaCharge(c => {
+        const next = Math.min(100, c + 100/300); // fills in 30s (100 ticks of 100ms)
+        if (next >= 100) { setMegaReady(true); return 100; }
+        return next;
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, [megaReady, megaFiring]);
+
+  // ── Arcanic Event ──
   useEffect(() => {
     const id = setInterval(() => {
       if (!arcanicEvent && Date.now() >= nextEventRef.current) {
-        const end = Date.now() + 30000;
-        setArcanicEvent({ end });
-        setEventCount(e => e + 1);
-        nextEventRef.current = Date.now() + 5 * 60 * 1000;
+        const end = Date.now()+30000;
+        setArcanicEvent({ end }); setEventCount(e => e+1);
+        nextEventRef.current = Date.now()+5*60*1000;
         localStorage.setItem('sc_nextevent', JSON.stringify(nextEventRef.current));
-        setMilestone({ msg: '⭐ ÉVÉNEMENT ARCANIQUE ! ×10 gains pendant 30s !', color: 'text-yellow-300' });
+        setMilestone({ msg:'⭐ ÉVÉNEMENT ARCANIQUE ! ×10 gains pendant 30s !', color:'text-yellow-300' });
         setTimeout(() => setMilestone(null), 3200);
       }
     }, 1000);
@@ -644,41 +827,62 @@ function SpiderChatClicker({ userPseudo }) {
   useEffect(() => {
     if (!arcanicEvent) return;
     const id = setInterval(() => {
-      const left = Math.max(0, Math.ceil((arcanicEvent.end - Date.now()) / 1000));
+      const left = Math.max(0, Math.ceil((arcanicEvent.end-Date.now())/1000));
       setEventLeft(left);
-      if (left <= 0) {
-        setArcanicEvent(null);
-        nextEventRef.current = Date.now() + 5 * 60 * 1000;
-        localStorage.setItem('sc_nextevent', JSON.stringify(nextEventRef.current));
-      }
+      if (left <= 0) { setArcanicEvent(null); nextEventRef.current = Date.now()+5*60*1000; }
     }, 200);
     return () => clearInterval(id);
   }, [arcanicEvent]);
 
-  // ── Milestones & achievements ──
+  // ── Gacha threshold ──
+  useEffect(() => {
+    if (allTime >= gachaThreshRef.current) {
+      gachaThreshRef.current += 500;
+      setGachaBoxes(b => b+1);
+    }
+  }, [Math.floor(allTime/500)]);
+
+  // ── Milestones + achievements + quests ──
   useEffect(() => {
     const milestones = [
       { at:1000,    msg:"✨ Le Chat Arcanique s'éveille !",          color:'text-amber-300' },
       { at:10000,   msg:"🕷️ La Toile Cosmique se tisse...",         color:'text-purple-300' },
       { at:100000,  msg:"👑 Le Seigneur des Chats est né !",          color:'text-yellow-300' },
       { at:1000000, msg:"🌌 L'Arcane Chat transcende la réalité !",  color:'text-blue-300' },
+      { at:1e9,     msg:"🌟 MILLIARD — DIEU ARCANIQUE !",            color:'text-white' },
     ];
-    const found = milestones.find(m => allTime >= m.at && !seenMsRef.current.has(m.at));
+    const found = milestones.find(m => allTime>=m.at && !seenMsRef.current.has(m.at));
     if (found) {
       seenMsRef.current.add(found.at);
       localStorage.setItem('sc_milestones', JSON.stringify([...seenMsRef.current]));
-      setMilestone(found);
-      setTimeout(() => setMilestone(null), 3200);
+      setMilestone(found); setTimeout(() => setMilestone(null), 3200);
     }
     ACHIEVEMENTS.forEach(ach => {
       if (!seenAchRef.current.has(ach.id) && ach.check(stats)) {
         seenAchRef.current.add(ach.id);
         setAchievements(prev => new Set([...prev, ach.id]));
-        setAchToast(ach);
-        setTimeout(() => setAchToast(null), 3500);
+        setAchToast(ach); setTimeout(() => setAchToast(null), 3500);
       }
     });
-  }, [Math.floor(allTime / 10), totalClicks, upgradeCount, level, critCount, maxCombo, prestige, eventCount, foundSpider]);
+    // Update daily quests progress
+    setDailyQuests(qs => qs.map(q => {
+      if (q.done) return q;
+      let progress = q.progress;
+      if (q.type==='clicks')   progress = totalClicks;
+      if (q.type==='crystals') progress = Math.floor(allTime);
+      if (q.type==='crits')    progress = critCount;
+      if (q.type==='combo10')  progress = maxCombo>=10?1:0;
+      if (q.type==='upgrades') progress = upgradeCount;
+      if (q.type==='event')    progress = eventCount;
+      const done = progress >= q.target;
+      if (done && !q.done) {
+        setCrystals(c => c+q.reward); setAllTime(t => t+q.reward);
+        setMilestone({ msg:`✅ Quête accomplie ! +${fmt(q.reward)} crystaux !`, color:'text-emerald-300' });
+        setTimeout(() => setMilestone(null), 3200);
+      }
+      return { ...q, progress: Math.min(progress, q.target), done };
+    }));
+  }, [Math.floor(allTime/10), totalClicks, upgradeCount, level, critCount, maxCombo, prestige, eventCount, foundSpider]);
 
   // ── Supabase leaderboard ──
   async function fetchLb() {
@@ -688,14 +892,17 @@ function SpiderChatClicker({ userPseudo }) {
       .select('pseudo,crystaux,cps,niveau,prestige,badge_emoji,badge_name,total_clics')
       .order(col, { ascending:false }).limit(10);
     setLeaderboard(data || []);
+    if (userPseudo) {
+      const myVal = lbTab==='crystaux'?Math.floor(allTime):lbTab==='cps'?Math.round(cps):lbTab==='niveau'?level:totalClicks;
+      const { count } = await supabase.from('clicker_scores').select('*',{count:'exact',head:true}).gt(col, myVal);
+      setMyRank((count??0)+1);
+    }
     setLbLoading(false);
   }
-
-  useEffect(() => { if (activeView === 'leaderboard') fetchLb(); }, [activeView, lbTab]);
+  useEffect(() => { if (activeView==='leaderboard') fetchLb(); }, [activeView, lbTab]);
   useEffect(() => {
-    if (activeView !== 'leaderboard') return;
-    const id = setInterval(fetchLb, 30000);
-    return () => clearInterval(id);
+    if (activeView!=='leaderboard') return;
+    const id = setInterval(fetchLb, 30000); return () => clearInterval(id);
   }, [activeView, lbTab]);
 
   function syncScore() {
@@ -712,12 +919,10 @@ function SpiderChatClicker({ userPseudo }) {
   useEffect(() => {
     const onKey = e => {
       const tag = document.activeElement?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      spiderKeyRef.current = (spiderKeyRef.current + e.key.toUpperCase()).slice(-6);
-      if (spiderKeyRef.current === 'SPIDER') {
-        setSpiderEgg(true);
-        setFoundSpider(true);
-        spiderKeyRef.current = '';
+      if (tag==='INPUT'||tag==='TEXTAREA') return;
+      spiderKeyRef.current = (spiderKeyRef.current+e.key.toUpperCase()).slice(-6);
+      if (spiderKeyRef.current==='SPIDER') {
+        setSpiderEgg(true); setFoundSpider(true); spiderKeyRef.current='';
         setTimeout(() => setSpiderEgg(false), 3000);
       }
     };
@@ -726,86 +931,184 @@ function SpiderChatClicker({ userPseudo }) {
   }, []);
 
   // ── Sounds ──
-  function playClick(isCrit) {
+  function playClick(isCrit, isMega) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator(), g = ctx.createGain();
+      if (isMega) {
+        [261,329,392,523,659,784].forEach((f,i) => {
+          const o=ctx.createOscillator(), g=ctx.createGain();
+          o.connect(g); g.connect(ctx.destination); o.type='square'; o.frequency.value=f;
+          g.gain.setValueAtTime(0.25, ctx.currentTime+i*0.04);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.04+0.9);
+          o.start(ctx.currentTime+i*0.04); o.stop(ctx.currentTime+i*0.04+0.95);
+        }); return;
+      }
+      const osc=ctx.createOscillator(), g=ctx.createGain();
       osc.connect(g); g.connect(ctx.destination);
-      osc.type = isCrit ? 'square' : 'sine';
-      osc.frequency.setValueAtTime(isCrit ? 660 : 880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(isCrit ? 2200 : 1320, ctx.currentTime + 0.1);
+      osc.type=isCrit?'square':'sine';
+      osc.frequency.setValueAtTime(isCrit?660:880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(isCrit?2200:1320, ctx.currentTime+0.1);
       g.gain.setValueAtTime(0.15, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.22);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.25);
+      if (combo>1) {
+        const co=ctx.createOscillator(), cg=ctx.createGain();
+        co.connect(cg); cg.connect(ctx.destination); co.type='triangle';
+        co.frequency.value=440+(combo-1)*80;
+        cg.gain.setValueAtTime(0.08, ctx.currentTime+0.06);
+        cg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.28);
+        co.start(ctx.currentTime+0.06); co.stop(ctx.currentTime+0.3);
+      }
     } catch {}
   }
   function playLevelUp() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [523, 659, 784, 1047].forEach((f, i) => {
-        const o = ctx.createOscillator(), g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination); o.type = 'triangle'; o.frequency.value = f;
-        g.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.12);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
-        o.start(ctx.currentTime + i * 0.12); o.stop(ctx.currentTime + i * 0.12 + 0.32);
+      [523,659,784,1047].forEach((f,i) => {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type='triangle'; o.frequency.value=f;
+        g.gain.setValueAtTime(0.18, ctx.currentTime+i*0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.12+0.3);
+        o.start(ctx.currentTime+i*0.12); o.stop(ctx.currentTime+i*0.12+0.32);
+      });
+    } catch {}
+  }
+  function playUpgrade() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [440,554,659].forEach((f,i) => {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type='sine'; o.frequency.value=f;
+        g.gain.setValueAtTime(0.2, ctx.currentTime+i*0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.08+0.3);
+        o.start(ctx.currentTime+i*0.08); o.stop(ctx.currentTime+i*0.08+0.35);
       });
     } catch {}
   }
 
-  // ── Handlers ──
+  // ── Main click handler ──
   function handleClick() {
     const now = Date.now();
+    clickTimesRef.current.push(now);
     const since = now - lastClickRef.current;
-    let newCombo = since < 800 ? Math.min(10, combo + (since < 300 ? 1 : 0)) : 1;
-    setCombo(newCombo);
-    setComboKey(k => k + 1);
-    if (newCombo > maxCombo) setMaxCombo(newCombo);
+    let newCombo = since<800 ? Math.min(10, combo+(since<300?1:0)) : 1;
+    setCombo(newCombo); setComboKey(k=>k+1);
+    if (newCombo>maxCombo) setMaxCombo(newCombo);
     lastClickRef.current = now;
     if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
-    comboTimerRef.current = setTimeout(() => { setCombo(1); }, 1500);
+    comboTimerRef.current = setTimeout(() => setCombo(1), 1500);
 
-    const isCrit = Math.random() < 0.10;
-    if (isCrit) { setCritCount(c => c + 1); setCritFlash(true); setTimeout(() => setCritFlash(false), 400); }
-    const gain = crystalsPerClick * (isCrit ? 5 : 1);
-    setCrystals(c => c + gain); setAllTime(t => t + gain); setTotalClicks(c => c + 1);
-    setClicking(true); setTimeout(() => setClicking(false), 120);
-    playClick(isCrit);
+    const isCrit = Math.random()<0.10;
+    if (isCrit) { setCritCount(c=>c+1); setCritFlash(true); setTimeout(()=>setCritFlash(false),400); }
+    const gain = crystalsPerClick*(isCrit?5:1);
+    setCrystals(c=>c+gain); setAllTime(t=>t+gain); setTotalClicks(c=>c+1);
+    setClicking(true); setTimeout(()=>setClicking(false),120);
+    playClick(isCrit, false);
 
-    const newP = Array.from({ length: isCrit ? 5 : 2 }, () => ({ id: Date.now() + Math.random(), dx: (Math.random()-0.5)*90, sym: isCrit ? '⭐' : '💎' }));
-    setFlyParticles(p => [...p.slice(-15), ...newP]);
-    newP.forEach(np => setTimeout(() => setFlyParticles(p => p.filter(x => x.id !== np.id)), 750));
+    // Particles (15-30)
+    const count = isCrit ? 25 : Math.min(28, 12+newCombo*2);
+    const syms = isCrit ? ['⭐','✨','💥','⚡','🌟','💎'] : ['💎','✨','💠','🔮','⚡'];
+    const newP = Array.from({length:count}, () => ({
+      id: Date.now()+Math.random(),
+      dx: (Math.random()-0.5)*180, dy: (Math.random()-0.5)*80-50,
+      sym: syms[Math.floor(Math.random()*syms.length)],
+      size: 0.65+Math.random()*0.9,
+    }));
+    setFlyParticles(p => [...p.slice(-30), ...newP]);
+    newP.forEach(np => setTimeout(()=>setFlyParticles(p=>p.filter(x=>x.id!==np.id)), 720));
+
+    // Floating number
+    const numId = Date.now()+Math.random();
+    const numStr = isCrit ? `💥 CRITIQUE ×5!` : `+${fmt(gain)}`;
+    const numColor = isCrit ? '#fbbf24' : newCombo>=5 ? '#f97316' : '#60a5fa';
+    setFloatNums(n=>[...n,{id:numId,text:numStr,color:numColor,x:(Math.random()-0.5)*60,big:isCrit}]);
+    setTimeout(()=>setFloatNums(n=>n.filter(x=>x.id!==numId)), 950);
+
+    // Shockwave
+    const swId = Date.now()+Math.random();
+    setShockwaves(s=>[...s,{id:swId,size:isCrit?200:130}]);
+    setTimeout(()=>setShockwaves(s=>s.filter(x=>x.id!==swId)), 520);
   }
 
+  // ── MEGA CLIC handler ──
+  function handleMegaClick() {
+    if (!megaReady||megaFiring) return;
+    setMegaFiring(true); setMegaReady(false); setMegaFlash(true);
+    const gain = crystalsPerClick*100;
+    setCrystals(c=>c+gain); setAllTime(t=>t+gain); setTotalClicks(c=>c+1);
+    playClick(false, true);
+    const megaP = Array.from({length:40}, () => ({
+      id:Date.now()+Math.random(), dx:(Math.random()-0.5)*300, dy:(Math.random()-0.5)*140-60,
+      sym:['⭐','✨','💥','💎','🌟','⚡','🔥','👑'][Math.floor(Math.random()*8)],
+      size:1+Math.random(),
+    }));
+    setFlyParticles(p=>[...p.slice(-20),...megaP]);
+    megaP.forEach(np=>setTimeout(()=>setFlyParticles(p=>p.filter(x=>x.id!==np.id)),1000));
+    const mid=Date.now();
+    setFloatNums(n=>[...n,{id:mid,text:`🌟 MEGA ×100 — +${fmt(gain)}!`,color:'#fbbf24',x:0,big:true}]);
+    setTimeout(()=>setFloatNums(n=>n.filter(x=>x.id!==mid)),1600);
+    setTimeout(()=>{setMegaFlash(false);setMegaFiring(false);setMegaCharge(0);},650);
+  }
+
+  // ── Buy upgrade ──
   function buyUpgrade(u) {
-    const count = purchased[u.id] || 0;
-    const cost = Math.floor(u.cost * Math.pow(1.15, count));
-    if (crystals < cost) return;
-    setCrystals(c => c - cost);
-    setPurchased(p => ({ ...p, [u.id]: count + 1 }));
+    const count = purchased[u.id]||0;
+    const cost = Math.floor(u.cost*Math.pow(1.15,count));
+    if (crystals<cost) return;
+    setCrystals(c=>c-cost); setPurchased(p=>({...p,[u.id]:count+1}));
+    playUpgrade();
+    setMilestone({msg:`🔨 ${u.name} lvl ${count+1} acheté !`,color:'text-amber-300'});
+    setTimeout(()=>setMilestone(null),1800);
   }
 
+  // ── Prestige ──
   function handlePrestige() {
-    if (level < 100) return;
+    if (level<100) return;
     if (!confirm(`Prestige ${prestige+1} : Reset crystaux & upgrades contre ×${Math.pow(2,prestige+1)} permanent. Confirmer ?`)) return;
-    setPrestige(p => p + 1); setCrystals(0); setPurchased({}); setCombo(1);
-    playLevelUp();
+    setPrestige(p=>p+1); setCrystals(0); setPurchased({}); setCombo(1);
+    setMegaCharge(0); setMegaReady(false); playLevelUp();
   }
 
+  // ── Gacha open ──
+  function openGacha() {
+    if (gachaBoxes<=0) return;
+    setGachaBoxes(b=>b-1);
+    const total = CAT_SKINS.reduce((a,s)=>a+s.weight,0);
+    let rand = Math.random()*total, skin=CAT_SKINS[0];
+    for (const s of CAT_SKINS) { rand-=s.weight; if(rand<=0){skin=s;break;} }
+    setGachaResult(skin);
+    if (!unlockedSkins.includes(skin.id)) setUnlockedSkins(prev=>[...prev,skin.id]);
+    setShowGacha(true); setTimeout(()=>{setShowGacha(false);setGachaResult(null);},3500);
+  }
+
+  // ── Reset ──
   function resetGame() {
     if (!confirm('Reset TOTAL ? Même le prestige sera effacé.')) return;
-    setCrystals(0); setAllTime(0); setPurchased({}); setPrestige(0);
-    setTotalClicks(0); setCritCount(0); setEventCount(0); setMaxCombo(1);
-    setAchievements(new Set()); setCombo(1); setFoundSpider(false);
-    seenMsRef.current = new Set(); seenAchRef.current = new Set();
+    setCrystals(0);setAllTime(0);setPurchased({});setPrestige(0);setTotalClicks(0);
+    setCritCount(0);setEventCount(0);setMaxCombo(1);setAchievements(new Set());
+    setCombo(1);setFoundSpider(false);setStreak(0);setGachaBoxes(0);
+    setUnlockedSkins(['default']);setActiveSkin('default');setMegaCharge(0);setMegaReady(false);
+    seenMsRef.current=new Set(); seenAchRef.current=new Set();
     ['sc_crystals','sc_alltime','sc_upgrades','sc_prestige','sc_clicks','sc_crits',
-     'sc_events','sc_maxcombo','sc_level','sc_milestones','sc_achievements','sc_citation','sc_nextevent','sc_spider'].forEach(k => localStorage.removeItem(k));
+     'sc_events','sc_maxcombo','sc_level','sc_milestones','sc_achievements','sc_citation',
+     'sc_nextevent','sc_spider','sc_streak','sc_gboxes','sc_skins','sc_skin','sc_gthresh',
+     'sc_ddate','sc_dquests','sc_lastsave','sc_lastdate','sc_cps_snapshot'].forEach(k=>localStorage.removeItem(k));
   }
 
   // ── Render ──
   return (
-    <div className="tab-fade space-y-4 cursor-crystal">
-      {/* Level-Up overlay */}
-      {levelUpAnim && (
+    <div className="tab-fade space-y-4 cursor-crystal relative">
+      {/* Aurora background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl" style={{zIndex:0}}>
+        <div className="aurora-bg aurora-1" style={{opacity:Math.min(0.15,level*0.002)}}/>
+        <div className="aurora-bg aurora-2" style={{opacity:Math.min(0.12,level*0.0015)}}/>
+        {level>=30&&<div className="aurora-bg aurora-3" style={{opacity:Math.min(0.1,(level-30)*0.003)}}/>}
+      </div>
+
+      <div className="relative" style={{zIndex:1}}>
+
+      {/* Overlays */}
+      {levelUpAnim&&(
         <div className="level-up-anim z-[9000]">
           <div className="bg-[#1a0f0a]/95 border-2 border-amber-400 rounded-2xl px-10 py-6 text-center shadow-2xl shadow-amber-900/60">
             <div className="text-4xl mb-2">⬆️</div>
@@ -814,12 +1117,9 @@ function SpiderChatClicker({ userPseudo }) {
           </div>
         </div>
       )}
-
-      {/* Critical flash */}
-      {critFlash && <div className="crit-flash-overlay"/>}
-
-      {/* SPIDER easter egg */}
-      {spiderEgg && (
+      {critFlash&&<div className="crit-flash-overlay"/>}
+      {megaFlash&&<div className="fixed inset-0 z-[8500] pointer-events-none" style={{background:'radial-gradient(circle at center,rgba(251,191,36,0.45) 0%,transparent 65%)',animation:'critFlashAnim 0.5s ease-out forwards'}}/>}
+      {spiderEgg&&(
         <div className="spider-egg">
           <div className="text-center bg-[#1a0f0a]/95 border-2 border-red-500 rounded-2xl p-6 shadow-2xl">
             <img src="https://i.imgur.com/GM7RDI9.jpeg" alt="" className="w-40 h-40 rounded-full mx-auto mb-3 border-4 border-red-600 object-cover"/>
@@ -828,115 +1128,168 @@ function SpiderChatClicker({ userPseudo }) {
           </div>
         </div>
       )}
-
-      {/* Milestone banner */}
-      {milestone && (
+      {showGacha&&gachaResult&&(
+        <div className="gacha-reveal">
+          <div className="text-center bg-[#0d0a1a]/98 border-2 rounded-2xl p-8 shadow-2xl min-w-[220px]"
+            style={{borderColor:gachaResult.color}}>
+            <div className="text-6xl mb-3">{gachaResult.emoji||'🐱'}</div>
+            <div className="text-xl font-black font-serif mb-1" style={{color:gachaResult.color}}>
+              {gachaResult.rarity.toUpperCase()}
+            </div>
+            <div className="text-base font-bold text-white">{gachaResult.name}</div>
+            <div className="text-xs text-stone-500 mt-2 font-mono">Skin chat débloqué !</div>
+          </div>
+        </div>
+      )}
+      {idleMsg&&(
+        <div className="idle-bonus">
+          <div className="bg-[#0d1a12]/95 border border-emerald-600/60 rounded-2xl px-8 py-4 text-center shadow-2xl">
+            <div className="text-emerald-300 font-black text-sm font-serif">💤 Bonus d'absence !</div>
+            <div className="text-emerald-400 font-black text-lg font-mono">+{fmt(idleMsg.bonus)} crystaux</div>
+            <div className="text-stone-500 text-xs">{idleMsg.elapsed}s hors-ligne · 50% CPS</div>
+          </div>
+        </div>
+      )}
+      {milestone&&(
         <div className="milestone-banner fixed top-20 left-1/2 z-[300] bg-[#1a0f0a]/95 border border-amber-500/70 rounded-2xl px-8 py-3 text-center shadow-2xl shadow-amber-900/40 pointer-events-none">
           <p className={`text-sm font-black font-serif ${milestone.color}`}>{milestone.msg}</p>
         </div>
       )}
-
-      {/* Achievement toast */}
-      {achToast && (
+      {achToast&&(
         <div className="milestone-banner fixed top-36 left-1/2 z-[300] bg-[#0d1a12]/95 border border-emerald-500/70 rounded-2xl px-8 py-3 text-center shadow-2xl pointer-events-none">
           <p className="text-sm font-black font-serif text-emerald-300">{achToast.icon} Succès : {achToast.name}</p>
           <p className="text-[10px] text-emerald-600 mt-0.5">{achToast.desc}</p>
         </div>
       )}
+      {profilePseudo&&<ProfileDrawer pseudo={profilePseudo} onClose={()=>setProfilePseudo(null)}/>}
 
-      {/* Profile drawer */}
-      {profilePseudo && <ProfileDrawer pseudo={profilePseudo} onClose={() => setProfilePseudo(null)}/>}
-
-      {/* Header: level + badge + views */}
-      <div className="bg-[#120d0a] border border-[#2a1d14] rounded-xl p-4 flex flex-wrap items-center gap-4 justify-between">
+      {/* Header */}
+      <div className="bg-[#120d0a] border border-[#2a1d14] rounded-xl p-4 flex flex-wrap items-center gap-3 justify-between">
         <div className="flex items-center gap-3">
-          <div className={`text-2xl ${badge.pulse ? 'badge-pulse' : ''} ${badge.rainbow ? 'rainbow-text' : ''}`}>{badge.emoji}</div>
+          <div className={`text-2xl ${badge.pulse?'badge-pulse':''} ${badge.rainbow?'rainbow-text':''}`}>{badge.emoji}</div>
           <div>
-            <div className={`text-sm font-black ${badge.color} ${badge.rainbow ? 'rainbow-text' : ''}`}>{badge.name}</div>
-            <div className="text-[10px] text-stone-500 font-mono">Niv. {level} · {levelTitle}{prestige > 0 ? ` · ${'★'.repeat(prestige)} Prestige` : ''}</div>
+            <div className={`text-sm font-black ${badge.color} ${badge.rainbow?'rainbow-text':''}`}>{badge.name}</div>
+            <div className="text-[10px] text-stone-500 font-mono">Niv.{level} · {levelTitle}{prestige>0?` · ${'★'.repeat(prestige)} Prestige`:''}{streak>0?` · 🔥${streak}j`:''}</div>
           </div>
         </div>
-        {/* Level progress bar */}
         <div className="flex-1 min-w-[120px] max-w-[200px]">
-          <div className="flex justify-between text-[9px] text-stone-600 font-mono mb-1"><span>Niv.{level}</span>{level < 100 && <span>Niv.{level+1}</span>}</div>
+          <div className="flex justify-between text-[9px] text-stone-600 font-mono mb-1"><span>Niv.{level}</span>{level<100&&<span>Niv.{level+1}</span>}</div>
           <div className="h-1.5 bg-[#211610] rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500"
-              style={{width: level >= 100 ? '100%' : `${levelPct}%`}}/>
+            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500" style={{width:level>=100?'100%':`${levelPct}%`}}/>
           </div>
         </div>
-        {/* Arcanic event indicator */}
-        {arcanicEvent && (
-          <div className="flex items-center gap-1.5 bg-yellow-900/40 border border-yellow-600/60 rounded-lg px-3 py-1.5">
-            <span className="text-yellow-300 text-xs font-black">⭐ ×10</span>
-            <span className="text-yellow-500 text-[10px] font-mono">{eventLeft}s</span>
-          </div>
-        )}
-        {/* View tabs */}
-        <div className="flex gap-1">
-          {[{v:'clicker',label:'🐱'},{v:'leaderboard',label:'🏆'},{v:'achievements',label:'🎖️'}].map(({v,label}) => (
-            <button key={v} onClick={() => setActiveView(v)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeView===v ? 'bg-amber-900/50 border-amber-600/50 text-amber-300' : 'bg-[#0d0907] border-[#211610] text-stone-600 hover:text-stone-400'}`}>
-              {label}
+        <div className="flex items-center gap-2 flex-wrap">
+          {arcanicEvent&&(
+            <div className="flex items-center gap-1.5 bg-yellow-900/40 border border-yellow-600/60 rounded-lg px-2.5 py-1.5">
+              <span className="text-yellow-300 text-xs font-black">⭐×10</span>
+              <span className="text-yellow-500 text-[10px] font-mono">{eventLeft}s</span>
+            </div>
+          )}
+          {gachaBoxes>0&&(
+            <button onClick={openGacha} className="flex items-center gap-1 bg-purple-900/40 border border-purple-600/60 rounded-lg px-2.5 py-1.5 badge-pulse">
+              <span className="text-purple-300 text-xs font-black">📦×{gachaBoxes}</span>
             </button>
-          ))}
+          )}
+          <div className="flex gap-1">
+            {[{v:'clicker',l:'🐱'},{v:'leaderboard',l:'🏆'},{v:'achievements',l:'🎖️'},{v:'quests',l:'📋'}].map(({v,l})=>(
+              <button key={v} onClick={()=>setActiveView(v)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeView===v?'bg-amber-900/50 border-amber-600/50 text-amber-300':'bg-[#0d0907] border-[#211610] text-stone-600 hover:text-stone-400'}`}>
+                {l}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ── CLICKER VIEW ── */}
-      {activeView === 'clicker' && (
+      {activeView==='clicker'&&(
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Click zone */}
-          <div className="lg:col-span-2 bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 flex flex-col items-center gap-5">
-            <div className="text-center space-y-1">
-              <div className="text-5xl font-black font-serif text-amber-400 tabular-nums leading-none">
-                {Math.floor(crystals).toLocaleString('fr-FR')}
+          <div className="lg:col-span-2 bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 flex flex-col items-center gap-4">
+            {/* Counter */}
+            <div className="text-center space-y-1 w-full">
+              <div className="text-5xl font-black font-serif text-amber-400 tabular-nums leading-none odometer-num">{fmt(crystals)}</div>
+              <div className="text-xs text-stone-600 font-mono">{Math.floor(crystals).toLocaleString('fr-FR')} Arcane Crystals</div>
+              <div className="flex items-center justify-center gap-4 flex-wrap">
+                {cps>0&&<div className="text-xs text-purple-400 font-mono">+{fmt(cps*evMult)} /sec</div>}
+                {streak>0&&<div className="text-xs text-orange-400 font-mono">🔥 Streak {streak}j (+{Math.round(streakMult*100-100)}%)</div>}
               </div>
-              <div className="text-[10px] text-stone-600 font-mono uppercase tracking-widest">Arcane Crystals</div>
-              {cps > 0 && <div className="text-xs text-purple-400 font-mono">+{cps.toLocaleString('fr-FR')} /sec</div>}
+              {cpsHistory.length>2&&(
+                <div className="mx-auto w-32 h-8 opacity-70">
+                  <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <polyline points={sparkPts} fill="none" stroke="#7c3aed" strokeWidth="4" opacity="0.9"/>
+                  </svg>
+                </div>
+              )}
             </div>
 
-            {/* Combo indicator */}
-            {combo > 1 && (
+            {/* Combo */}
+            {combo>1&&(
               <div key={comboKey} className="combo-pop bg-orange-900/60 border border-orange-500/60 rounded-full px-4 py-1">
                 <span className="text-sm font-black text-orange-300">×{combo} COMBO !</span>
               </div>
             )}
 
-            {/* Click button */}
-            <div className="relative flex flex-col items-center gap-3">
-              {flyParticles.map(p => (
-                <span key={p.id} className="fly-crystal" style={{'--dx': p.dx + 'px'}}>{p.sym}</span>
+            {/* Click area */}
+            <div className="relative flex flex-col items-center gap-3" ref={clickBtnRef}>
+              {/* Floating numbers */}
+              {floatNums.map(fn=>(
+                <div key={fn.id} className="float-num" style={{color:fn.color,fontSize:fn.big?'0.95rem':'0.8rem',left:`calc(50% + ${fn.x}px)`,fontWeight:900}}>
+                  {fn.text}
+                </div>
+              ))}
+              {/* Particles */}
+              {flyParticles.map(p=>(
+                <span key={p.id} className="fly-crystal" style={{'--dx':p.dx+'px','--dy':p.dy+'px',fontSize:(p.size||1)+'rem'}}>{p.sym}</span>
+              ))}
+              {/* Shockwaves */}
+              {shockwaves.map(sw=>(
+                <div key={sw.id} className="shockwave" style={{width:sw.size,height:sw.size,border:'3px solid rgba(251,191,36,0.85)'}}/>
               ))}
               <button onClick={handleClick}
-                className={`relative w-44 h-44 rounded-full border-4 border-red-600/80 flex items-center justify-center select-none transition-transform duration-100 chat-pulse overflow-hidden ${clicking ? 'scale-90' : 'scale-100'} ${badge.divine ? 'divine-glow' : ''} ${badge.rainbow ? 'rainbow-border' : ''}`}
-                style={{ background:'radial-gradient(circle at 35% 35%,#dc2626 0%,#7f1d1d 55%,#3b0000 100%)', boxShadow:'0 0 30px rgba(220,38,38,0.35),inset 0 0 20px rgba(0,0,0,0.5)' }}>
+                className={`relative w-44 h-44 rounded-full border-4 flex items-center justify-center select-none overflow-hidden ${clicking?'scale-90':'scale-100'} ${badge.divine?'divine-glow':''} ${badge.rainbow?'rainbow-border':''}`}
+                style={{background:'radial-gradient(circle at 35% 35%,#dc2626 0%,#7f1d1d 55%,#3b0000 100%)',boxShadow:`0 0 ${20+clickSpeed*8}px ${auraColor}80, inset 0 0 20px rgba(0,0,0,0.5)`,borderColor:auraColor,transition:'box-shadow 0.25s,border-color 0.25s,transform 0.1s'}}>
                 <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100">
-                  {[0,30,60,90,120,150].map(a => (
-                    <line key={a} x1="50" y1="50" x2={50+50*Math.cos(a*Math.PI/180)} y2={50+50*Math.sin(a*Math.PI/180)} stroke="white" strokeWidth="0.8"/>
-                  ))}
-                  {[12,22,32,42].map(r => (
-                    <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>
-                  ))}
+                  {[0,30,60,90,120,150].map(a=><line key={a} x1="50" y1="50" x2={50+50*Math.cos(a*Math.PI/180)} y2={50+50*Math.sin(a*Math.PI/180)} stroke="white" strokeWidth="0.8"/>)}
+                  {[12,22,32,42].map(r=><circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>)}
                 </svg>
-                <img src="https://i.imgur.com/GM7RDI9.jpeg" alt="Spider-Chat"
-                  className="relative z-10 rounded-full object-cover" style={{width:200,height:200,pointerEvents:'none'}}/>
+                <img src="https://i.imgur.com/GM7RDI9.jpeg" alt="Spider-Chat" className="relative z-10 rounded-full object-cover" style={{width:200,height:200,pointerEvents:'none'}}/>
+                {skinData.id!=='default'&&<div className="absolute bottom-2 right-2 z-20 text-2xl">{skinData.emoji}</div>}
+                {heatLevel>0.6&&Array.from({length:3}).map((_,i)=>(
+                  <div key={i} className="vapor-drop" style={{width:4+i*2,height:4+i*2,left:`${28+i*22}%`,animationDelay:`${i*0.35}s`}}/>
+                ))}
               </button>
               <div className="text-center space-y-0.5">
-                <div className="text-[10px] text-stone-500 font-mono">
-                  +{Math.round(crystalsPerClick).toLocaleString('fr-FR')} /clic{combo>1?` ×${combo} COMBO`:''}{arcanicEvent?' ⭐×10':''}
-                </div>
-                <div className="text-[9px] text-stone-700 font-mono">10% critique ×5 — Tape SPIDER !</div>
+                <div className="text-[10px] text-stone-500 font-mono">+{fmt(crystalsPerClick)} /clic{combo>1?` ×${combo} COMBO`:''}{arcanicEvent?' ⭐×10':''}</div>
+                <div className="text-[9px] text-stone-700 font-mono">10% crit ×5 · Tape SPIDER!</div>
+                {clickSpeed>0&&<div className="text-[9px] font-mono font-bold" style={{color:auraColor}}>⚡ {clickSpeed} clics/sec</div>}
               </div>
             </div>
 
-            {/* Stats row */}
+            {/* MEGA CLIC bar */}
+            <div className="w-full max-w-sm space-y-1">
+              <div className="flex justify-between text-[9px] text-stone-500 font-mono">
+                <span>MEGA CLIC ×100</span>
+                <span className={megaReady?'text-amber-400 font-black':''}>
+                  {megaReady?'✅ PRÊT — Cliquer !':megaFiring?'💥 FIRING…':`${Math.round(megaCharge)}%`}
+                </span>
+              </div>
+              <div className={`relative h-3.5 bg-[#0a0705] rounded-full border border-[#21160e] overflow-hidden ${megaReady?'cursor-pointer':''}`}
+                onClick={megaReady?handleMegaClick:undefined}>
+                <div className={`h-full rounded-full ${megaReady?'mega-ready':'mega-bar'}`}
+                  style={{width:megaReady?'100%':`${megaCharge}%`,transition:megaReady?'none':'width 0.1s linear'}}/>
+                {megaReady&&<div className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-white drop-shadow">⚡ MEGA CLIC — ×100 !</div>}
+              </div>
+            </div>
+
+            {/* Stats */}
             <div className="grid grid-cols-4 gap-2 w-full max-w-sm">
               {[
-                { label:'/clic',  value: Math.round(crystalsPerClick).toLocaleString('fr-FR'), color:'text-amber-400' },
-                { label:'/sec',   value: Math.round(cps).toLocaleString('fr-FR'),              color:'text-purple-400' },
-                { label:'total',  value: Math.floor(allTime).toLocaleString('fr-FR'),          color:'text-stone-300' },
-                { label:'clics',  value: totalClicks.toLocaleString('fr-FR'),                  color:'text-blue-400' },
-              ].map(s => (
+                {label:'/clic',value:fmt(crystalsPerClick),color:'text-amber-400'},
+                {label:'/sec', value:fmt(cps*evMult),      color:'text-purple-400'},
+                {label:'total',value:fmt(allTime),          color:'text-stone-300'},
+                {label:'clics',value:totalClicks.toLocaleString('fr-FR'),color:'text-blue-400'},
+              ].map(s=>(
                 <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-lg p-2 text-center">
                   <div className={`text-xs font-black font-mono ${s.color} tabular-nums`}>{s.value}</div>
                   <div className="text-[8px] text-stone-700 uppercase tracking-wider">{s.label}</div>
@@ -944,70 +1297,83 @@ function SpiderChatClicker({ userPseudo }) {
               ))}
             </div>
 
+            {/* Gacha + skins */}
+            {(gachaBoxes>0||unlockedSkins.length>1)&&(
+              <div className="w-full max-w-sm space-y-2">
+                {gachaBoxes>0&&(
+                  <button onClick={openGacha} className="w-full bg-purple-900/40 border border-purple-600/60 hover:bg-purple-900/60 rounded-xl py-2.5 flex items-center justify-center gap-2 badge-pulse transition-all">
+                    <span className="text-lg">📦</span>
+                    <span className="text-sm font-black text-purple-300">Ouvrir Boîte Arcanide ({gachaBoxes})</span>
+                  </button>
+                )}
+                {unlockedSkins.length>1&&(
+                  <div className="flex gap-1 flex-wrap">
+                    {CAT_SKINS.filter(s=>unlockedSkins.includes(s.id)).map(s=>(
+                      <button key={s.id} onClick={()=>setActiveSkin(s.id)}
+                        className={`px-2 py-1 rounded-lg text-xs border transition-all ${activeSkin===s.id?'bg-amber-900/50 border-amber-600 text-amber-300':'bg-[#0d0907] border-[#211610] text-stone-500 hover:text-stone-300'}`}>
+                        {s.emoji||'🐱'} {s.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Citation */}
             <div className="w-full max-w-sm">
-              {editCit ? (
-                <div className="flex gap-2">
-                  <input maxLength={100} value={citation} onChange={e=>setCitation(e.target.value)}
-                    className="flex-1 bg-[#0a0605] border border-[#3e2a1e] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-700 font-mono"
-                    placeholder="Votre citation (100 chars)"
-                    onBlur={() => { setEditCit(false); syncScore(); }}
-                    autoFocus/>
-                </div>
-              ) : (
-                <button onClick={() => setEditCit(true)}
-                  className="w-full text-center text-[10px] text-stone-600 hover:text-stone-400 italic border border-dashed border-[#211610] hover:border-[#3a2a1c] rounded-lg py-2 px-3 transition-all">
-                  {citation || '✏️ Ajouter une citation…'}
+              {editCit?(
+                <input maxLength={100} value={citation} onChange={e=>setCitation(e.target.value)}
+                  className="w-full bg-[#0a0605] border border-[#3e2a1e] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-700 font-mono"
+                  placeholder="Votre citation (100 chars)"
+                  onBlur={()=>{setEditCit(false);syncScore();}} autoFocus/>
+              ):(
+                <button onClick={()=>setEditCit(true)} className="w-full text-center text-[10px] text-stone-600 hover:text-stone-400 italic border border-dashed border-[#211610] hover:border-[#3a2a1c] rounded-lg py-2 px-3 transition-all">
+                  {citation||'✏️ Ajouter une citation…'}
                 </button>
               )}
             </div>
 
-            {/* Prestige button (level 100 only) */}
-            {level >= 100 && (
-              <button onClick={handlePrestige}
-                className="w-full max-w-sm divine-glow bg-gradient-to-r from-amber-900/60 to-yellow-900/60 border border-amber-400/60 rounded-xl py-3 font-black text-amber-300 text-sm font-serif uppercase tracking-wider">
+            {/* Prestige */}
+            {level>=100&&(
+              <button onClick={handlePrestige} className="w-full max-w-sm divine-glow bg-gradient-to-r from-amber-900/60 to-yellow-900/60 border border-amber-400/60 rounded-xl py-3 font-black text-amber-300 text-sm font-serif uppercase tracking-wider">
                 ✨ PRESTIGE {prestige+1} — ×{Math.pow(2,prestige+1)} permanent
               </button>
             )}
+            <button onClick={resetGame} className="text-[8px] text-stone-800 hover:text-red-700 transition-colors font-mono underline">Réinitialiser</button>
           </div>
 
-          {/* Upgrades panel */}
+          {/* Upgrades */}
           <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-3 flex flex-col gap-2 overflow-y-auto max-h-[680px]">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5 px-1 sticky top-0 bg-[#120d0a] py-1 z-10">
               <Sparkles className="w-3 h-3 text-amber-500"/> Améliorations ({upgradeCount}/15)
             </h3>
-            {CLICKER_UPGRADES.map(u => {
-              const count = purchased[u.id] || 0;
-              const cost  = Math.floor(u.cost * Math.pow(1.15, count));
-              const can   = crystals >= cost;
-              const roi   = u.cps > 0 ? (cost / (u.cps * prestigeMult)).toFixed(1) + 's' : null;
+            {CLICKER_UPGRADES.map(u=>{
+              const count=purchased[u.id]||0;
+              const cost=Math.floor(u.cost*Math.pow(1.15,count));
+              const can=crystals>=cost;
+              const roi=u.cps>0?(cost/(u.cps*prestigeMult)).toFixed(0)+'s':null;
               return (
-                <button key={u.id} onClick={() => buyUpgrade(u)} disabled={!can}
-                  data-tip={roi ? `ROI: ${roi}` : undefined}
-                  className={`w-full text-left p-2.5 rounded-xl border transition-all ${can ? 'bg-amber-900/20 border-amber-700/40 hover:bg-amber-900/30' : 'bg-[#0a0705] border-[#1c1108] opacity-40 cursor-not-allowed'}`}>
+                <button key={u.id} onClick={()=>buyUpgrade(u)} disabled={!can}
+                  data-tip={roi?`ROI: ${roi}`:undefined}
+                  className={`w-full text-left p-2.5 rounded-xl border transition-all ${can?'upgrade-avail bg-amber-900/20 border-amber-700/40 hover:bg-amber-900/30':'bg-[#0a0705] border-[#1c1108] opacity-40 cursor-not-allowed'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
                       <span className="text-base leading-none">{u.icon}</span>
                       <span className="text-[11px] font-bold text-stone-300">{u.name}</span>
                     </div>
-                    {count > 0 && <span className="text-[9px] bg-amber-900/70 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-mono">×{count}</span>}
+                    {count>0&&<span className="text-[9px] bg-amber-900/70 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-mono">×{count}</span>}
                   </div>
                   <div className="text-[9px] text-stone-600 mt-0.5">{u.desc}</div>
-                  <div className={`text-[10px] font-black font-mono mt-1 ${can ? 'text-amber-400' : 'text-stone-700'}`}>
-                    💎 {cost.toLocaleString('fr-FR')}
-                  </div>
+                  <div className={`text-[10px] font-black font-mono mt-1 ${can?'text-amber-400':'text-stone-700'}`}>💎 {fmt(cost)}</div>
                 </button>
               );
             })}
-            <button onClick={resetGame} className="text-[8px] text-stone-800 hover:text-red-700 transition-colors font-mono underline mt-2">
-              Réinitialiser
-            </button>
           </div>
         </div>
       )}
 
       {/* ── LEADERBOARD VIEW ── */}
-      {activeView === 'leaderboard' && (
+      {activeView==='leaderboard'&&(
         <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black font-serif text-stone-100 flex items-center gap-2">
@@ -1017,74 +1383,134 @@ function SpiderChatClicker({ userPseudo }) {
               <RefreshCw className="w-3 h-3"/> Refresh
             </button>
           </div>
-          {/* Tab selector */}
-          <div className="flex gap-1.5">
-            {[{k:'crystaux',l:'💎 Crystaux'},{k:'cps',l:'⚡ CPS'},{k:'niveau',l:'⬆️ Niveau'},{k:'clics',l:'🖱️ Clics'}].map(({k,l}) => (
-              <button key={k} onClick={() => setLbTab(k)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${lbTab===k ? 'bg-amber-900/40 border-amber-600/50 text-amber-300' : 'bg-[#0d0907] border-[#211610] text-stone-600'}`}>
-                {l}
-              </button>
+          <div className="flex gap-1.5 flex-wrap">
+            {[{k:'crystaux',l:'💎 Crystaux'},{k:'cps',l:'⚡ CPS'},{k:'niveau',l:'⬆️ Niveau'},{k:'clics',l:'🖱️ Clics'}].map(({k,l})=>(
+              <button key={k} onClick={()=>setLbTab(k)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${lbTab===k?'bg-amber-900/40 border-amber-600/50 text-amber-300':'bg-[#0d0907] border-[#211610] text-stone-600'}`}>{l}</button>
             ))}
           </div>
-          {lbLoading ? (
+          {lbLoading?(
             <div className="text-center text-stone-600 text-xs py-6 font-mono">Chargement…</div>
-          ) : leaderboard.length === 0 ? (
+          ):leaderboard.length===0?(
             <div className="text-center text-stone-600 text-xs py-6 font-mono">Aucune entrée — joue pour apparaître !</div>
-          ) : (
+          ):(
             <div className="space-y-2">
-              {leaderboard.map((row, i) => {
-                const isMe = row.pseudo === userPseudo;
-                const medal = ['🥇','🥈','🥉'][i] || `#${i+1}`;
-                const val = lbTab === 'crystaux' ? row.crystaux : lbTab === 'cps' ? row.cps : lbTab === 'niveau' ? row.niveau : row.total_clics;
-                return (
-                  <div key={row.pseudo}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${isMe ? 'bg-amber-900/25 border-amber-600/50' : 'bg-[#0d0907] border-[#211610] hover:border-[#3a2a1c]'}`}>
-                    <span className="text-base w-6 text-center">{medal}</span>
+              {/* Podium top 3 */}
+              {leaderboard.length>=3&&(
+                <div className="flex justify-center items-end gap-4 pb-3">
+                  {[{pos:1,idx:0,h:'h-16'},{pos:0,idx:1,h:'h-20'},{pos:2,idx:2,h:'h-12'}].map(({pos,idx,h})=>{
+                    const row=leaderboard[pos];if(!row)return null;
+                    const medals=['🥇','🥈','🥉'];const isMe=row.pseudo===userPseudo;
+                    return(
+                      <div key={pos} className="flex flex-col items-center gap-1">
+                        <div className="text-2xl">{row.badge_emoji}</div>
+                        <button onClick={()=>setProfilePseudo(row.pseudo)} className={`text-[10px] font-bold ${isMe?'text-amber-300':'text-stone-300'} hover:underline`}>{row.pseudo.slice(0,8)}</button>
+                        <div className={`w-12 ${h} rounded-t-lg flex items-end justify-center pb-1 text-xl`}
+                          style={{background:pos===1?'linear-gradient(#fbbf24,#92400e)':pos===0?'linear-gradient(#94a3b8,#475569)':'linear-gradient(#cd7c2f,#78350f)'}}>
+                          {medals[pos]}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {leaderboard.map((row,i)=>{
+                const isMe=row.pseudo===userPseudo;
+                const medal=['🥇','🥈','🥉'][i]||`#${i+1}`;
+                const val=lbTab==='crystaux'?row.crystaux:lbTab==='cps'?row.cps:lbTab==='niveau'?row.niveau:row.total_clics;
+                return(
+                  <div key={row.pseudo} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${isMe?'bg-amber-900/25 border-amber-600/50':'bg-[#0d0907] border-[#211610] hover:border-[#3a2a1c]'}`}>
+                    <span className="text-sm w-6 text-center">{medal}</span>
                     <span className="text-base">{row.badge_emoji}</span>
-                    <button onClick={() => setProfilePseudo(row.pseudo)} className="flex-1 text-left">
-                      <span className={`text-xs font-bold ${isMe ? 'text-amber-300' : 'text-stone-300'} hover:underline`}>{row.pseudo}</span>
-                      {row.prestige > 0 && <span className="ml-1 text-[9px] text-yellow-400">{'★'.repeat(Math.min(row.prestige,5))}</span>}
+                    <button onClick={()=>setProfilePseudo(row.pseudo)} className="flex-1 text-left">
+                      <span className={`text-xs font-bold ${isMe?'text-amber-300':'text-stone-300'} hover:underline`}>{row.pseudo}</span>
+                      {row.prestige>0&&<span className="ml-1 text-[9px] text-yellow-400">{'★'.repeat(Math.min(row.prestige,5))}</span>}
                     </button>
                     <div className="text-right">
-                      <div className="text-xs font-black font-mono text-amber-400">{(val||0).toLocaleString('fr-FR')}</div>
+                      <div className="text-xs font-black font-mono text-amber-400">{fmt(val||0)}</div>
                       <div className="text-[9px] text-stone-600">Niv.{row.niveau||1}</div>
                     </div>
                   </div>
                 );
               })}
+              {/* Rang hors top 10 */}
+              {userPseudo&&myRank&&myRank>10&&(
+                <div className="pt-2 border-t border-[#211610]">
+                  <div className="text-[9px] text-stone-600 font-mono text-center mb-1">Votre position</div>
+                  <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border bg-amber-900/20 border-amber-700/40">
+                    <span className="text-sm w-6 text-center font-black text-amber-400">#{myRank}</span>
+                    <span className="text-base">{badge.emoji}</span>
+                    <span className="flex-1 text-xs font-bold text-amber-300">{userPseudo}</span>
+                    <span className="text-xs font-black font-mono text-amber-400">{fmt(allTime)}</span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          {userPseudo && (
-            <div className="pt-3 border-t border-[#211610] text-center">
-              <button onClick={syncScore} className="text-[10px] text-amber-700 hover:text-amber-500 font-mono underline">
-                Synchro mon score maintenant
-              </button>
+          {userPseudo&&(
+            <div className="text-center pt-2 border-t border-[#211610]">
+              <button onClick={syncScore} className="text-[10px] text-amber-700 hover:text-amber-500 font-mono underline">Synchro mon score maintenant</button>
             </div>
           )}
         </div>
       )}
 
       {/* ── ACHIEVEMENTS VIEW ── */}
-      {activeView === 'achievements' && (
+      {activeView==='achievements'&&(
         <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 space-y-4">
           <h3 className="text-sm font-black font-serif text-stone-100 flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-500"/> Succès ({achievements.size}/{ACHIEVEMENTS.length})
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {ACHIEVEMENTS.map(a => {
-              const done = achievements.has(a.id);
-              return (
-                <div key={a.id} className={`p-3 rounded-xl border text-center transition-all ${done ? 'bg-emerald-900/20 border-emerald-700/50' : 'bg-[#0a0705] border-[#1c1108] opacity-50'}`}>
+            {ACHIEVEMENTS.map(a=>{
+              const done=achievements.has(a.id);
+              return(
+                <div key={a.id} className={`p-3 rounded-xl border text-center transition-all ${done?'bg-emerald-900/20 border-emerald-700/50':'bg-[#0a0705] border-[#1c1108] opacity-50'}`}>
                   <div className="text-xl mb-1">{a.icon}</div>
-                  <div className={`text-[10px] font-bold ${done ? 'text-emerald-300' : 'text-stone-600'}`}>{a.name}</div>
+                  <div className={`text-[10px] font-bold ${done?'text-emerald-300':'text-stone-600'}`}>{a.name}</div>
                   <div className="text-[9px] text-stone-700 mt-0.5">{a.desc}</div>
-                  {done && <div className="text-[8px] text-emerald-600 mt-1">✓ Débloqué</div>}
+                  {done&&<div className="text-[8px] text-emerald-600 mt-1">✓ Débloqué</div>}
                 </div>
               );
             })}
           </div>
         </div>
       )}
+
+      {/* ── DAILY QUESTS VIEW ── */}
+      {activeView==='quests'&&(
+        <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black font-serif text-stone-100">📋 Quêtes Journalières</h3>
+            <div className="text-[10px] text-orange-400 font-mono font-bold">🔥 {streak} jours de suite</div>
+          </div>
+          <div className="text-[10px] text-stone-600 font-mono">Reset à minuit · {Math.ceil((new Date().setHours(23,59,59,999)-Date.now())/3600000)}h restantes</div>
+          <div className="space-y-3">
+            {dailyQuests.map(q=>{
+              const pct=Math.min(100,(q.progress/q.target)*100);
+              return(
+                <div key={q.id} className={`p-4 rounded-xl border ${q.done?'bg-emerald-900/20 border-emerald-700/50':'bg-[#0d0907] border-[#211610]'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-bold ${q.done?'text-emerald-300':'text-stone-300'}`}>{q.done?'✅ ':''}{q.desc}</span>
+                    <span className="text-[10px] text-amber-400 font-mono font-black">+{fmt(q.reward)} 💎</span>
+                  </div>
+                  <div className="w-full bg-[#0a0705] h-2 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${q.done?'bg-emerald-500':'bg-amber-500'}`} style={{width:`${pct}%`}}/>
+                  </div>
+                  <div className="text-[9px] text-stone-600 font-mono mt-1">{q.progress.toLocaleString('fr-FR')} / {q.target.toLocaleString('fr-FR')}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="bg-[#0d0907] border border-[#211610] rounded-xl p-3 text-center space-y-1">
+            <div className="text-[10px] text-stone-500 font-mono">Bonus streak actuel</div>
+            <div className="text-base font-black text-orange-400">🔥 ×{streakMult.toFixed(2)} sur tous les gains</div>
+            <div className="text-[9px] text-stone-600 font-mono">+2% par jour consécutif · max +50%</div>
+          </div>
+        </div>
+      )}
+
+      </div>
     </div>
   );
 }
@@ -1663,7 +2089,7 @@ export default function App() {
     { id:'profil',      label:'Profil',           icon:User },
   ];
 
-  const powerClass = powerLevel >= 100 ? 'power-100' : powerLevel >= 75 ? 'power-75' : powerLevel >= 50 ? 'power-50' : powerLevel >= 20 ? 'power-20' : '';
+  const powerClass = powerLevel >= 100 ? 'power-100' : powerLevel >= 90 ? 'power-90' : powerLevel >= 75 ? 'power-75' : powerLevel >= 60 ? 'power-60' : powerLevel >= 50 ? 'power-50' : powerLevel >= 30 ? 'power-30' : powerLevel >= 20 ? 'power-20' : powerLevel >= 10 ? 'power-10' : '';
 
   return (
     <PowerLevelCtx.Provider value={powerLevel}>
