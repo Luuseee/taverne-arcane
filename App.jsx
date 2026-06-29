@@ -531,7 +531,12 @@ function SpiderChatClicker() {
                   <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>
                 ))}
               </svg>
-              <span className="relative z-10 text-6xl leading-none">{chatExpr.emoji}</span>
+              <img
+                src="https://i.imgur.com/GM7RDI9.jpeg"
+                alt="Spider-Chat"
+                className="relative z-10 rounded-full object-cover"
+                style={{ width: 200, height: 200, pointerEvents: 'none' }}
+              />
             </button>
 
             <div className="text-center space-y-0.5">
