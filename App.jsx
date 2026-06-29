@@ -6,7 +6,7 @@ import {
   BookOpen, LayoutDashboard, Star, Copy,
   Wifi, WifiOff, Search, X, Skull,
   Users, TrendingUp, Sparkles, Server,
-  Bell, Moon, Sun, Megaphone, Award, Crown, User
+  Bell, Moon, Sun, Megaphone, Award, Crown, User, Gamepad2
 } from 'lucide-react';
 
 // ── Supabase ──────────────────────────────────────────────────────────────
@@ -364,6 +364,250 @@ function GuideBlock({ block }) {
   if (block.t === 'h')      return <h4 className="text-stone-100 font-bold font-serif text-sm mt-4 mb-1 flex items-center gap-1"><ChevronRight className="w-3.5 h-3.5 text-amber-500"/>{block.text}</h4>;
   if (block.t === 'list')   return <ul className="space-y-1.5 pl-2">{block.items.map((it,i)=><li key={i} className="text-xs text-stone-300 flex gap-2"><span className="text-amber-600 mt-0.5">•</span><span>{it}</span></li>)}</ul>;
   return null;
+}
+
+// ── Spider-Chat Clicker — données ────────────────────────────────────────
+const SPIDER_UPGRADES = [
+  { id:'familier',  name:'Familier du Chat',  desc:'+1 crystal/clic',    cost:50,    clickBonus:1, cps:0   },
+  { id:'toile',     name:'Toile Magique',      desc:'+1 crystal/sec',     cost:100,   clickBonus:0, cps:1   },
+  { id:'portail',   name:'Portail Arcanique',  desc:'+10 crystaux/sec',   cost:500,   clickBonus:0, cps:10  },
+  { id:'armee',     name:'Armée de Chats',     desc:'+50 crystaux/sec',   cost:2000,  clickBonus:0, cps:50  },
+  { id:'legendaire',name:'Chat Légendaire',    desc:'+200 crystaux/sec',  cost:10000, clickBonus:0, cps:200 },
+];
+const SPIDER_MILESTONES = [
+  { at:100,   msg:"✨ Le Chat Arcanique s'éveille !",         color:'text-amber-300'  },
+  { at:1000,  msg:"🕷️ La Toile Cosmique se tisse...",        color:'text-purple-300' },
+  { at:10000, msg:"👑 Le Seigneur des Chats est né !",        color:'text-yellow-300' },
+  { at:50000, msg:"🌌 L'Arcane Chat transcende la réalité !", color:'text-blue-300'   },
+];
+const CHAT_EXPRS = [
+  { min:0,     emoji:'🐱', label:'Endormi'    },
+  { min:100,   emoji:'😸', label:'Content'    },
+  { min:1000,  emoji:'😻', label:'Euphorique' },
+  { min:10000, emoji:'🙀', label:'Légendaire' },
+];
+
+// ── Composant Spider-Chat Clicker ─────────────────────────────────────────
+function SpiderChatClicker() {
+  const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key) ?? 'null') ?? def; } catch { return def; } };
+
+  const [crystals,      setCrystals]      = useState(() => load('sc_crystals', 0));
+  const [totalCrystals, setTotalCrystals] = useState(() => load('sc_total', 0));
+  const [purchased,     setPurchased]     = useState(() => load('sc_upgrades', {}));
+  const [flyParticles,  setFlyParticles]  = useState([]);
+  const [clicking,      setClicking]      = useState(false);
+  const [milestone,     setMilestone]     = useState(null);
+
+  const seenRef = useRef(new Set(load('sc_milestones', [])));
+
+  // Dérivés
+  const clickBonus      = SPIDER_UPGRADES.reduce((a, u) => a + (purchased[u.id] || 0) * u.clickBonus, 0);
+  const crystalsPerClick = 1 + clickBonus;
+  const cps              = SPIDER_UPGRADES.reduce((a, u) => a + (purchased[u.id] || 0) * u.cps, 0);
+  const chatExpr         = [...CHAT_EXPRS].reverse().find(e => totalCrystals >= e.min) ?? CHAT_EXPRS[0];
+
+  // Persistance
+  useEffect(() => {
+    localStorage.setItem('sc_crystals',  JSON.stringify(Math.floor(crystals)));
+    localStorage.setItem('sc_total',     JSON.stringify(Math.floor(totalCrystals)));
+    localStorage.setItem('sc_upgrades',  JSON.stringify(purchased));
+  }, [crystals, totalCrystals, purchased]);
+
+  // Tick CPS
+  useEffect(() => {
+    if (cps === 0) return;
+    const id = setInterval(() => {
+      const gain = cps / 20;
+      setCrystals(c => c + gain);
+      setTotalCrystals(t => t + gain);
+    }, 50);
+    return () => clearInterval(id);
+  }, [cps]);
+
+  // Vérif milestones
+  useEffect(() => {
+    const found = SPIDER_MILESTONES.find(m => totalCrystals >= m.at && !seenRef.current.has(m.at));
+    if (!found) return;
+    seenRef.current.add(found.at);
+    localStorage.setItem('sc_milestones', JSON.stringify([...seenRef.current]));
+    setMilestone(found);
+    setTimeout(() => setMilestone(null), 3200);
+  }, [Math.floor(totalCrystals / 10)]);
+
+  function playClick() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.22);
+    } catch {}
+  }
+
+  function handleClick() {
+    const gain = crystalsPerClick;
+    setCrystals(c => c + gain);
+    setTotalCrystals(t => t + gain);
+    setClicking(true);
+    setTimeout(() => setClicking(false), 120);
+    playClick();
+    const dx = (Math.random() - 0.5) * 80;
+    const id = Date.now() + Math.random();
+    setFlyParticles(p => [...p.slice(-12), { id, dx }]);
+    setTimeout(() => setFlyParticles(p => p.filter(x => x.id !== id)), 700);
+  }
+
+  function buyUpgrade(u) {
+    const count = purchased[u.id] || 0;
+    const cost  = Math.floor(u.cost * Math.pow(1.15, count));
+    if (crystals < cost) return;
+    setCrystals(c => c - cost);
+    setPurchased(prev => ({ ...prev, [u.id]: count + 1 }));
+  }
+
+  function resetGame() {
+    if (!confirm('Réinitialiser la partie ? Toute progression sera perdue.')) return;
+    setCrystals(0); setTotalCrystals(0); setPurchased({});
+    seenRef.current = new Set();
+    ['sc_crystals','sc_total','sc_upgrades','sc_milestones'].forEach(k => localStorage.removeItem(k));
+  }
+
+  return (
+    <div className="tab-fade space-y-5">
+      {/* Milestone banner */}
+      {milestone && (
+        <div className="milestone-banner fixed top-20 left-1/2 z-[300] bg-[#1a0f0a]/95 border border-amber-500/70 rounded-2xl px-8 py-3 text-center shadow-2xl shadow-amber-900/40 pointer-events-none">
+          <p className={`text-sm font-black font-serif ${milestone.color}`}>{milestone.msg}</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Zone de clic principale */}
+        <div className="lg:col-span-2 bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-6 flex flex-col items-center gap-6">
+
+          {/* Compteur crystaux */}
+          <div className="text-center space-y-1">
+            <div className="text-6xl font-black font-serif text-amber-400 tabular-nums leading-none">
+              {Math.floor(crystals).toLocaleString('fr-FR')}
+            </div>
+            <div className="text-[11px] text-stone-500 font-mono uppercase tracking-widest">Arcane Crystals</div>
+            {cps > 0 && (
+              <div className="text-xs text-purple-400 font-mono font-semibold">
+                +{cps.toLocaleString('fr-FR')} / seconde
+              </div>
+            )}
+          </div>
+
+          {/* Bouton chat Spider-Man */}
+          <div className="relative flex flex-col items-center gap-3">
+            {/* Particules volantes */}
+            {flyParticles.map(p => (
+              <span key={p.id} className="fly-crystal" style={{'--dx': p.dx + 'px'}}>💎</span>
+            ))}
+
+            <button
+              onClick={handleClick}
+              className={`relative w-44 h-44 rounded-full border-4 border-red-600/80 flex items-center justify-center select-none transition-transform duration-100 chat-pulse overflow-hidden ${clicking ? 'scale-90' : 'scale-100'}`}
+              style={{
+                background: 'radial-gradient(circle at 35% 35%, #dc2626 0%, #7f1d1d 55%, #3b0000 100%)',
+                boxShadow: '0 0 30px rgba(220,38,38,0.35), inset 0 0 20px rgba(0,0,0,0.5)',
+              }}
+            >
+              {/* Toile d'araignée SVG */}
+              <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                {[0,30,60,90,120,150].map(a => (
+                  <line key={a} x1="50" y1="50"
+                    x2={50 + 50*Math.cos(a*Math.PI/180)}
+                    y2={50 + 50*Math.sin(a*Math.PI/180)}
+                    stroke="white" strokeWidth="0.8"/>
+                ))}
+                {[12,22,32,42].map(r => (
+                  <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>
+                ))}
+              </svg>
+              <span className="relative z-10 text-6xl leading-none">{chatExpr.emoji}</span>
+            </button>
+
+            <div className="text-center space-y-0.5">
+              <div className="text-[11px] text-stone-400 font-mono uppercase tracking-widest">
+                {chatExpr.label}
+              </div>
+              <div className="text-[10px] text-amber-600 font-mono">
+                +{crystalsPerClick} crystal{crystalsPerClick > 1 ? 'x' : ''} / clic
+              </div>
+            </div>
+          </div>
+
+          {/* Stats rapides */}
+          <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
+            {[
+              { label:'Par clic',    value: crystalsPerClick, color:'text-amber-400'  },
+              { label:'Par seconde', value: cps,              color:'text-purple-400' },
+              { label:'Total gagné', value: Math.floor(totalCrystals), color:'text-stone-300' },
+            ].map(s => (
+              <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-xl p-3 text-center">
+                <div className={`text-base font-black font-mono ${s.color}`}>
+                  {s.value.toLocaleString('fr-FR')}
+                </div>
+                <div className="text-[9px] text-stone-600 uppercase tracking-wider mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Panel upgrades */}
+        <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-4 flex flex-col gap-3">
+          <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500"/> Améliorations
+          </h3>
+
+          <div className="flex-1 space-y-2">
+            {SPIDER_UPGRADES.map(u => {
+              const count    = purchased[u.id] || 0;
+              const cost     = Math.floor(u.cost * Math.pow(1.15, count));
+              const canBuy   = crystals >= cost;
+              return (
+                <button key={u.id} onClick={() => buyUpgrade(u)} disabled={!canBuy}
+                  className={`w-full text-left p-3 rounded-xl border transition-all ${canBuy ? 'bg-amber-900/20 border-amber-700/50 hover:bg-amber-900/35' : 'bg-[#0a0705] border-[#1c1108] opacity-50 cursor-not-allowed'}`}>
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-xs font-bold text-stone-200">{u.name}</span>
+                    {count > 0 && (
+                      <span className="text-[9px] bg-amber-900/60 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-mono">×{count}</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-stone-600 leading-snug">{u.desc}</div>
+                  <div className={`text-[11px] font-black font-mono mt-1.5 ${canBuy ? 'text-amber-400' : 'text-stone-700'}`}>
+                    💎 {cost.toLocaleString('fr-FR')}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Milestones débloqués */}
+          {seenRef.current.size > 0 && (
+            <div className="border-t border-[#1c1108] pt-3 space-y-1.5">
+              <div className="text-[9px] text-stone-600 uppercase tracking-wider font-mono">Succès débloqués</div>
+              {SPIDER_MILESTONES.filter(m => seenRef.current.has(m.at)).map(m => (
+                <div key={m.at} className={`text-[10px] font-semibold ${m.color}`}>{m.msg}</div>
+              ))}
+            </div>
+          )}
+
+          <button onClick={resetGame}
+            className="text-[9px] text-stone-800 hover:text-red-600 transition-colors font-mono underline mt-1">
+            Réinitialiser la partie
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── App principal ─────────────────────────────────────────────────────────
@@ -887,6 +1131,7 @@ export default function App() {
     { id:'coordonnees', label:'Coordonnées',      icon:MapPin },
     { id:'raids',       label:'Raids & Boss',     icon:Shield },
     { id:'guides',      label:'Guide',            icon:BookOpen },
+    { id:'minijeux',    label:'Mini-Jeux',        icon:Gamepad2 },
     { id:'profil',      label:'Profil',           icon:User },
   ];
 
@@ -1567,6 +1812,21 @@ export default function App() {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            MINI-JEUX
+        ═══════════════════════════════════════════════════════ */}
+        {!loading && activeTab === 'minijeux' && (
+          <div className="tab-fade">
+            <div className="mb-5">
+              <h2 className="text-lg font-black font-serif text-stone-100 flex items-center gap-2">
+                <Gamepad2 className="w-5 h-5 text-amber-500"/> Mini-Jeux
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">Spider-Chat Clicker — Accumulez des Arcane Crystals !</p>
+            </div>
+            <SpiderChatClicker />
           </div>
         )}
 

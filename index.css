@@ -64,3 +64,30 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 /* ── Glassmorphism ──────────────────────────────────── */
 .glass { backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+
+/* ── Spider-Chat Clicker ────────────────────────────── */
+@keyframes crystalFly {
+  0%   { transform:translate(0,0) scale(1.4); opacity:1; }
+  70%  { opacity:1; }
+  100% { transform:translate(var(--dx,0px),-110px) scale(0.3); opacity:0; }
+}
+.fly-crystal {
+  position:absolute; pointer-events:none; z-index:50;
+  animation:crystalFly 0.65s ease-out forwards;
+  font-size:1rem; user-select:none;
+  top:50%; left:50%; margin-top:-0.5rem; margin-left:-0.5rem;
+}
+
+@keyframes chatPulse {
+  0%,100% { filter:drop-shadow(0 0 8px rgba(220,38,38,0.4)); }
+  50%      { filter:drop-shadow(0 0 20px rgba(220,38,38,0.8)); }
+}
+.chat-pulse { animation:chatPulse 2.5s ease-in-out infinite; }
+
+@keyframes milestoneIn {
+  0%   { transform:translateX(-50%) translateY(16px); opacity:0; }
+  12%  { transform:translateX(-50%) translateY(0);    opacity:1; }
+  80%  { transform:translateX(-50%) translateY(0);    opacity:1; }
+  100% { transform:translateX(-50%) translateY(-10px);opacity:0; }
+}
+.milestone-banner { animation:milestoneIn 3s ease-in-out forwards; }
