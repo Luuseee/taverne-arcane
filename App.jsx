@@ -366,119 +366,469 @@ function GuideBlock({ block }) {
   return null;
 }
 
-// ── Spider-Chat Clicker — données ────────────────────────────────────────
-const SPIDER_UPGRADES = [
-  { id:'familier',  name:'Familier du Chat',  desc:'+1 crystal/clic',    cost:50,    clickBonus:1, cps:0   },
-  { id:'toile',     name:'Toile Magique',      desc:'+1 crystal/sec',     cost:100,   clickBonus:0, cps:1   },
-  { id:'portail',   name:'Portail Arcanique',  desc:'+10 crystaux/sec',   cost:500,   clickBonus:0, cps:10  },
-  { id:'armee',     name:'Armée de Chats',     desc:'+50 crystaux/sec',   cost:2000,  clickBonus:0, cps:50  },
-  { id:'legendaire',name:'Chat Légendaire',    desc:'+200 crystaux/sec',  cost:10000, clickBonus:0, cps:200 },
-];
-const SPIDER_MILESTONES = [
-  { at:100,   msg:"✨ Le Chat Arcanique s'éveille !",         color:'text-amber-300'  },
-  { at:1000,  msg:"🕷️ La Toile Cosmique se tisse...",        color:'text-purple-300' },
-  { at:10000, msg:"👑 Le Seigneur des Chats est né !",        color:'text-yellow-300' },
-  { at:50000, msg:"🌌 L'Arcane Chat transcende la réalité !", color:'text-blue-300'   },
-];
-const CHAT_EXPRS = [
-  { min:0,     emoji:'🐱', label:'Endormi'    },
-  { min:100,   emoji:'😸', label:'Content'    },
-  { min:1000,  emoji:'😻', label:'Euphorique' },
-  { min:10000, emoji:'🙀', label:'Légendaire' },
+// ── Spider-Chat Clicker v3 — données ─────────────────────────────────────
+/*
+  SQL — Supabase Dashboard › SQL Editor:
+  CREATE TABLE IF NOT EXISTS clicker_scores (
+    id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    pseudo      text UNIQUE NOT NULL,
+    crystaux    bigint DEFAULT 0,
+    cps         integer DEFAULT 0,
+    niveau      integer DEFAULT 1,
+    prestige    integer DEFAULT 0,
+    badge_emoji text DEFAULT '🌱',
+    badge_name  text DEFAULT 'Graine d''Arcane',
+    citation    text DEFAULT '',
+    total_clics bigint DEFAULT 0,
+    updated_at  timestamptz DEFAULT now()
+  );
+  ALTER TABLE clicker_scores ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "read all" ON clicker_scores FOR SELECT USING (true);
+  CREATE POLICY "upsert own" ON clicker_scores FOR ALL USING (true) WITH CHECK (true);
+*/
+
+const BADGES = [
+  { min:1,   emoji:'🌱', name:'Graine d\'Arcane',      color:'text-stone-400',   border:'border-stone-600'   },
+  { min:5,   emoji:'⚔️',  name:'Écuyer',                color:'text-amber-700',   border:'border-amber-800'   },
+  { min:10,  emoji:'🗡️',  name:'Aventurier',            color:'text-amber-500',   border:'border-amber-700'   },
+  { min:15,  emoji:'🏹',  name:'Chasseur',              color:'text-slate-300',   border:'border-slate-500'   },
+  { min:20,  emoji:'🛡️',  name:'Guerrier',              color:'text-slate-200',   border:'border-slate-400'   },
+  { min:25,  emoji:'💎',  name:'Vétéran',               color:'text-blue-300',    border:'border-blue-500'    },
+  { min:30,  emoji:'🔮',  name:'Mage',                  color:'text-purple-300',  border:'border-purple-500'  },
+  { min:40,  emoji:'⚡',  name:'Foudre',                color:'text-violet-300',  border:'border-violet-400'  },
+  { min:50,  emoji:'🌟',  name:'Champion',              color:'text-yellow-300',  border:'border-yellow-500', pulse:true },
+  { min:60,  emoji:'👑',  name:'Maître',                color:'text-amber-300',   border:'border-amber-400',  pulse:true },
+  { min:70,  emoji:'🔱',  name:'Grand Maître',          color:'text-amber-200',   border:'border-amber-300',  pulse:true },
+  { min:80,  emoji:'🌌',  name:'Archimage',             color:'text-cyan-200',    border:'border-cyan-400',   rainbow:true },
+  { min:90,  emoji:'☄️',  name:'Dieu Arcanique',        color:'text-white',       border:'border-white',      rainbow:true },
+  { min:95,  emoji:'💀',  name:'Démon Transcendant',    color:'text-purple-200',  border:'border-purple-300', rainbow:true },
+  { min:100, emoji:'🐱‍👤', name:'Spider-Chat Suprême',  color:'text-yellow-100',  border:'border-yellow-300', rainbow:true, divine:true },
 ];
 
-// ── Composant Spider-Chat Clicker ─────────────────────────────────────────
-function SpiderChatClicker() {
+const CLICKER_UPGRADES = [
+  { id:'griffe',      name:'Griffe du Chat',      icon:'🐾', desc:'+1 /clic',          cost:25,       clickAdd:1,    cps:0     },
+  { id:'familier',    name:'Familier Arcanique',  icon:'🐱', desc:'+3 /clic',          cost:100,      clickAdd:3,    cps:0     },
+  { id:'toile',       name:'Toile Magique',        icon:'🕷️', desc:'+1/sec',            cost:150,      clickAdd:0,    cps:1     },
+  { id:'potion',      name:'Potion de Mana',       icon:'⚗️', desc:'+8 /clic',          cost:400,      clickAdd:8,    cps:0     },
+  { id:'portail',     name:'Portail Arcanique',    icon:'🌀', desc:'+10/sec',           cost:800,      clickAdd:0,    cps:10    },
+  { id:'grimoire',    name:'Grimoire Ancien',      icon:'📚', desc:'+20 /clic',         cost:2000,     clickAdd:20,   cps:0     },
+  { id:'armee',       name:'Armée de Chats',       icon:'⚔️', desc:'+50/sec',           cost:4000,     clickAdd:0,    cps:50    },
+  { id:'cristal',     name:'Cristal de Puissance', icon:'💎', desc:'+50 /clic',         cost:8000,     clickAdd:50,   cps:0     },
+  { id:'legendaire',  name:'Chat Légendaire',      icon:'👑', desc:'+250/sec',          cost:20000,    clickAdd:0,    cps:250   },
+  { id:'nexus',       name:'Nexus Arcanique',      icon:'🔮', desc:'+1 000/sec',        cost:50000,    clickAdd:0,    cps:1000  },
+  { id:'dimension',   name:'Dimension du Chat',    icon:'🌌', desc:'+200 /clic',        cost:100000,   clickAdd:200,  cps:0     },
+  { id:'singularite', name:'Singularité Féline',   icon:'⭐', desc:'+5 000/sec',        cost:300000,   clickAdd:0,    cps:5000  },
+  { id:'void',        name:'Œil de Void',          icon:'👁️', desc:'+1 000 /clic',      cost:600000,   clickAdd:1000, cps:0     },
+  { id:'dieu',        name:'Dieu Chat',            icon:'🐾', desc:'+25 000/sec',       cost:1500000,  clickAdd:0,    cps:25000 },
+  { id:'transcendance',name:'Transcendance',       icon:'✨', desc:'+5 000/clic +100k/s',cost:10000000,clickAdd:5000, cps:100000},
+];
+
+const LEVEL_TITLES = [
+  { min:1,   title:'Novice'        },
+  { min:5,   title:'Apprenti'      },
+  { min:10,  title:'Aventurier'    },
+  { min:20,  title:'Guerrier'      },
+  { min:30,  title:'Champion'      },
+  { min:40,  title:'Maître'        },
+  { min:50,  title:'Grand Maître'  },
+  { min:60,  title:'Archimage'     },
+  { min:75,  title:'Légende'       },
+  { min:90,  title:'Dieu Arcanique'},
+  { min:100, title:'TRANSCENDANCE' },
+];
+
+const ACHIEVEMENTS = [
+  { id:'first_click', name:'Premier Pas',       icon:'👶', desc:'Premier clic',           check:s => s.totalClicks >= 1       },
+  { id:'click_100',   name:'Centurion',          icon:'💯', desc:'100 clics',              check:s => s.totalClicks >= 100     },
+  { id:'click_1k',    name:'Mille Clics',        icon:'🖱️', desc:'1 000 clics',            check:s => s.totalClicks >= 1000    },
+  { id:'click_10k',   name:'Obsessionnel',       icon:'🌀', desc:'10 000 clics',           check:s => s.totalClicks >= 10000   },
+  { id:'c_1k',        name:'Collecteur',         icon:'💎', desc:'1 000 crystaux gagnés',  check:s => s.allTime >= 1000        },
+  { id:'c_10k',       name:'Trésorier',          icon:'💰', desc:'10 000 crystaux',        check:s => s.allTime >= 10000       },
+  { id:'c_100k',      name:'Riche',              icon:'💎', desc:'100 000 crystaux',       check:s => s.allTime >= 100000      },
+  { id:'c_1m',        name:'Millionnaire',       icon:'👑', desc:'1 000 000 crystaux',     check:s => s.allTime >= 1000000     },
+  { id:'c_100m',      name:'Milliardaire',       icon:'🌟', desc:'100 millions de crystaux',check:s => s.allTime >= 100000000  },
+  { id:'up_1',        name:'Acheteur',           icon:'🛒', desc:'Premier upgrade',        check:s => s.upgradeCount >= 1      },
+  { id:'up_5',        name:'Collectionneur',     icon:'📦', desc:'5 upgrades achetés',     check:s => s.upgradeCount >= 5      },
+  { id:'up_15',       name:'Arsenal Complet',    icon:'✅', desc:'Tous les upgrades',      check:s => s.upgradeCount >= 15     },
+  { id:'lv_10',       name:'Niveau 10',          icon:'🎯', desc:'Atteins le niveau 10',   check:s => s.level >= 10            },
+  { id:'lv_50',       name:'Mi-chemin',          icon:'⚡', desc:'Atteins le niveau 50',   check:s => s.level >= 50            },
+  { id:'lv_100',      name:'Maximum !',          icon:'🌟', desc:'Niveau 100 atteint',     check:s => s.level >= 100           },
+  { id:'crit_1',      name:'Chanceux',           icon:'⚡', desc:'Premier coup critique',  check:s => s.critCount >= 1         },
+  { id:'crit_100',    name:'Foudre',             icon:'⚡', desc:'100 coups critiques',    check:s => s.critCount >= 100       },
+  { id:'combo_5',     name:'Combo x5',           icon:'🔥', desc:'Atteins combo ×5',       check:s => s.maxCombo >= 5          },
+  { id:'combo_10',    name:'Frénésie',           icon:'🌪️', desc:'Atteins combo ×10',      check:s => s.maxCombo >= 10         },
+  { id:'event_1',     name:'Événement Arcanique',icon:'⭐', desc:'Survie un Arcane Event', check:s => s.eventCount >= 1        },
+  { id:'prestige_1',  name:'Renaissance',        icon:'♾️', desc:'Premier prestige',       check:s => s.prestige >= 1          },
+  { id:'prestige_5',  name:'Ascension',          icon:'🌠', desc:'5 prestiges',            check:s => s.prestige >= 5          },
+  { id:'cps_1k',      name:'Usine',              icon:'⚙️', desc:'1 000 crystaux/sec',     check:s => s.cps >= 1000            },
+  { id:'nocturne',    name:'Noctambule',         icon:'🌙', desc:'Joue après minuit',      check:s => s.lateNight              },
+  { id:'spider_egg',  name:'Easter Egg',         icon:'🕷️', desc:'Tape S-P-I-D-E-R',      check:s => s.foundSpider            },
+];
+
+const PowerLevelCtx = React.createContext(1);
+
+// ── ProfileDrawer ─────────────────────────────────────────────────────────
+function ProfileDrawer({ pseudo, onClose }) {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    supabase.from('clicker_scores').select('*').eq('pseudo', pseudo).single()
+      .then(({ data: d }) => setData(d));
+  }, [pseudo]);
+
+  const badge = data ? ([...BADGES].reverse().find(b => (data.niveau||1) >= b.min) ?? BADGES[0]) : null;
+
+  return (
+    <div className="fixed inset-0 z-[500] flex items-start justify-end" onClick={onClose}>
+      <div className="portal-open mt-16 mr-2 w-80 bg-[#120d0a]/98 border border-[#3a2a1c] rounded-2xl shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}>
+        <div className="bg-gradient-to-r from-amber-900/40 to-red-900/30 p-5 border-b border-[#2a1d14]">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-600 to-amber-900 border-2 border-amber-500/50 flex items-center justify-center text-2xl font-black text-stone-950 font-serif">
+              {pseudo.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-black text-white text-base font-serif truncate">{pseudo}</div>
+              {badge && <div className={`text-xs font-bold ${badge.color}`}>{badge.emoji} {badge.name}</div>}
+            </div>
+            <button onClick={onClose} className="text-stone-600 hover:text-stone-300 text-lg leading-none">✕</button>
+          </div>
+          {data?.citation && (
+            <p className="mt-3 text-[11px] text-stone-400 italic border-l-2 border-amber-700/50 pl-2">"{data.citation}"</p>
+          )}
+        </div>
+        <div className="p-4 space-y-3">
+          {data ? (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label:'Niveau',    value: data.niveau||1,                    color:'text-amber-400' },
+                  { label:'Prestige',  value: data.prestige > 0 ? `★×${data.prestige}` : '—', color:'text-yellow-300' },
+                  { label:'Crystaux',  value: (data.crystaux||0).toLocaleString('fr-FR'), color:'text-blue-300' },
+                  { label:'CPS',       value: (data.cps||0).toLocaleString('fr-FR'),      color:'text-purple-300' },
+                  { label:'Clics',     value: (data.total_clics||0).toLocaleString('fr-FR'), color:'text-stone-300' },
+                  { label:'Maj',       value: data.updated_at ? new Date(data.updated_at).toLocaleDateString('fr-FR') : '—', color:'text-stone-500' },
+                ].map(s => (
+                  <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-lg p-2.5 text-center">
+                    <div className={`text-sm font-black font-mono ${s.color}`}>{s.value}</div>
+                    <div className="text-[9px] text-stone-600 uppercase tracking-wider mt-0.5">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center text-stone-600 text-xs py-4 font-mono">Chargement…</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SpiderChatClicker v3 ──────────────────────────────────────────────────
+function SpiderChatClicker({ userPseudo }) {
   const load = (key, def) => { try { return JSON.parse(localStorage.getItem(key) ?? 'null') ?? def; } catch { return def; } };
 
-  const [crystals,      setCrystals]      = useState(() => load('sc_crystals', 0));
-  const [totalCrystals, setTotalCrystals] = useState(() => load('sc_total', 0));
-  const [purchased,     setPurchased]     = useState(() => load('sc_upgrades', {}));
+  // ── Core state ──
+  const [crystals,    setCrystals]    = useState(() => load('sc_crystals', 0));
+  const [allTime,     setAllTime]     = useState(() => load('sc_alltime',  0));
+  const [purchased,   setPurchased]   = useState(() => load('sc_upgrades', {}));
+  const [prestige,    setPrestige]    = useState(() => load('sc_prestige', 0));
+  const [totalClicks, setTotalClicks] = useState(() => load('sc_clicks',   0));
+  const [critCount,   setCritCount]   = useState(() => load('sc_crits',    0));
+  const [eventCount,  setEventCount]  = useState(() => load('sc_events',   0));
+  const [citation,    setCitation]    = useState(() => load('sc_citation',  ''));
+  const [editCit,     setEditCit]     = useState(false);
+  const [maxCombo,    setMaxCombo]    = useState(() => load('sc_maxcombo', 1));
+  const [foundSpider, setFoundSpider] = useState(() => load('sc_spider',   false));
+
+  // ── UI state ──
   const [flyParticles,  setFlyParticles]  = useState([]);
   const [clicking,      setClicking]      = useState(false);
   const [milestone,     setMilestone]     = useState(null);
+  const [critFlash,     setCritFlash]     = useState(false);
+  const [levelUpAnim,   setLevelUpAnim]   = useState(null);
+  const [combo,         setCombo]         = useState(1);
+  const [comboKey,      setComboKey]      = useState(0);
+  const [arcanicEvent,  setArcanicEvent]  = useState(null);
+  const [eventLeft,     setEventLeft]     = useState(0);
+  const [achievements,  setAchievements]  = useState(() => new Set(load('sc_achievements', [])));
+  const [achToast,      setAchToast]      = useState(null);
+  const [spiderEgg,     setSpiderEgg]     = useState(false);
+  const [activeView,    setActiveView]    = useState('clicker');
+  const [leaderboard,   setLeaderboard]   = useState([]);
+  const [lbTab,         setLbTab]         = useState('crystaux');
+  const [lbLoading,     setLbLoading]     = useState(false);
+  const [profilePseudo, setProfilePseudo] = useState(null);
 
-  const seenRef = useRef(new Set(load('sc_milestones', [])));
+  const lastClickRef   = useRef(0);
+  const comboTimerRef  = useRef(null);
+  const seenMsRef      = useRef(new Set(load('sc_milestones', [])));
+  const seenAchRef     = useRef(new Set(load('sc_achievements', [])));
+  const nextEventRef   = useRef(load('sc_nextevent', Date.now() + 5*60*1000));
+  const spiderKeyRef   = useRef('');
+  const prevLevelRef   = useRef(null);
 
-  // Dérivés
-  const clickBonus      = SPIDER_UPGRADES.reduce((a, u) => a + (purchased[u.id] || 0) * u.clickBonus, 0);
-  const crystalsPerClick = 1 + clickBonus;
-  const cps              = SPIDER_UPGRADES.reduce((a, u) => a + (purchased[u.id] || 0) * u.cps, 0);
-  const chatExpr         = [...CHAT_EXPRS].reverse().find(e => totalCrystals >= e.min) ?? CHAT_EXPRS[0];
+  // ── Derived ──
+  const prestigeMult     = Math.pow(2, prestige);
+  const totalClickAdd    = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0) * u.clickAdd, 0);
+  const cps              = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0) * u.cps, 0) * prestigeMult;
+  const evMult           = arcanicEvent ? 10 : 1;
+  const crystalsPerClick = (1 + totalClickAdd) * prestigeMult * combo * evMult;
+  const level            = Math.min(100, Math.floor(Math.sqrt(Math.max(0, allTime) / 1000)) + 1);
+  const levelTitle       = ([...LEVEL_TITLES].reverse().find(t => level >= t.min) ?? LEVEL_TITLES[0]).title;
+  const badge            = [...BADGES].reverse().find(b => level >= b.min) ?? BADGES[0];
+  const upgradeCount     = Object.values(purchased).reduce((a, v) => a + (v > 0 ? 1 : 0), 0);
+  const lateNight        = new Date().getHours() < 4;
+  const hasTrans         = (purchased['transcendance']||0) > 0;
+  const nextLevelAt      = Math.pow(level, 2) * 1000;
+  const prevLevelAt      = level > 1 ? Math.pow(level-1, 2) * 1000 : 0;
+  const levelPct         = Math.min(100, ((allTime - prevLevelAt) / (nextLevelAt - prevLevelAt)) * 100);
 
-  // Persistance
+  const stats = { totalClicks, allTime, upgradeCount, level, critCount, maxCombo, prestige, eventCount, lateNight, foundSpider, hasTrans, cps };
+
+  // ── Level up detection ──
   useEffect(() => {
-    localStorage.setItem('sc_crystals',  JSON.stringify(Math.floor(crystals)));
-    localStorage.setItem('sc_total',     JSON.stringify(Math.floor(totalCrystals)));
-    localStorage.setItem('sc_upgrades',  JSON.stringify(purchased));
-  }, [crystals, totalCrystals, purchased]);
+    if (prevLevelRef.current === null) { prevLevelRef.current = level; return; }
+    if (level > prevLevelRef.current) {
+      setLevelUpAnim({ level, title: levelTitle });
+      playLevelUp();
+      setTimeout(() => setLevelUpAnim(null), 2300);
+      window.dispatchEvent(new CustomEvent('powerlevel', { detail: level }));
+    }
+    prevLevelRef.current = level;
+  }, [level]);
 
-  // Tick CPS
+  // ── Persistence ──
+  useEffect(() => {
+    localStorage.setItem('sc_crystals',     JSON.stringify(Math.floor(crystals)));
+    localStorage.setItem('sc_alltime',      JSON.stringify(Math.floor(allTime)));
+    localStorage.setItem('sc_upgrades',     JSON.stringify(purchased));
+    localStorage.setItem('sc_prestige',     JSON.stringify(prestige));
+    localStorage.setItem('sc_clicks',       JSON.stringify(totalClicks));
+    localStorage.setItem('sc_crits',        JSON.stringify(critCount));
+    localStorage.setItem('sc_events',       JSON.stringify(eventCount));
+    localStorage.setItem('sc_maxcombo',     JSON.stringify(maxCombo));
+    localStorage.setItem('sc_level',        JSON.stringify(level));
+    localStorage.setItem('sc_citation',     JSON.stringify(citation));
+    localStorage.setItem('sc_spider',       JSON.stringify(foundSpider));
+    localStorage.setItem('sc_achievements', JSON.stringify([...achievements]));
+  }, [crystals, allTime, purchased, prestige, totalClicks, critCount, eventCount, maxCombo, level, citation, foundSpider, achievements]);
+
+  // ── CPS tick ──
   useEffect(() => {
     if (cps === 0) return;
     const id = setInterval(() => {
-      const gain = cps / 20;
+      const gain = (cps * evMult) / 20;
       setCrystals(c => c + gain);
-      setTotalCrystals(t => t + gain);
+      setAllTime(t => t + gain);
     }, 50);
     return () => clearInterval(id);
-  }, [cps]);
+  }, [cps, evMult]);
 
-  // Vérif milestones
+  // ── Arcanic Event timer ──
   useEffect(() => {
-    const found = SPIDER_MILESTONES.find(m => totalCrystals >= m.at && !seenRef.current.has(m.at));
-    if (!found) return;
-    seenRef.current.add(found.at);
-    localStorage.setItem('sc_milestones', JSON.stringify([...seenRef.current]));
-    setMilestone(found);
-    setTimeout(() => setMilestone(null), 3200);
-  }, [Math.floor(totalCrystals / 10)]);
+    const id = setInterval(() => {
+      if (!arcanicEvent && Date.now() >= nextEventRef.current) {
+        const end = Date.now() + 30000;
+        setArcanicEvent({ end });
+        setEventCount(e => e + 1);
+        nextEventRef.current = Date.now() + 5 * 60 * 1000;
+        localStorage.setItem('sc_nextevent', JSON.stringify(nextEventRef.current));
+        setMilestone({ msg: '⭐ ÉVÉNEMENT ARCANIQUE ! ×10 gains pendant 30s !', color: 'text-yellow-300' });
+        setTimeout(() => setMilestone(null), 3200);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [arcanicEvent]);
 
-  function playClick() {
+  useEffect(() => {
+    if (!arcanicEvent) return;
+    const id = setInterval(() => {
+      const left = Math.max(0, Math.ceil((arcanicEvent.end - Date.now()) / 1000));
+      setEventLeft(left);
+      if (left <= 0) {
+        setArcanicEvent(null);
+        nextEventRef.current = Date.now() + 5 * 60 * 1000;
+        localStorage.setItem('sc_nextevent', JSON.stringify(nextEventRef.current));
+      }
+    }, 200);
+    return () => clearInterval(id);
+  }, [arcanicEvent]);
+
+  // ── Milestones & achievements ──
+  useEffect(() => {
+    const milestones = [
+      { at:1000,    msg:"✨ Le Chat Arcanique s'éveille !",          color:'text-amber-300' },
+      { at:10000,   msg:"🕷️ La Toile Cosmique se tisse...",         color:'text-purple-300' },
+      { at:100000,  msg:"👑 Le Seigneur des Chats est né !",          color:'text-yellow-300' },
+      { at:1000000, msg:"🌌 L'Arcane Chat transcende la réalité !",  color:'text-blue-300' },
+    ];
+    const found = milestones.find(m => allTime >= m.at && !seenMsRef.current.has(m.at));
+    if (found) {
+      seenMsRef.current.add(found.at);
+      localStorage.setItem('sc_milestones', JSON.stringify([...seenMsRef.current]));
+      setMilestone(found);
+      setTimeout(() => setMilestone(null), 3200);
+    }
+    ACHIEVEMENTS.forEach(ach => {
+      if (!seenAchRef.current.has(ach.id) && ach.check(stats)) {
+        seenAchRef.current.add(ach.id);
+        setAchievements(prev => new Set([...prev, ach.id]));
+        setAchToast(ach);
+        setTimeout(() => setAchToast(null), 3500);
+      }
+    });
+  }, [Math.floor(allTime / 10), totalClicks, upgradeCount, level, critCount, maxCombo, prestige, eventCount, foundSpider]);
+
+  // ── Supabase leaderboard ──
+  async function fetchLb() {
+    setLbLoading(true);
+    const col = { crystaux:'crystaux', cps:'cps', niveau:'niveau', clics:'total_clics' }[lbTab] || 'crystaux';
+    const { data } = await supabase.from('clicker_scores')
+      .select('pseudo,crystaux,cps,niveau,prestige,badge_emoji,badge_name,total_clics')
+      .order(col, { ascending:false }).limit(10);
+    setLeaderboard(data || []);
+    setLbLoading(false);
+  }
+
+  useEffect(() => { if (activeView === 'leaderboard') fetchLb(); }, [activeView, lbTab]);
+  useEffect(() => {
+    if (activeView !== 'leaderboard') return;
+    const id = setInterval(fetchLb, 30000);
+    return () => clearInterval(id);
+  }, [activeView, lbTab]);
+
+  function syncScore() {
+    if (!userPseudo) return;
+    supabase.from('clicker_scores').upsert({
+      pseudo: userPseudo, crystaux: Math.floor(allTime), cps: Math.round(cps),
+      niveau: level, prestige, badge_emoji: badge.emoji, badge_name: badge.name,
+      citation, total_clics: totalClicks, updated_at: new Date().toISOString(),
+    }, { onConflict: 'pseudo' });
+  }
+  useEffect(() => { const id = setInterval(syncScore, 30000); return () => clearInterval(id); }, [allTime, cps, level, prestige, citation]);
+
+  // ── SPIDER easter egg ──
+  useEffect(() => {
+    const onKey = e => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      spiderKeyRef.current = (spiderKeyRef.current + e.key.toUpperCase()).slice(-6);
+      if (spiderKeyRef.current === 'SPIDER') {
+        setSpiderEgg(true);
+        setFoundSpider(true);
+        spiderKeyRef.current = '';
+        setTimeout(() => setSpiderEgg(false), 3000);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // ── Sounds ──
+  function playClick(isCrit) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator(), gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.22);
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.type = isCrit ? 'square' : 'sine';
+      osc.frequency.setValueAtTime(isCrit ? 660 : 880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(isCrit ? 2200 : 1320, ctx.currentTime + 0.1);
+      g.gain.setValueAtTime(0.15, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
+    } catch {}
+  }
+  function playLevelUp() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [523, 659, 784, 1047].forEach((f, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type = 'triangle'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.12);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+        o.start(ctx.currentTime + i * 0.12); o.stop(ctx.currentTime + i * 0.12 + 0.32);
+      });
     } catch {}
   }
 
+  // ── Handlers ──
   function handleClick() {
-    const gain = crystalsPerClick;
-    setCrystals(c => c + gain);
-    setTotalCrystals(t => t + gain);
-    setClicking(true);
-    setTimeout(() => setClicking(false), 120);
-    playClick();
-    const dx = (Math.random() - 0.5) * 80;
-    const id = Date.now() + Math.random();
-    setFlyParticles(p => [...p.slice(-12), { id, dx }]);
-    setTimeout(() => setFlyParticles(p => p.filter(x => x.id !== id)), 700);
+    const now = Date.now();
+    const since = now - lastClickRef.current;
+    let newCombo = since < 800 ? Math.min(10, combo + (since < 300 ? 1 : 0)) : 1;
+    setCombo(newCombo);
+    setComboKey(k => k + 1);
+    if (newCombo > maxCombo) setMaxCombo(newCombo);
+    lastClickRef.current = now;
+    if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
+    comboTimerRef.current = setTimeout(() => { setCombo(1); }, 1500);
+
+    const isCrit = Math.random() < 0.10;
+    if (isCrit) { setCritCount(c => c + 1); setCritFlash(true); setTimeout(() => setCritFlash(false), 400); }
+    const gain = crystalsPerClick * (isCrit ? 5 : 1);
+    setCrystals(c => c + gain); setAllTime(t => t + gain); setTotalClicks(c => c + 1);
+    setClicking(true); setTimeout(() => setClicking(false), 120);
+    playClick(isCrit);
+
+    const newP = Array.from({ length: isCrit ? 5 : 2 }, () => ({ id: Date.now() + Math.random(), dx: (Math.random()-0.5)*90, sym: isCrit ? '⭐' : '💎' }));
+    setFlyParticles(p => [...p.slice(-15), ...newP]);
+    newP.forEach(np => setTimeout(() => setFlyParticles(p => p.filter(x => x.id !== np.id)), 750));
   }
 
   function buyUpgrade(u) {
     const count = purchased[u.id] || 0;
-    const cost  = Math.floor(u.cost * Math.pow(1.15, count));
+    const cost = Math.floor(u.cost * Math.pow(1.15, count));
     if (crystals < cost) return;
     setCrystals(c => c - cost);
-    setPurchased(prev => ({ ...prev, [u.id]: count + 1 }));
+    setPurchased(p => ({ ...p, [u.id]: count + 1 }));
+  }
+
+  function handlePrestige() {
+    if (level < 100) return;
+    if (!confirm(`Prestige ${prestige+1} : Reset crystaux & upgrades contre ×${Math.pow(2,prestige+1)} permanent. Confirmer ?`)) return;
+    setPrestige(p => p + 1); setCrystals(0); setPurchased({}); setCombo(1);
+    playLevelUp();
   }
 
   function resetGame() {
-    if (!confirm('Réinitialiser la partie ? Toute progression sera perdue.')) return;
-    setCrystals(0); setTotalCrystals(0); setPurchased({});
-    seenRef.current = new Set();
-    ['sc_crystals','sc_total','sc_upgrades','sc_milestones'].forEach(k => localStorage.removeItem(k));
+    if (!confirm('Reset TOTAL ? Même le prestige sera effacé.')) return;
+    setCrystals(0); setAllTime(0); setPurchased({}); setPrestige(0);
+    setTotalClicks(0); setCritCount(0); setEventCount(0); setMaxCombo(1);
+    setAchievements(new Set()); setCombo(1); setFoundSpider(false);
+    seenMsRef.current = new Set(); seenAchRef.current = new Set();
+    ['sc_crystals','sc_alltime','sc_upgrades','sc_prestige','sc_clicks','sc_crits',
+     'sc_events','sc_maxcombo','sc_level','sc_milestones','sc_achievements','sc_citation','sc_nextevent','sc_spider'].forEach(k => localStorage.removeItem(k));
   }
 
+  // ── Render ──
   return (
-    <div className="tab-fade space-y-5">
+    <div className="tab-fade space-y-4 cursor-crystal">
+      {/* Level-Up overlay */}
+      {levelUpAnim && (
+        <div className="level-up-anim z-[9000]">
+          <div className="bg-[#1a0f0a]/95 border-2 border-amber-400 rounded-2xl px-10 py-6 text-center shadow-2xl shadow-amber-900/60">
+            <div className="text-4xl mb-2">⬆️</div>
+            <div className="text-3xl font-black font-serif text-amber-300">NIVEAU {levelUpAnim.level}</div>
+            <div className="text-sm text-amber-500 font-bold uppercase tracking-widest mt-1">{levelUpAnim.title}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Critical flash */}
+      {critFlash && <div className="crit-flash-overlay"/>}
+
+      {/* SPIDER easter egg */}
+      {spiderEgg && (
+        <div className="spider-egg">
+          <div className="text-center bg-[#1a0f0a]/95 border-2 border-red-500 rounded-2xl p-6 shadow-2xl">
+            <img src="https://i.imgur.com/GM7RDI9.jpeg" alt="" className="w-40 h-40 rounded-full mx-auto mb-3 border-4 border-red-600 object-cover"/>
+            <div className="text-2xl font-black text-red-400 font-serif">SPIDER-CHAT RÉVÉLÉ !</div>
+            <div className="text-xs text-stone-400 mt-1 font-mono">Easter Egg débloqué 🕷️</div>
+          </div>
+        </div>
+      )}
+
       {/* Milestone banner */}
       {milestone && (
         <div className="milestone-banner fixed top-20 left-1/2 z-[300] bg-[#1a0f0a]/95 border border-amber-500/70 rounded-2xl px-8 py-3 text-center shadow-2xl shadow-amber-900/40 pointer-events-none">
@@ -486,131 +836,255 @@ function SpiderChatClicker() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Achievement toast */}
+      {achToast && (
+        <div className="milestone-banner fixed top-36 left-1/2 z-[300] bg-[#0d1a12]/95 border border-emerald-500/70 rounded-2xl px-8 py-3 text-center shadow-2xl pointer-events-none">
+          <p className="text-sm font-black font-serif text-emerald-300">{achToast.icon} Succès : {achToast.name}</p>
+          <p className="text-[10px] text-emerald-600 mt-0.5">{achToast.desc}</p>
+        </div>
+      )}
 
-        {/* Zone de clic principale */}
-        <div className="lg:col-span-2 bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-6 flex flex-col items-center gap-6">
+      {/* Profile drawer */}
+      {profilePseudo && <ProfileDrawer pseudo={profilePseudo} onClose={() => setProfilePseudo(null)}/>}
 
-          {/* Compteur crystaux */}
-          <div className="text-center space-y-1">
-            <div className="text-6xl font-black font-serif text-amber-400 tabular-nums leading-none">
-              {Math.floor(crystals).toLocaleString('fr-FR')}
-            </div>
-            <div className="text-[11px] text-stone-500 font-mono uppercase tracking-widest">Arcane Crystals</div>
-            {cps > 0 && (
-              <div className="text-xs text-purple-400 font-mono font-semibold">
-                +{cps.toLocaleString('fr-FR')} / seconde
+      {/* Header: level + badge + views */}
+      <div className="bg-[#120d0a] border border-[#2a1d14] rounded-xl p-4 flex flex-wrap items-center gap-4 justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`text-2xl ${badge.pulse ? 'badge-pulse' : ''} ${badge.rainbow ? 'rainbow-text' : ''}`}>{badge.emoji}</div>
+          <div>
+            <div className={`text-sm font-black ${badge.color} ${badge.rainbow ? 'rainbow-text' : ''}`}>{badge.name}</div>
+            <div className="text-[10px] text-stone-500 font-mono">Niv. {level} · {levelTitle}{prestige > 0 ? ` · ${'★'.repeat(prestige)} Prestige` : ''}</div>
+          </div>
+        </div>
+        {/* Level progress bar */}
+        <div className="flex-1 min-w-[120px] max-w-[200px]">
+          <div className="flex justify-between text-[9px] text-stone-600 font-mono mb-1"><span>Niv.{level}</span>{level < 100 && <span>Niv.{level+1}</span>}</div>
+          <div className="h-1.5 bg-[#211610] rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500"
+              style={{width: level >= 100 ? '100%' : `${levelPct}%`}}/>
+          </div>
+        </div>
+        {/* Arcanic event indicator */}
+        {arcanicEvent && (
+          <div className="flex items-center gap-1.5 bg-yellow-900/40 border border-yellow-600/60 rounded-lg px-3 py-1.5">
+            <span className="text-yellow-300 text-xs font-black">⭐ ×10</span>
+            <span className="text-yellow-500 text-[10px] font-mono">{eventLeft}s</span>
+          </div>
+        )}
+        {/* View tabs */}
+        <div className="flex gap-1">
+          {[{v:'clicker',label:'🐱'},{v:'leaderboard',label:'🏆'},{v:'achievements',label:'🎖️'}].map(({v,label}) => (
+            <button key={v} onClick={() => setActiveView(v)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${activeView===v ? 'bg-amber-900/50 border-amber-600/50 text-amber-300' : 'bg-[#0d0907] border-[#211610] text-stone-600 hover:text-stone-400'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── CLICKER VIEW ── */}
+      {activeView === 'clicker' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Click zone */}
+          <div className="lg:col-span-2 bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 flex flex-col items-center gap-5">
+            <div className="text-center space-y-1">
+              <div className="text-5xl font-black font-serif text-amber-400 tabular-nums leading-none">
+                {Math.floor(crystals).toLocaleString('fr-FR')}
               </div>
+              <div className="text-[10px] text-stone-600 font-mono uppercase tracking-widest">Arcane Crystals</div>
+              {cps > 0 && <div className="text-xs text-purple-400 font-mono">+{cps.toLocaleString('fr-FR')} /sec</div>}
+            </div>
+
+            {/* Combo indicator */}
+            {combo > 1 && (
+              <div key={comboKey} className="combo-pop bg-orange-900/60 border border-orange-500/60 rounded-full px-4 py-1">
+                <span className="text-sm font-black text-orange-300">×{combo} COMBO !</span>
+              </div>
+            )}
+
+            {/* Click button */}
+            <div className="relative flex flex-col items-center gap-3">
+              {flyParticles.map(p => (
+                <span key={p.id} className="fly-crystal" style={{'--dx': p.dx + 'px'}}>{p.sym}</span>
+              ))}
+              <button onClick={handleClick}
+                className={`relative w-44 h-44 rounded-full border-4 border-red-600/80 flex items-center justify-center select-none transition-transform duration-100 chat-pulse overflow-hidden ${clicking ? 'scale-90' : 'scale-100'} ${badge.divine ? 'divine-glow' : ''} ${badge.rainbow ? 'rainbow-border' : ''}`}
+                style={{ background:'radial-gradient(circle at 35% 35%,#dc2626 0%,#7f1d1d 55%,#3b0000 100%)', boxShadow:'0 0 30px rgba(220,38,38,0.35),inset 0 0 20px rgba(0,0,0,0.5)' }}>
+                <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100">
+                  {[0,30,60,90,120,150].map(a => (
+                    <line key={a} x1="50" y1="50" x2={50+50*Math.cos(a*Math.PI/180)} y2={50+50*Math.sin(a*Math.PI/180)} stroke="white" strokeWidth="0.8"/>
+                  ))}
+                  {[12,22,32,42].map(r => (
+                    <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>
+                  ))}
+                </svg>
+                <img src="https://i.imgur.com/GM7RDI9.jpeg" alt="Spider-Chat"
+                  className="relative z-10 rounded-full object-cover" style={{width:200,height:200,pointerEvents:'none'}}/>
+              </button>
+              <div className="text-center space-y-0.5">
+                <div className="text-[10px] text-stone-500 font-mono">
+                  +{Math.round(crystalsPerClick).toLocaleString('fr-FR')} /clic{combo>1?` ×${combo} COMBO`:''}{arcanicEvent?' ⭐×10':''}
+                </div>
+                <div className="text-[9px] text-stone-700 font-mono">10% critique ×5 — Tape SPIDER !</div>
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-4 gap-2 w-full max-w-sm">
+              {[
+                { label:'/clic',  value: Math.round(crystalsPerClick).toLocaleString('fr-FR'), color:'text-amber-400' },
+                { label:'/sec',   value: Math.round(cps).toLocaleString('fr-FR'),              color:'text-purple-400' },
+                { label:'total',  value: Math.floor(allTime).toLocaleString('fr-FR'),          color:'text-stone-300' },
+                { label:'clics',  value: totalClicks.toLocaleString('fr-FR'),                  color:'text-blue-400' },
+              ].map(s => (
+                <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-lg p-2 text-center">
+                  <div className={`text-xs font-black font-mono ${s.color} tabular-nums`}>{s.value}</div>
+                  <div className="text-[8px] text-stone-700 uppercase tracking-wider">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Citation */}
+            <div className="w-full max-w-sm">
+              {editCit ? (
+                <div className="flex gap-2">
+                  <input maxLength={100} value={citation} onChange={e=>setCitation(e.target.value)}
+                    className="flex-1 bg-[#0a0605] border border-[#3e2a1e] rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-700 font-mono"
+                    placeholder="Votre citation (100 chars)"
+                    onBlur={() => { setEditCit(false); syncScore(); }}
+                    autoFocus/>
+                </div>
+              ) : (
+                <button onClick={() => setEditCit(true)}
+                  className="w-full text-center text-[10px] text-stone-600 hover:text-stone-400 italic border border-dashed border-[#211610] hover:border-[#3a2a1c] rounded-lg py-2 px-3 transition-all">
+                  {citation || '✏️ Ajouter une citation…'}
+                </button>
+              )}
+            </div>
+
+            {/* Prestige button (level 100 only) */}
+            {level >= 100 && (
+              <button onClick={handlePrestige}
+                className="w-full max-w-sm divine-glow bg-gradient-to-r from-amber-900/60 to-yellow-900/60 border border-amber-400/60 rounded-xl py-3 font-black text-amber-300 text-sm font-serif uppercase tracking-wider">
+                ✨ PRESTIGE {prestige+1} — ×{Math.pow(2,prestige+1)} permanent
+              </button>
             )}
           </div>
 
-          {/* Bouton chat Spider-Man */}
-          <div className="relative flex flex-col items-center gap-3">
-            {/* Particules volantes */}
-            {flyParticles.map(p => (
-              <span key={p.id} className="fly-crystal" style={{'--dx': p.dx + 'px'}}>💎</span>
-            ))}
-
-            <button
-              onClick={handleClick}
-              className={`relative w-44 h-44 rounded-full border-4 border-red-600/80 flex items-center justify-center select-none transition-transform duration-100 chat-pulse overflow-hidden ${clicking ? 'scale-90' : 'scale-100'}`}
-              style={{
-                background: 'radial-gradient(circle at 35% 35%, #dc2626 0%, #7f1d1d 55%, #3b0000 100%)',
-                boxShadow: '0 0 30px rgba(220,38,38,0.35), inset 0 0 20px rgba(0,0,0,0.5)',
-              }}
-            >
-              {/* Toile d'araignée SVG */}
-              <svg className="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                {[0,30,60,90,120,150].map(a => (
-                  <line key={a} x1="50" y1="50"
-                    x2={50 + 50*Math.cos(a*Math.PI/180)}
-                    y2={50 + 50*Math.sin(a*Math.PI/180)}
-                    stroke="white" strokeWidth="0.8"/>
-                ))}
-                {[12,22,32,42].map(r => (
-                  <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="white" strokeWidth="0.7"/>
-                ))}
-              </svg>
-              <img
-                src="https://i.imgur.com/GM7RDI9.jpeg"
-                alt="Spider-Chat"
-                className="relative z-10 rounded-full object-cover"
-                style={{ width: 200, height: 200, pointerEvents: 'none' }}
-              />
-            </button>
-
-            <div className="text-center space-y-0.5">
-              <div className="text-[11px] text-stone-400 font-mono uppercase tracking-widest">
-                {chatExpr.label}
-              </div>
-              <div className="text-[10px] text-amber-600 font-mono">
-                +{crystalsPerClick} crystal{crystalsPerClick > 1 ? 'x' : ''} / clic
-              </div>
-            </div>
-          </div>
-
-          {/* Stats rapides */}
-          <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
-            {[
-              { label:'Par clic',    value: crystalsPerClick, color:'text-amber-400'  },
-              { label:'Par seconde', value: cps,              color:'text-purple-400' },
-              { label:'Total gagné', value: Math.floor(totalCrystals), color:'text-stone-300' },
-            ].map(s => (
-              <div key={s.label} className="bg-[#0d0907] border border-[#211610] rounded-xl p-3 text-center">
-                <div className={`text-base font-black font-mono ${s.color}`}>
-                  {s.value.toLocaleString('fr-FR')}
-                </div>
-                <div className="text-[9px] text-stone-600 uppercase tracking-wider mt-0.5">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel upgrades */}
-        <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-4 flex flex-col gap-3">
-          <h3 className="text-[11px] font-black uppercase tracking-widest text-stone-400 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500"/> Améliorations
-          </h3>
-
-          <div className="flex-1 space-y-2">
-            {SPIDER_UPGRADES.map(u => {
-              const count    = purchased[u.id] || 0;
-              const cost     = Math.floor(u.cost * Math.pow(1.15, count));
-              const canBuy   = crystals >= cost;
+          {/* Upgrades panel */}
+          <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-3 flex flex-col gap-2 overflow-y-auto max-h-[680px]">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-stone-500 flex items-center gap-1.5 px-1 sticky top-0 bg-[#120d0a] py-1 z-10">
+              <Sparkles className="w-3 h-3 text-amber-500"/> Améliorations ({upgradeCount}/15)
+            </h3>
+            {CLICKER_UPGRADES.map(u => {
+              const count = purchased[u.id] || 0;
+              const cost  = Math.floor(u.cost * Math.pow(1.15, count));
+              const can   = crystals >= cost;
+              const roi   = u.cps > 0 ? (cost / (u.cps * prestigeMult)).toFixed(1) + 's' : null;
               return (
-                <button key={u.id} onClick={() => buyUpgrade(u)} disabled={!canBuy}
-                  className={`w-full text-left p-3 rounded-xl border transition-all ${canBuy ? 'bg-amber-900/20 border-amber-700/50 hover:bg-amber-900/35' : 'bg-[#0a0705] border-[#1c1108] opacity-50 cursor-not-allowed'}`}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-xs font-bold text-stone-200">{u.name}</span>
-                    {count > 0 && (
-                      <span className="text-[9px] bg-amber-900/60 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-mono">×{count}</span>
-                    )}
+                <button key={u.id} onClick={() => buyUpgrade(u)} disabled={!can}
+                  data-tip={roi ? `ROI: ${roi}` : undefined}
+                  className={`w-full text-left p-2.5 rounded-xl border transition-all ${can ? 'bg-amber-900/20 border-amber-700/40 hover:bg-amber-900/30' : 'bg-[#0a0705] border-[#1c1108] opacity-40 cursor-not-allowed'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-base leading-none">{u.icon}</span>
+                      <span className="text-[11px] font-bold text-stone-300">{u.name}</span>
+                    </div>
+                    {count > 0 && <span className="text-[9px] bg-amber-900/70 text-amber-300 border border-amber-700/50 px-1.5 py-0.5 rounded font-mono">×{count}</span>}
                   </div>
-                  <div className="text-[10px] text-stone-600 leading-snug">{u.desc}</div>
-                  <div className={`text-[11px] font-black font-mono mt-1.5 ${canBuy ? 'text-amber-400' : 'text-stone-700'}`}>
+                  <div className="text-[9px] text-stone-600 mt-0.5">{u.desc}</div>
+                  <div className={`text-[10px] font-black font-mono mt-1 ${can ? 'text-amber-400' : 'text-stone-700'}`}>
                     💎 {cost.toLocaleString('fr-FR')}
                   </div>
                 </button>
               );
             })}
+            <button onClick={resetGame} className="text-[8px] text-stone-800 hover:text-red-700 transition-colors font-mono underline mt-2">
+              Réinitialiser
+            </button>
           </div>
+        </div>
+      )}
 
-          {/* Milestones débloqués */}
-          {seenRef.current.size > 0 && (
-            <div className="border-t border-[#1c1108] pt-3 space-y-1.5">
-              <div className="text-[9px] text-stone-600 uppercase tracking-wider font-mono">Succès débloqués</div>
-              {SPIDER_MILESTONES.filter(m => seenRef.current.has(m.at)).map(m => (
-                <div key={m.at} className={`text-[10px] font-semibold ${m.color}`}>{m.msg}</div>
-              ))}
+      {/* ── LEADERBOARD VIEW ── */}
+      {activeView === 'leaderboard' && (
+        <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black font-serif text-stone-100 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-amber-500"/> Classement Global
+            </h3>
+            <button onClick={fetchLb} className="text-[10px] text-stone-600 hover:text-stone-400 font-mono flex items-center gap-1">
+              <RefreshCw className="w-3 h-3"/> Refresh
+            </button>
+          </div>
+          {/* Tab selector */}
+          <div className="flex gap-1.5">
+            {[{k:'crystaux',l:'💎 Crystaux'},{k:'cps',l:'⚡ CPS'},{k:'niveau',l:'⬆️ Niveau'},{k:'clics',l:'🖱️ Clics'}].map(({k,l}) => (
+              <button key={k} onClick={() => setLbTab(k)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${lbTab===k ? 'bg-amber-900/40 border-amber-600/50 text-amber-300' : 'bg-[#0d0907] border-[#211610] text-stone-600'}`}>
+                {l}
+              </button>
+            ))}
+          </div>
+          {lbLoading ? (
+            <div className="text-center text-stone-600 text-xs py-6 font-mono">Chargement…</div>
+          ) : leaderboard.length === 0 ? (
+            <div className="text-center text-stone-600 text-xs py-6 font-mono">Aucune entrée — joue pour apparaître !</div>
+          ) : (
+            <div className="space-y-2">
+              {leaderboard.map((row, i) => {
+                const isMe = row.pseudo === userPseudo;
+                const medal = ['🥇','🥈','🥉'][i] || `#${i+1}`;
+                const val = lbTab === 'crystaux' ? row.crystaux : lbTab === 'cps' ? row.cps : lbTab === 'niveau' ? row.niveau : row.total_clics;
+                return (
+                  <div key={row.pseudo}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${isMe ? 'bg-amber-900/25 border-amber-600/50' : 'bg-[#0d0907] border-[#211610] hover:border-[#3a2a1c]'}`}>
+                    <span className="text-base w-6 text-center">{medal}</span>
+                    <span className="text-base">{row.badge_emoji}</span>
+                    <button onClick={() => setProfilePseudo(row.pseudo)} className="flex-1 text-left">
+                      <span className={`text-xs font-bold ${isMe ? 'text-amber-300' : 'text-stone-300'} hover:underline`}>{row.pseudo}</span>
+                      {row.prestige > 0 && <span className="ml-1 text-[9px] text-yellow-400">{'★'.repeat(Math.min(row.prestige,5))}</span>}
+                    </button>
+                    <div className="text-right">
+                      <div className="text-xs font-black font-mono text-amber-400">{(val||0).toLocaleString('fr-FR')}</div>
+                      <div className="text-[9px] text-stone-600">Niv.{row.niveau||1}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
-
-          <button onClick={resetGame}
-            className="text-[9px] text-stone-800 hover:text-red-600 transition-colors font-mono underline mt-1">
-            Réinitialiser la partie
-          </button>
+          {userPseudo && (
+            <div className="pt-3 border-t border-[#211610] text-center">
+              <button onClick={syncScore} className="text-[10px] text-amber-700 hover:text-amber-500 font-mono underline">
+                Synchro mon score maintenant
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* ── ACHIEVEMENTS VIEW ── */}
+      {activeView === 'achievements' && (
+        <div className="bg-[#120d0a] border border-[#2a1d14] rounded-2xl p-5 space-y-4">
+          <h3 className="text-sm font-black font-serif text-stone-100 flex items-center gap-2">
+            <Award className="w-4 h-4 text-amber-500"/> Succès ({achievements.size}/{ACHIEVEMENTS.length})
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {ACHIEVEMENTS.map(a => {
+              const done = achievements.has(a.id);
+              return (
+                <div key={a.id} className={`p-3 rounded-xl border text-center transition-all ${done ? 'bg-emerald-900/20 border-emerald-700/50' : 'bg-[#0a0705] border-[#1c1108] opacity-50'}`}>
+                  <div className="text-xl mb-1">{a.icon}</div>
+                  <div className={`text-[10px] font-bold ${done ? 'text-emerald-300' : 'text-stone-600'}`}>{a.name}</div>
+                  <div className="text-[9px] text-stone-700 mt-0.5">{a.desc}</div>
+                  {done && <div className="text-[8px] text-emerald-600 mt-1">✓ Débloqué</div>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -621,6 +1095,14 @@ export default function App() {
     !!(localStorage.getItem('taverne_pseudo') && localStorage.getItem('taverne_registered'))
   );
   const [userPseudo, setUserPseudo] = useState(() => localStorage.getItem('taverne_pseudo') || '');
+  const [powerLevel, setPowerLevel] = useState(() => {
+    try { return parseInt(localStorage.getItem('sc_level') || '1'); } catch { return 1; }
+  });
+  useEffect(() => {
+    const handler = e => setPowerLevel(e.detail);
+    window.addEventListener('powerlevel', handler);
+    return () => window.removeEventListener('powerlevel', handler);
+  }, []);
 
   const [activeTab,  setActiveTab]  = useState('dashboard');
   const [syncing,    setSyncing]    = useState(false);
@@ -858,12 +1340,22 @@ export default function App() {
   }
 
   // ── Login ────────────────────────────────────────────────────────────────
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    const clean = userPseudo.trim();
+  const handleRegister = async (e, overridePseudo) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const clean = (overridePseudo || userPseudo).trim();
     if (!clean) return;
     localStorage.setItem('taverne_registered', 'true');
     localStorage.setItem('taverne_pseudo', clean);
+    // Update pseudo history (max 5)
+    try {
+      const hist = JSON.parse(localStorage.getItem('taverne_historique') || '[]');
+      const level = parseInt(localStorage.getItem('sc_level') || '1');
+      const allTime = parseInt(localStorage.getItem('sc_alltime') || '0');
+      const existing = hist.find(h => h.pseudo === clean);
+      const entry = { pseudo: clean, level, crystals: allTime, lastSeen: new Date().toISOString().slice(0,10) };
+      const filtered = hist.filter(h => h.pseudo !== clean);
+      localStorage.setItem('taverne_historique', JSON.stringify([entry, ...filtered].slice(0, 5)));
+    } catch {}
     await supabase.from('aventuriers').insert([{ pseudo: clean }], { ignoreDuplicates: true });
     setIsRegistered(true);
   };
@@ -1107,7 +1599,7 @@ export default function App() {
             animationDelay: p.dl + 's',
           }}/>
         ))}
-        <div className="bg-[#150e0b]/90 backdrop-blur-sm p-8 rounded-xl border border-[#38261c] shadow-2xl max-w-md w-full text-center space-y-6 relative z-10">
+        <div className="bg-[#150e0b]/90 backdrop-blur-sm p-8 rounded-xl border border-[#38261c] shadow-2xl max-w-md w-full text-center space-y-5 relative z-10">
           <div className="inline-flex p-3 bg-[#e58219]/10 rounded-full border border-[#e58219]/20">
             <Beer className="w-10 h-10 text-[#e58219]"/>
           </div>
@@ -1115,6 +1607,37 @@ export default function App() {
             <h2 className="text-2xl font-serif font-black text-white uppercase tracking-wider">Taverne d'Arcane Frontier</h2>
             <p className="text-xs text-stone-400 mt-1">Identifiez-vous pour accéder aux registres de la guilde.</p>
           </div>
+
+          {/* Historique pseudos */}
+          {(() => {
+            try {
+              const hist = JSON.parse(localStorage.getItem('taverne_historique') || '[]');
+              if (hist.length === 0) return null;
+              return (
+                <div className="text-left space-y-2">
+                  <div className="text-[10px] text-stone-600 uppercase tracking-widest font-mono">Retour rapide</div>
+                  {hist.map(h => {
+                    const badge = [...BADGES].reverse().find(b => (h.level||1) >= b.min) ?? BADGES[0];
+                    return (
+                      <button key={h.pseudo} onClick={() => handleRegister(null, h.pseudo)}
+                        className="w-full flex items-center gap-3 bg-[#0a0605] border border-[#2a1d14] hover:border-[#4a3020] rounded-lg px-4 py-2.5 transition-all group">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-700 to-amber-900 flex items-center justify-center text-sm font-black text-stone-950 font-serif flex-shrink-0">
+                          {h.pseudo.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <div className="text-sm font-bold text-stone-200 group-hover:text-white">{h.pseudo}</div>
+                          <div className="text-[9px] text-stone-600 font-mono">{badge.emoji} Niv.{h.level||1} · {(h.crystals||0).toLocaleString('fr-FR')} crystaux</div>
+                        </div>
+                        <span className="text-[9px] text-stone-700 group-hover:text-amber-600 font-mono">{h.lastSeen}</span>
+                      </button>
+                    );
+                  })}
+                  <div className="text-[9px] text-stone-700 text-center font-mono pt-1">— ou nouveau personnage —</div>
+                </div>
+              );
+            } catch { return null; }
+          })()}
+
           <form onSubmit={handleRegister} className="space-y-3">
             <input type="text" value={userPseudo} onChange={e=>setUserPseudo(e.target.value)}
               placeholder="Votre pseudo Minecraft exact"
@@ -1140,8 +1663,11 @@ export default function App() {
     { id:'profil',      label:'Profil',           icon:User },
   ];
 
+  const powerClass = powerLevel >= 100 ? 'power-100' : powerLevel >= 75 ? 'power-75' : powerLevel >= 50 ? 'power-50' : powerLevel >= 20 ? 'power-20' : '';
+
   return (
-    <div className={`min-h-screen text-stone-300 font-sans antialiased ${shaking ? 'screen-shake' : ''}`}
+    <PowerLevelCtx.Provider value={powerLevel}>
+    <div className={`min-h-screen text-stone-300 font-sans antialiased ${shaking ? 'screen-shake' : ''} ${powerClass}`}
       style={{ backgroundColor: moonMode ? '#02040f' : '#090605' }}>
 
       {/* Toast */}
@@ -1829,9 +2355,9 @@ export default function App() {
               <h2 className="text-lg font-black font-serif text-stone-100 flex items-center gap-2">
                 <Gamepad2 className="w-5 h-5 text-amber-500"/> Mini-Jeux
               </h2>
-              <p className="text-xs text-stone-500 mt-0.5">Spider-Chat Clicker — Accumulez des Arcane Crystals !</p>
+              <p className="text-xs text-stone-500 mt-0.5">Spider-Chat Clicker v3 — Badges · Leaderboard · Prestige · Succès</p>
             </div>
-            <SpiderChatClicker />
+            <SpiderChatClicker userPseudo={userPseudo} />
           </div>
         )}
 
@@ -1959,5 +2485,6 @@ export default function App() {
         )}
       </main>
     </div>
+    </PowerLevelCtx.Provider>
   );
 }
