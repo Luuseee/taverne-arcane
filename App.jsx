@@ -478,12 +478,64 @@ function fmt(n) {
 }
 
 const CAT_SKINS = [
-  { id:'default', emoji:'',    name:'Classique',   rarity:'common',    weight:50, color:'#6ee7b7' },
-  { id:'pirate',  emoji:'🏴‍☠️', name:'Pirate',      rarity:'rare',      weight:25, color:'#60a5fa' },
-  { id:'mage',    emoji:'🧙',  name:'Mage Arcane', rarity:'epic',      weight:15, color:'#c084fc' },
-  { id:'robot',   emoji:'🤖',  name:'Cyber-Chat',  rarity:'legendary', weight:8,  color:'#fbbf24' },
-  { id:'dragon',  emoji:'🐉',  name:'Dragon Divin',rarity:'divine',    weight:2,  color:'#f97316' },
+  { id:'default',    emoji:'',    name:'Classique',        rarity:'common',    weight:50, color:'#6ee7b7', skinClass:'' },
+  { id:'pirate',     emoji:'🏴‍☠️', name:'Pirate',           rarity:'rare',      weight:25, color:'#60a5fa', skinClass:'' },
+  { id:'mage',       emoji:'🧙',  name:'Mage Arcane',      rarity:'epic',      weight:15, color:'#c084fc', skinClass:'' },
+  { id:'robot',      emoji:'🤖',  name:'Cyber-Chat',       rarity:'legendary', weight:8,  color:'#fbbf24', skinClass:'' },
+  { id:'dragon',     emoji:'🐉',  name:'Dragon Divin',     rarity:'divine',    weight:2,  color:'#f97316', skinClass:'' },
+  { id:'ascendant',  emoji:'✨',  name:'Chat Ascendant',   rarity:'prestige3', weight:0,  color:'#c084fc', skinClass:'prestige-halo' },
+  { id:'primordial', emoji:'🌌',  name:'Chat Primordial',  rarity:'prestige10',weight:0,  color:'#38bdf8', skinClass:'prestige-cosmic' },
 ];
+
+const ARCANE_CARDS = [
+  // ── Communes (poids total ~50) ──
+  { id:'c_sleep',      name:'Chat qui Dort',             rarity:'commune',     weight:8,   border:'#6b7280', bg:'from-indigo-950 to-slate-900',   emoji:'😴🐱💤', desc:'ZZZ... Le destin attend.' },
+  { id:'c_window',     name:'Chat Fenêtre',              rarity:'commune',     weight:8,   border:'#6b7280', bg:'from-slate-900 to-blue-950',     emoji:'🪟🐱🌧️', desc:'Il attend. Il a toujours attendu.' },
+  { id:'c_suspicious', name:'Chat Suspicieux',           rarity:'commune',     weight:7,   border:'#6b7280', bg:'from-stone-900 to-stone-800',    emoji:'👀🐱📦', desc:'Cette boîte... elle le regarde.' },
+  { id:'c_bowl',       name:'Chat Gamelle',              rarity:'commune',     weight:7,   border:'#6b7280', bg:'from-orange-950 to-stone-900',   emoji:'🥣🐱💧', desc:'C\'était accidentel. Peut-être.' },
+  { id:'c_loaf',       name:'Chat en Loaf',              rarity:'commune',     weight:7,   border:'#6b7280', bg:'from-amber-950 to-stone-900',    emoji:'🍞🐱✨', desc:'Forme parfaite. Énergie zéro.' },
+  { id:'c_monday',     name:'Chat du Lundi',             rarity:'commune',     weight:5,   border:'#6b7280', bg:'from-gray-900 to-gray-950',      emoji:'😾🐱☕', desc:'Non. Juste... non.' },
+  { id:'c_monorail',   name:'Chat Monorail',             rarity:'commune',     weight:5,   border:'#6b7280', bg:'from-cyan-950 to-slate-900',     emoji:'🚝🐱😌', desc:'Glisse. Sans raison.' },
+  { id:'c_biscuit',    name:'Chat qui Pétrit',           rarity:'commune',     weight:4,   border:'#6b7280', bg:'from-amber-950 to-orange-950',   emoji:'🐾🐱🍞', desc:'Making bread. All day. Every day.' },
+  { id:'c_ghost',      name:'Chat Fantôme',              rarity:'commune',     weight:4,   border:'#6b7280', bg:'from-slate-900 to-gray-950',     emoji:'👻🐱🛋️', desc:'Dans le canapé. Invisible. Partout.' },
+  { id:'c_boxlover',   name:'Chat Boîte Vide',           rarity:'commune',     weight:5,   border:'#6b7280', bg:'from-stone-950 to-neutral-900',  emoji:'📦🐱💕', desc:'La boîte > le jouet. Toujours.' },
+  // ── Peu Communes (poids total ~25) ──
+  { id:'u_ninja',      name:'Chat Ninja',                rarity:'peu_commune', weight:5,   border:'#22c55e', bg:'from-gray-950 to-green-950',     emoji:'🥷🐱🕷️', desc:'Il était là. Il n\'est plus là.', holo:true },
+  { id:'u_detective',  name:'Chat Détective',            rarity:'peu_commune', weight:5,   border:'#22c55e', bg:'from-amber-950 to-gray-900',     emoji:'🔍🐱🎩', desc:'Il a tout résolu. Depuis le canapé.', holo:true },
+  { id:'u_astro',      name:'Chat Astronaute',           rarity:'peu_commune', weight:5,   border:'#22c55e', bg:'from-indigo-950 to-slate-950',   emoji:'🚀🐱⭐', desc:'L\'espace lui appartient.', holo:true },
+  { id:'u_chef',       name:'Chat Pizzaïolo Runique',    rarity:'peu_commune', weight:5,   border:'#22c55e', bg:'from-red-950 to-orange-950',     emoji:'🍕🐱✨', desc:'La recette est un secret arcanique.', holo:true },
+  { id:'u_samurai',    name:'Chat Samouraï',             rarity:'peu_commune', weight:5,   border:'#22c55e', bg:'from-red-950 to-stone-950',      emoji:'⚔️🐱🎎', desc:'L\'honneur d\'un cristal bien mérité.', holo:true },
+  // ── Rares (poids total ~13) ──
+  { id:'r_spider',     name:'Chat Ninja Araignée',       rarity:'rare',        weight:3,   border:'#3b82f6', bg:'from-red-950 to-slate-950',      emoji:'🕷️🐱🌌', desc:'Tisseur de sorts dans l\'ombre.', holo:true },
+  { id:'r_space',      name:'Chat Astronaute Arcanique', rarity:'rare',        weight:3,   border:'#3b82f6', bg:'from-purple-950 to-indigo-950',  emoji:'🌌🐱🚀', desc:'Explorer des astres et des donjons.', holo:true },
+  { id:'r_alchemist',  name:'Chat Alchimiste',           rarity:'rare',        weight:3,   border:'#3b82f6', bg:'from-green-950 to-teal-950',     emoji:'⚗️🐱✨', desc:'Transmutation de l\'ennui en magie.', holo:true },
+  { id:'r_scroll',     name:'Chat Détective Runique',    rarity:'rare',        weight:2,   border:'#3b82f6', bg:'from-amber-950 to-purple-950',   emoji:'📜🐱🔍', desc:'Chaque parchemin est un mystère résolu.', holo:true },
+  { id:'r_pirate',     name:'Chat Pirate des Cieux',     rarity:'rare',        weight:2,   border:'#3b82f6', bg:'from-slate-900 to-blue-950',     emoji:'⛵🐱🏴‍☠️', desc:'Capitaine d\'un vaisseau qui n\'existe pas.', holo:true },
+  // ── Épiques (poids total ~7) ──
+  { id:'e_smith',      name:'Chat Forgeron de Create',   rarity:'epique',      weight:2.5, border:'#a855f7', bg:'from-stone-900 to-orange-950',   emoji:'⚙️🐱🔥', desc:'Engrenages, sueur et magie mécanique.', particles:true },
+  { id:'e_arch',       name:'Chat Archimage Grimoire',   rarity:'epique',      weight:2.5, border:'#a855f7', bg:'from-purple-950 to-indigo-950',  emoji:'📚🐱🔮', desc:'Son grimoire flotte. Lui aussi.', particles:true },
+  { id:'e_knight',     name:'Chat Chevalier Apotheosis', rarity:'epique',      weight:2,   border:'#a855f7', bg:'from-amber-950 to-stone-950',    emoji:'🛡️🐱👑', desc:'Armure légendaire, âme de velours.', particles:true },
+  // ── Légendaires (poids total ~4) ──
+  { id:'l_voidsent',   name:'Chat Gardien Voidsent',     rarity:'legendaire',  weight:1.5, border:'#f59e0b', bg:'from-purple-950 to-violet-950',  emoji:'🌿🐱👁️', desc:'Il garde la forêt depuis l\'éternité.', legendary:true },
+  { id:'l_dragon',     name:'Chat Dragon Supercharged',  rarity:'legendaire',  weight:1.5, border:'#f59e0b', bg:'from-red-950 to-orange-950',     emoji:'🐉🐱⚡', desc:'Trois phases. Zéro pitié.', legendary:true },
+  { id:'l_obliterator',name:'Chat Obliterator',          rarity:'legendaire',  weight:1,   border:'#f59e0b', bg:'from-slate-950 to-gray-950',     emoji:'⚡🐱💀', desc:'Identifie l\'original grâce à l\'ombre.', legendary:true },
+  // ── Mythiques (poids total ~0.9) ──
+  { id:'m_creator',    name:'Chat Créateur d\'Univers',  rarity:'mythique',    weight:0.5, border:'rainbow', bg:'from-slate-950 to-purple-950',   emoji:'🌌✨🐱', desc:'Du néant, il a créé des cristaux.', mythic:true },
+  { id:'m_emperor',    name:'Chat Empereur Arcanique',   rarity:'mythique',    weight:0.4, border:'rainbow', bg:'from-amber-950 to-yellow-950',   emoji:'👑🐱🔱', desc:'Son règne dure depuis avant le premier prestige.', mythic:true },
+  // ── Secrètes (poids total ~0.1) ──
+  { id:'s_anthropic',  name:'Chat Anthropic',            rarity:'secrete',     weight:0.07,border:'#ec4899', bg:'from-rose-950 to-purple-950',    emoji:'🤖🐱🧠', desc:'Entraîné sur d\'infinis cristaux arcaniques.', secret:true },
+  { id:'s_meaning',    name:'Chat du Vrai Sens',         rarity:'secrete',     weight:0.03,border:'#ec4899', bg:'from-indigo-950 to-blue-950',    emoji:'🧿🐱❓', desc:'Il a trouvé. C\'était 42 cristaux.', secret:true },
+];
+
+const RARITY_CONFIG = {
+  commune:     { label:'Commune',     color:'text-gray-400',   bgBorder:'border-gray-600',    sound:'commune'  },
+  peu_commune: { label:'Peu Commune', color:'text-green-400',  bgBorder:'border-green-600',   sound:'uncommon' },
+  rare:        { label:'Rare',        color:'text-blue-400',   bgBorder:'border-blue-500',    sound:'rare'     },
+  epique:      { label:'Épique',      color:'text-purple-400', bgBorder:'border-purple-500',  sound:'epic'     },
+  legendaire:  { label:'Légendaire',  color:'text-amber-400',  bgBorder:'border-amber-500',   sound:'legendary'},
+  mythique:    { label:'Mythique',    color:'text-white',      bgBorder:'border-white',       sound:'mythic'   },
+  secrete:     { label:'Secrète !!',  color:'text-pink-400',   bgBorder:'border-pink-500',    sound:'secret'   },
+};
 
 function genDailyQuests() {
   const d = new Date().getDate(), m = new Date().getMonth();
@@ -514,6 +566,8 @@ function ProfileDrawer({ pseudo, onClose }) {
   }, [pseudo]);
 
   const badge = data ? ([...BADGES].reverse().find(b => (data.niveau||1) >= b.min) ?? BADGES[0]) : null;
+  const prestigeStars = data?.prestige || 0;
+  const prestigeMul = data ? (1 + (data.prestige||0) * 0.5).toFixed(1) : '1.0';
 
   const inferredAchs = data ? ACHIEVEMENTS.filter(a => {
     const s = { totalClicks:data.total_clics||0, allTime:data.crystaux||0, upgradeCount:15, level:data.niveau||1, critCount:99, maxCombo:10, prestige:data.prestige||0, eventCount:1, lateNight:false, foundSpider:false, hasTrans:data.niveau>=50, cps:data.cps||0 };
@@ -549,10 +603,17 @@ function ProfileDrawer({ pseudo, onClose }) {
         <div className="p-4 space-y-3 overflow-y-auto flex-1">
           {data ? (
             <>
+              {prestigeStars > 0 && (
+                <div className="bg-amber-900/20 border border-amber-700/40 rounded-xl p-3 text-center">
+                  <div className="text-[10px] text-amber-500 uppercase tracking-wider font-mono mb-1">Prestige ×{prestigeStars}</div>
+                  <div className="text-base leading-tight">{'⭐'.repeat(Math.min(prestigeStars,10))}{prestigeStars>10?'…':''}</div>
+                  <div className="text-[10px] text-amber-400 font-mono mt-1">Multiplicateur ×{prestigeMul}</div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { label:'Niveau',   value: data.niveau||1,                  color:'text-amber-400' },
-                  { label:'Prestige', value: data.prestige>0?`★×${data.prestige}`:'—', color:'text-yellow-300' },
+                  { label:'Prestige', value: prestigeStars>0?`⭐×${prestigeStars}`:'—', color:'text-yellow-300' },
                   { label:'Crystaux', value: fmt(data.crystaux||0),           color:'text-blue-300' },
                   { label:'CPS',      value: fmt(data.cps||0),                color:'text-purple-300' },
                   { label:'Clics',    value: fmt(data.total_clics||0),        color:'text-stone-300' },
@@ -651,8 +712,13 @@ function SpiderChatClicker({ userPseudo }) {
   const [gachaBoxes,    setGachaBoxes]    = useState(() => load('sc_gboxes', 0));
   const [unlockedSkins, setUnlockedSkins] = useState(() => load('sc_skins',  ['default']));
   const [activeSkin,    setActiveSkin]    = useState(() => load('sc_skin',   'default'));
-  const [gachaResult,   setGachaResult]   = useState(null);
-  const [showGacha,     setShowGacha]     = useState(false);
+  const [cardInventory, setCardInventory] = useState(() => load('sc_cards',  {}));
+  const [showBoxModal,  setShowBoxModal]  = useState(false);
+  const [showChatDex,   setShowChatDex]   = useState(false);
+  const [openingCards,  setOpeningCards]  = useState([]);
+  const [cardRevealIdx, setCardRevealIdx] = useState(0);
+  const [dexFilter,     setDexFilter]     = useState('toutes');
+  const [dexSelected,   setDexSelected]   = useState(null);
 
   // ── Daily quests ──
   const [dailyQuests, setDailyQuests] = useState(() => {
@@ -672,11 +738,11 @@ function SpiderChatClicker({ userPseudo }) {
   const prevLevelRef    = useRef(null);
   const clickBtnRef     = useRef(null);
   const clickTimesRef   = useRef([]);
-  const gachaThreshRef  = useRef(load('sc_gthresh', 500));
+  const boxesGivenRef   = useRef(load('sc_boxes_given', 0));
   const cpsHistRef      = useRef([]);
 
   // ── Derived ──
-  const prestigeMult     = Math.pow(2, prestige);
+  const prestigeMult     = 1 + prestige * 0.5;
   const totalClickAdd    = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0)*u.clickAdd, 0);
   const cps              = CLICKER_UPGRADES.reduce((a, u) => a + (purchased[u.id]||0)*u.cps, 0) * prestigeMult;
   const evMult           = arcanicEvent ? 10 : 1;
@@ -758,11 +824,11 @@ function SpiderChatClicker({ userPseudo }) {
     localStorage.setItem('sc_gboxes',       JSON.stringify(gachaBoxes));
     localStorage.setItem('sc_skins',        JSON.stringify(unlockedSkins));
     localStorage.setItem('sc_skin',         JSON.stringify(activeSkin));
-    localStorage.setItem('sc_gthresh',      JSON.stringify(gachaThreshRef.current));
+    localStorage.setItem('sc_cards',        JSON.stringify(cardInventory));
     localStorage.setItem('sc_dquests',      JSON.stringify(dailyQuests));
     localStorage.setItem('sc_lastsave',     JSON.stringify(Date.now()));
     localStorage.setItem('sc_cps_snapshot', JSON.stringify(Math.round(cps*evMult)));
-  }, [crystals, allTime, purchased, prestige, totalClicks, critCount, eventCount, maxCombo, level, citation, foundSpider, achievements, streak, gachaBoxes, unlockedSkins, activeSkin, dailyQuests, cps, evMult]);
+  }, [crystals, allTime, purchased, prestige, totalClicks, critCount, eventCount, maxCombo, level, citation, foundSpider, achievements, streak, gachaBoxes, unlockedSkins, activeSkin, cardInventory, dailyQuests, cps, evMult]);
 
   // ── CPS tick ──
   useEffect(() => {
@@ -834,13 +900,16 @@ function SpiderChatClicker({ userPseudo }) {
     return () => clearInterval(id);
   }, [arcanicEvent]);
 
-  // ── Gacha threshold ──
+  // ── Gacha threshold — 1 boîte toutes les 5 000 crystaux gagnés ──
   useEffect(() => {
-    if (allTime >= gachaThreshRef.current) {
-      gachaThreshRef.current += 500;
-      setGachaBoxes(b => b+1);
+    const earned = Math.floor(allTime / 5000);
+    if (earned > boxesGivenRef.current) {
+      const newBoxes = earned - boxesGivenRef.current;
+      boxesGivenRef.current = earned;
+      localStorage.setItem('sc_boxes_given', JSON.stringify(earned));
+      setGachaBoxes(b => b + newBoxes);
     }
-  }, [Math.floor(allTime/500)]);
+  }, [Math.floor(allTime / 5000)]);
 
   // ── Milestones + achievements + quests ──
   useEffect(() => {
@@ -1061,37 +1130,113 @@ function SpiderChatClicker({ userPseudo }) {
     setTimeout(()=>setMilestone(null),1800);
   }
 
-  // ── Prestige ──
-  function handlePrestige() {
-    if (level<100) return;
-    if (!confirm(`Prestige ${prestige+1} : Reset crystaux & upgrades contre ×${Math.pow(2,prestige+1)} permanent. Confirmer ?`)) return;
-    setPrestige(p=>p+1); setCrystals(0); setPurchased({}); setCombo(1);
-    setMegaCharge(0); setMegaReady(false); playLevelUp();
+  // ── Son par rareté de carte ──
+  function playCardSound(rarity) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const profiles = {
+        commune:     { freqs:[440,550],                    type:'sine',   vol:0.12 },
+        peu_commune: { freqs:[440,550,660],                type:'sine',   vol:0.14 },
+        rare:        { freqs:[523,659,784],                type:'triangle',vol:0.15 },
+        epique:      { freqs:[523,659,784,1047],           type:'triangle',vol:0.17 },
+        legendaire:  { freqs:[392,523,659,784,1047],       type:'square', vol:0.15 },
+        mythique:    { freqs:[261,329,392,523,659,784,1047],type:'square',vol:0.14 },
+        secrete:     { freqs:[261,329,392,523,659,784,1047,1319],type:'square',vol:0.13 },
+      };
+      const p = profiles[rarity] || profiles.commune;
+      p.freqs.forEach((f,i) => {
+        const o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination); o.type=p.type; o.frequency.value=f;
+        g.gain.setValueAtTime(p.vol-i*0.01, ctx.currentTime+i*0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+i*0.08+0.45);
+        o.start(ctx.currentTime+i*0.08); o.stop(ctx.currentTime+i*0.08+0.5);
+      });
+    } catch {}
   }
 
-  // ── Gacha open ──
-  function openGacha() {
-    if (gachaBoxes<=0) return;
-    setGachaBoxes(b=>b-1);
-    const total = CAT_SKINS.reduce((a,s)=>a+s.weight,0);
-    let rand = Math.random()*total, skin=CAT_SKINS[0];
-    for (const s of CAT_SKINS) { rand-=s.weight; if(rand<=0){skin=s;break;} }
-    setGachaResult(skin);
-    if (!unlockedSkins.includes(skin.id)) setUnlockedSkins(prev=>[...prev,skin.id]);
-    setShowGacha(true); setTimeout(()=>{setShowGacha(false);setGachaResult(null);},3500);
+  // ── Prestige FIXÉ ──
+  function handlePrestige() {
+    if (level < 100) return;
+    const newPrestige = prestige + 1;
+    const newMult = (1 + newPrestige * 0.5).toFixed(1);
+    if (!confirm(`Tu vas perdre ${level} niveaux et ${fmt(Math.floor(crystals))} crystaux, mais gagner +0.5x multiplicateur permanent (nouveau total : ×${newMult}) et une étoile ⭐. Continuer ?`)) return;
+    setPrestige(newPrestige);
+    setCrystals(0);
+    setAllTime(0);
+    setPurchased({});
+    setCombo(1);
+    setMegaCharge(0);
+    setMegaReady(false);
+    boxesGivenRef.current = 0;
+    localStorage.setItem('sc_boxes_given', '0');
+    if (newPrestige >= 3 && !unlockedSkins.includes('ascendant')) {
+      setUnlockedSkins(prev => [...prev, 'ascendant']);
+      setTimeout(() => {
+        setMilestone({ msg: '✨ Skin "Chat Ascendant" débloqué ! (Prestige 3)', color: 'text-purple-300' });
+        setTimeout(() => setMilestone(null), 3800);
+      }, 500);
+    }
+    if (newPrestige >= 10 && !unlockedSkins.includes('primordial')) {
+      setUnlockedSkins(prev => [...prev, 'primordial']);
+      setTimeout(() => {
+        setMilestone({ msg: '🌌 Skin "Chat Primordial" débloqué ! (Prestige 10)', color: 'text-cyan-300' });
+        setTimeout(() => setMilestone(null), 3800);
+      }, 600);
+    }
+    playLevelUp();
+  }
+
+  // ── Ouverture de boîtes Arcanides ──
+  function rollCard() {
+    const total = ARCANE_CARDS.reduce((a,c) => a+c.weight, 0);
+    let r = Math.random() * total;
+    for (const c of ARCANE_CARDS) { r -= c.weight; if (r <= 0) return c; }
+    return ARCANE_CARDS[0];
+  }
+
+  function startBoxOpening() {
+    if (gachaBoxes <= 0) return;
+    const count = gachaBoxes;
+    const cards = Array.from({ length: count }, () => rollCard());
+    const newInv = { ...cardInventory };
+    let bonus = 0;
+    cards.forEach(card => {
+      if ((newInv[card.id] || 0) > 0) bonus += 100;
+      newInv[card.id] = (newInv[card.id] || 0) + 1;
+    });
+    setCardInventory(newInv);
+    setGachaBoxes(0);
+    setOpeningCards(cards);
+    setCardRevealIdx(0);
+    setShowBoxModal(true);
+    if (bonus > 0) { setCrystals(c=>c+bonus); setAllTime(t=>t+bonus); }
+    if (cards[0]) playCardSound(cards[0].rarity);
+  }
+
+  function advanceCard() {
+    if (cardRevealIdx < openingCards.length - 1) {
+      const next = cardRevealIdx + 1;
+      setCardRevealIdx(next);
+      if (openingCards[next]) playCardSound(openingCards[next].rarity);
+    } else {
+      setCardRevealIdx(openingCards.length);
+    }
   }
 
   // ── Reset ──
   function resetGame() {
-    if (!confirm('Reset TOTAL ? Même le prestige sera effacé.')) return;
+    if (!confirm('Reset TOTAL ? Même le prestige et les cartes seront effacés.')) return;
     setCrystals(0);setAllTime(0);setPurchased({});setPrestige(0);setTotalClicks(0);
     setCritCount(0);setEventCount(0);setMaxCombo(1);setAchievements(new Set());
     setCombo(1);setFoundSpider(false);setStreak(0);setGachaBoxes(0);
     setUnlockedSkins(['default']);setActiveSkin('default');setMegaCharge(0);setMegaReady(false);
+    setCardInventory({});
+    boxesGivenRef.current = 0;
     seenMsRef.current=new Set(); seenAchRef.current=new Set();
     ['sc_crystals','sc_alltime','sc_upgrades','sc_prestige','sc_clicks','sc_crits',
      'sc_events','sc_maxcombo','sc_level','sc_milestones','sc_achievements','sc_citation',
-     'sc_nextevent','sc_spider','sc_streak','sc_gboxes','sc_skins','sc_skin','sc_gthresh',
+     'sc_nextevent','sc_spider','sc_streak','sc_gboxes','sc_skins','sc_skin',
+     'sc_cards','sc_boxes_given',
      'sc_ddate','sc_dquests','sc_lastsave','sc_lastdate','sc_cps_snapshot'].forEach(k=>localStorage.removeItem(k));
   }
 
@@ -1128,16 +1273,167 @@ function SpiderChatClicker({ userPseudo }) {
           </div>
         </div>
       )}
-      {showGacha&&gachaResult&&(
-        <div className="gacha-reveal">
-          <div className="text-center bg-[#0d0a1a]/98 border-2 rounded-2xl p-8 shadow-2xl min-w-[220px]"
-            style={{borderColor:gachaResult.color}}>
-            <div className="text-6xl mb-3">{gachaResult.emoji||'🐱'}</div>
-            <div className="text-xl font-black font-serif mb-1" style={{color:gachaResult.color}}>
-              {gachaResult.rarity.toUpperCase()}
+      {/* ── MODAL OUVERTURE DE BOÎTES ── */}
+      {showBoxModal&&(
+        <div className="fixed inset-0 z-[9500] flex items-center justify-center bg-black/85 backdrop-blur-sm" onClick={()=>{ if(cardRevealIdx>=openingCards.length) setShowBoxModal(false); }}>
+          <div className="box-modal-in bg-[#0d0907] border border-[#3a2520] rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
+            {cardRevealIdx < openingCards.length ? (
+              (() => {
+                const card = openingCards[cardRevealIdx];
+                const rc = RARITY_CONFIG[card.rarity] || RARITY_CONFIG.commune;
+                const isMythic = card.mythic;
+                const isSecret = card.secret;
+                const isLeg = card.legendary;
+                const isEpic = card.particles;
+                return (
+                  <div className="p-6 flex flex-col items-center gap-4">
+                    <div className="text-[10px] text-stone-500 font-mono uppercase tracking-widest">
+                      Boîte {cardRevealIdx+1} / {openingCards.length}
+                    </div>
+                    <div key={cardRevealIdx} className={`card-reveal relative w-56 h-72 rounded-2xl bg-gradient-to-b ${card.bg} border-4 flex flex-col items-center justify-center gap-3 overflow-hidden cursor-pointer ${isMythic?'card-mythic':isSecret?'card-secret':''} ${card.holo?'relative':''}`}
+                      style={!isMythic&&!isSecret?{borderColor:card.border,boxShadow:`0 0 24px ${card.border}55`}:{}}
+                      onClick={advanceCard}>
+                      {isLeg&&<div className="card-legendary-rays pointer-events-none"/>}
+                      {card.holo&&<div className="absolute inset-0 card-holo pointer-events-none rounded-2xl"/>}
+                      <div className={`text-6xl select-none ${isEpic?'card-epic-fx':''}`}>{card.emoji.split('').slice(0,3).join('')}</div>
+                      <div className="text-center px-3">
+                        <div className={`text-xs font-black uppercase tracking-widest ${rc.color}`}>{rc.label}</div>
+                        <div className="text-base font-black text-white font-serif mt-0.5 leading-tight">{card.name}</div>
+                        <div className="text-[10px] text-stone-400 italic mt-1">{card.desc}</div>
+                      </div>
+                      {(cardInventory[card.id]||0) > 1 && (
+                        <div className="absolute top-2 right-2 bg-black/60 border border-amber-600/50 rounded-full px-2 py-0.5 text-[9px] font-black text-amber-400">
+                          +100 💎 DUP
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-stone-600 font-mono">Cliquer sur la carte ou →</div>
+                    <div className="flex gap-3 w-full">
+                      <button onClick={advanceCard} className="flex-1 bg-amber-900/40 border border-amber-700/50 hover:bg-amber-900/60 text-amber-300 font-black text-sm py-2.5 rounded-xl transition-all">
+                        {cardRevealIdx < openingCards.length-1 ? 'Carte suivante →' : 'Voir le résumé ✓'}
+                      </button>
+                      <button onClick={()=>{
+                        const last = openingCards.length-1;
+                        setCardRevealIdx(last);
+                        playCardSound(openingCards[last]?.rarity||'commune');
+                      }} className="bg-[#1a130f] border border-[#352018] hover:border-[#4a3020] text-stone-500 hover:text-stone-300 text-xs py-2.5 px-3 rounded-xl transition-all">
+                        Aller à la fin
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="p-6 space-y-4">
+                <div className="text-center">
+                  <div className="text-2xl font-black font-serif text-amber-300">📦 {openingCards.length} boîte{openingCards.length>1?'s':''} ouvertes !</div>
+                  <div className="text-[10px] text-stone-500 font-mono mt-1">Collection mise à jour</div>
+                </div>
+                <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+                  {openingCards.map((card,i) => {
+                    const rc = RARITY_CONFIG[card.rarity]||RARITY_CONFIG.commune;
+                    return (
+                      <div key={i} className={`rounded-xl bg-gradient-to-b ${card.bg} border-2 flex flex-col items-center justify-center p-2 gap-1 ${card.mythic?'card-mythic':card.secret?'card-secret':''}`}
+                        style={!card.mythic&&!card.secret?{borderColor:card.border}:{}}>
+                        <div className="text-2xl">{card.emoji.split('').slice(0,1).join('')}</div>
+                        <div className={`text-[8px] font-black ${rc.color} uppercase text-center leading-none`}>{rc.label}</div>
+                        <div className="text-[8px] text-white font-bold text-center leading-none">{card.name.split(' ').slice(0,2).join(' ')}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={()=>setShowBoxModal(false)} className="flex-1 bg-[#1a130f] border border-[#352018] text-stone-400 hover:text-stone-200 font-bold text-sm py-2.5 rounded-xl transition-all">Fermer</button>
+                  <button onClick={()=>{setShowBoxModal(false);setShowChatDex(true);}} className="flex-1 bg-purple-900/40 border border-purple-700/50 hover:bg-purple-900/60 text-purple-300 font-black text-sm py-2.5 rounded-xl transition-all">Voir mon ChatDex 📖</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── CHATDEX MODAL ── */}
+      {showChatDex&&(
+        <div className="fixed inset-0 z-[9500] flex items-center justify-center bg-black/85 backdrop-blur-sm" onClick={()=>dexSelected?setDexSelected(null):setShowChatDex(false)}>
+          <div className="box-modal-in bg-[#0d0907] border border-[#3a2520] rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden" onClick={e=>e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-[#2a1d14] flex-shrink-0">
+              <div>
+                <div className="text-base font-black font-serif text-white flex items-center gap-2">📖 ChatDex
+                  <span className="text-[10px] text-stone-500 font-mono font-normal">
+                    {Object.keys(cardInventory).filter(k=>cardInventory[k]>0).length}/{ARCANE_CARDS.length} cartes
+                  </span>
+                </div>
+                <div className="w-48 h-1 bg-[#1a130f] rounded-full mt-1 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-600 to-amber-500 rounded-full transition-all"
+                    style={{width:`${(Object.keys(cardInventory).filter(k=>cardInventory[k]>0).length/ARCANE_CARDS.length)*100}%`}}/>
+                </div>
+              </div>
+              <button onClick={()=>setShowChatDex(false)} className="text-stone-500 hover:text-white text-xl leading-none">✕</button>
             </div>
-            <div className="text-base font-bold text-white">{gachaResult.name}</div>
-            <div className="text-xs text-stone-500 mt-2 font-mono">Skin chat débloqué !</div>
+            <div className="flex gap-1.5 p-3 flex-shrink-0 flex-wrap border-b border-[#1a130f]">
+              {['toutes','commune','peu_commune','rare','epique','legendaire','mythique','secrete'].map(r=>(
+                <button key={r} onClick={()=>setDexFilter(r)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${dexFilter===r?'bg-amber-900/50 border-amber-600 text-amber-300':'bg-[#1a130f] border-[#2a1d14] text-stone-500 hover:text-stone-300'}`}>
+                  {r==='toutes'?'Toutes':(RARITY_CONFIG[r]?.label||r)}
+                </button>
+              ))}
+            </div>
+            {dexSelected ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
+                {(() => {
+                  const card = ARCANE_CARDS.find(c=>c.id===dexSelected);
+                  const rc = RARITY_CONFIG[card.rarity]||RARITY_CONFIG.commune;
+                  const count = cardInventory[card.id]||0;
+                  return (
+                    <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+                      <div className={`relative w-56 h-72 rounded-2xl bg-gradient-to-b ${card.bg} border-4 flex flex-col items-center justify-center gap-3 overflow-hidden ${card.mythic?'card-mythic':card.secret?'card-secret':''}`}
+                        style={!card.mythic&&!card.secret?{borderColor:card.border,boxShadow:`0 0 30px ${card.border}66`}:{}}>
+                        {card.legendary&&<div className="card-legendary-rays"/>}
+                        {card.holo&&<div className="absolute inset-0 card-holo pointer-events-none rounded-2xl"/>}
+                        <div className={`text-7xl select-none ${card.particles?'card-epic-fx':''}`}>{card.emoji}</div>
+                        <div className="text-center px-3">
+                          <div className={`text-xs font-black uppercase tracking-widest ${rc.color}`}>{rc.label}</div>
+                          <div className="text-lg font-black text-white font-serif mt-0.5 leading-tight">{card.name}</div>
+                          <div className="text-[11px] text-stone-300 italic mt-1">{card.desc}</div>
+                        </div>
+                        {count>0&&<div className="absolute top-2 right-2 bg-black/60 border border-white/20 rounded-full px-2 py-0.5 text-[9px] font-black text-white">×{count}</div>}
+                      </div>
+                      <button onClick={()=>setDexSelected(null)} className="w-full bg-[#1a130f] border border-[#352018] text-stone-400 hover:text-stone-200 font-bold text-sm py-2 rounded-xl transition-all">← Retour</button>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-3">
+                <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+                  {ARCANE_CARDS.filter(c=>dexFilter==='toutes'||c.rarity===dexFilter).map(card => {
+                    const owned = (cardInventory[card.id]||0)>0;
+                    const rc = RARITY_CONFIG[card.rarity]||RARITY_CONFIG.commune;
+                    const count = cardInventory[card.id]||0;
+                    return (
+                      <button key={card.id} onClick={()=>owned&&setDexSelected(card.id)}
+                        className={`relative rounded-xl border-2 flex flex-col items-center justify-center p-2 gap-1 aspect-[3/4] transition-all ${owned?'hover:scale-105 cursor-pointer':'opacity-40 cursor-default grayscale'} ${card.mythic&&owned?'card-mythic':card.secret&&owned?'card-secret':''}`}
+                        style={owned&&!card.mythic&&!card.secret?{borderColor:card.border,background:`linear-gradient(to bottom, #0d0907, #1a0f0a)`}:{borderColor:'#374151',background:'#0a0705'}}>
+                        {owned ? (
+                          <>
+                            <div className="text-2xl">{card.emoji.split('').slice(0,1).join('')}</div>
+                            <div className={`text-[7px] font-black uppercase leading-none ${rc.color}`}>{rc.label}</div>
+                            <div className="text-[8px] text-white font-bold text-center leading-none">{card.name.split(' ').slice(0,2).join(' ')}</div>
+                            {count>1&&<div className="absolute top-1 right-1 bg-amber-800 text-amber-200 text-[7px] font-black rounded-full w-4 h-4 flex items-center justify-center">×{count}</div>}
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-2xl grayscale opacity-50">❓</div>
+                            <div className={`text-[7px] font-black uppercase leading-none ${rc.color} opacity-50`}>{rc.label}</div>
+                            <div className="text-[8px] text-stone-600 font-bold text-center leading-none">???</div>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1169,7 +1465,7 @@ function SpiderChatClicker({ userPseudo }) {
           <div className={`text-2xl ${badge.pulse?'badge-pulse':''} ${badge.rainbow?'rainbow-text':''}`}>{badge.emoji}</div>
           <div>
             <div className={`text-sm font-black ${badge.color} ${badge.rainbow?'rainbow-text':''}`}>{badge.name}</div>
-            <div className="text-[10px] text-stone-500 font-mono">Niv.{level} · {levelTitle}{prestige>0?` · ${'★'.repeat(prestige)} Prestige`:''}{streak>0?` · 🔥${streak}j`:''}</div>
+            <div className="text-[10px] text-stone-500 font-mono">Niv.{level} · {levelTitle}{prestige>0?` · ${'⭐'.repeat(Math.min(prestige,10))}${prestige>10?'…':''} ×${(1+prestige*0.5).toFixed(1)}`:''}{streak>0?` · 🔥${streak}j`:''}</div>
           </div>
         </div>
         <div className="flex-1 min-w-[120px] max-w-[200px]">
@@ -1186,10 +1482,13 @@ function SpiderChatClicker({ userPseudo }) {
             </div>
           )}
           {gachaBoxes>0&&(
-            <button onClick={openGacha} className="flex items-center gap-1 bg-purple-900/40 border border-purple-600/60 rounded-lg px-2.5 py-1.5 badge-pulse">
-              <span className="text-purple-300 text-xs font-black">📦×{gachaBoxes}</span>
+            <button onClick={startBoxOpening} className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-600/60 rounded-lg px-2.5 py-1.5 badge-pulse hover:bg-purple-900/60 transition-all">
+              <span className="text-purple-300 text-xs font-black">📦 {gachaBoxes} boîte{gachaBoxes>1?'s':''}</span>
             </button>
           )}
+          <button onClick={()=>setShowChatDex(true)} className="flex items-center gap-1 bg-blue-900/30 border border-blue-700/40 rounded-lg px-2.5 py-1.5 hover:bg-blue-900/50 transition-all">
+            <span className="text-blue-300 text-xs font-bold">📖 ChatDex</span>
+          </button>
           <div className="flex gap-1">
             {[{v:'clicker',l:'🐱'},{v:'leaderboard',l:'🏆'},{v:'achievements',l:'🎖️'},{v:'quests',l:'📋'}].map(({v,l})=>(
               <button key={v} onClick={()=>setActiveView(v)}
@@ -1297,27 +1596,33 @@ function SpiderChatClicker({ userPseudo }) {
               ))}
             </div>
 
-            {/* Gacha + skins */}
-            {(gachaBoxes>0||unlockedSkins.length>1)&&(
-              <div className="w-full max-w-sm space-y-2">
-                {gachaBoxes>0&&(
-                  <button onClick={openGacha} className="w-full bg-purple-900/40 border border-purple-600/60 hover:bg-purple-900/60 rounded-xl py-2.5 flex items-center justify-center gap-2 badge-pulse transition-all">
-                    <span className="text-lg">📦</span>
-                    <span className="text-sm font-black text-purple-300">Ouvrir Boîte Arcanide ({gachaBoxes})</span>
-                  </button>
-                )}
-                {unlockedSkins.length>1&&(
-                  <div className="flex gap-1 flex-wrap">
-                    {CAT_SKINS.filter(s=>unlockedSkins.includes(s.id)).map(s=>(
+            {/* Boîtes + skins */}
+            <div className="w-full max-w-sm space-y-2">
+              {gachaBoxes>0&&(
+                <button onClick={startBoxOpening} className="w-full bg-purple-900/40 border border-purple-600/60 hover:bg-purple-900/60 rounded-xl py-2.5 flex items-center justify-center gap-2 badge-pulse transition-all">
+                  <span className="text-lg">📦</span>
+                  <span className="text-sm font-black text-purple-300">Ouvrir mes Boîtes ({gachaBoxes})</span>
+                </button>
+              )}
+              {unlockedSkins.length>1&&(
+                <div className="flex gap-1 flex-wrap">
+                  {CAT_SKINS.filter(s=>unlockedSkins.includes(s.id)).map(s=>{
+                    const skinData = CAT_SKINS.find(x=>x.id===s.id);
+                    return (
                       <button key={s.id} onClick={()=>setActiveSkin(s.id)}
-                        className={`px-2 py-1 rounded-lg text-xs border transition-all ${activeSkin===s.id?'bg-amber-900/50 border-amber-600 text-amber-300':'bg-[#0d0907] border-[#211610] text-stone-500 hover:text-stone-300'}`}>
+                        className={`px-2 py-1 rounded-lg text-xs border transition-all ${activeSkin===s.id?'bg-amber-900/50 border-amber-600 text-amber-300':'bg-[#0d0907] border-[#211610] text-stone-500 hover:text-stone-300'} ${activeSkin===s.id&&skinData?.skinClass?skinData.skinClass:''}`}>
                         {s.emoji||'🐱'} {s.name}
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              )}
+              {prestige<3&&(
+                <div className="text-[9px] text-stone-700 font-mono text-center">
+                  💡 Boîte Arcanide toutes les 5 000 crystaux gagnés · Prestige 3+ débloque un skin spécial
+                </div>
+              )}
+            </div>
 
             {/* Citation */}
             <div className="w-full max-w-sm">
@@ -1335,8 +1640,9 @@ function SpiderChatClicker({ userPseudo }) {
 
             {/* Prestige */}
             {level>=100&&(
-              <button onClick={handlePrestige} className="w-full max-w-sm divine-glow bg-gradient-to-r from-amber-900/60 to-yellow-900/60 border border-amber-400/60 rounded-xl py-3 font-black text-amber-300 text-sm font-serif uppercase tracking-wider">
-                ✨ PRESTIGE {prestige+1} — ×{Math.pow(2,prestige+1)} permanent
+              <button onClick={handlePrestige} className="w-full max-w-sm divine-glow bg-gradient-to-r from-amber-900/60 to-yellow-900/60 border border-amber-400/60 rounded-xl py-3 font-black text-amber-300 text-sm font-serif uppercase tracking-wider flex flex-col items-center gap-0.5">
+                <span>✨ PRESTIGE {prestige+1} — ×{(1+(prestige+1)*0.5).toFixed(1)} permanent</span>
+                <span className="text-[10px] font-normal text-amber-500 normal-case tracking-normal">Niv.{level} → 1 · Crystaux → 0 · +⭐{prestige>=2?` · Skin ${prestige+1>=3&&!unlockedSkins.includes('ascendant')?' Ascendant débloqué !':''}`:''}</span>
               </button>
             )}
             <button onClick={resetGame} className="text-[8px] text-stone-800 hover:text-red-700 transition-colors font-mono underline">Réinitialiser</button>
@@ -1424,7 +1730,7 @@ function SpiderChatClicker({ userPseudo }) {
                     <span className="text-base">{row.badge_emoji}</span>
                     <button onClick={()=>setProfilePseudo(row.pseudo)} className="flex-1 text-left">
                       <span className={`text-xs font-bold ${isMe?'text-amber-300':'text-stone-300'} hover:underline`}>{row.pseudo}</span>
-                      {row.prestige>0&&<span className="ml-1 text-[9px] text-yellow-400">{'★'.repeat(Math.min(row.prestige,5))}</span>}
+                      {row.prestige>0&&<span className="ml-1 text-[9px] text-yellow-400">{'⭐'.repeat(Math.min(row.prestige,5))}{row.prestige>5?`+${row.prestige-5}`:''}</span>}
                     </button>
                     <div className="text-right">
                       <div className="text-xs font-black font-mono text-amber-400">{fmt(val||0)}</div>
@@ -1570,8 +1876,11 @@ export default function App() {
   const [newRaidDate, setNewRaidDate] = useState('');
 
   // ── Formulaires Trophées ──
-  const [tropheeBoss, setTropheeBoss] = useState('');
-  const [tropheeTier, setTropheeTier] = useState('I');
+  const [tropheeBoss,     setTropheeBoss]     = useState('');
+  const [tropheeTier,     setTropheeTier]     = useState('I');
+  const [tropheeRespawn,  setTropheeRespawn]  = useState(24);
+  const [respawnTimers,   setRespawnTimers]   = useState({});
+  const [showShoppingList,setShowShoppingList]= useState(false);
 
   // ── Guide ──
   const [activeSection,  setActiveSection]  = useState(0);
@@ -1936,7 +2245,8 @@ export default function App() {
   const handleAddTrophee = async (e) => {
     e.preventDefault();
     if (!tropheeBoss.trim()) return;
-    const t = { boss: tropheeBoss.trim(), killed_by: userPseudo, date: new Date().toLocaleDateString('fr-FR'), tier: tropheeTier };
+    const tueAt = new Date().toISOString();
+    const t = { boss: tropheeBoss.trim(), killed_by: userPseudo, date: new Date().toLocaleDateString('fr-FR'), tier: tropheeTier, respawn_heures: tropheeRespawn, tue_le: tueAt };
     try {
       const { error } = await supabase.from('trophees').insert([t]);
       if (!error) setTrophees(prev => [{ ...t, id: Date.now() }, ...prev]);
@@ -1944,10 +2254,47 @@ export default function App() {
     } catch {
       setTrophees(prev => [{ ...t, id: Date.now() }, ...prev]);
     }
-    setTropheeBoss('');
+    setTropheeBoss(''); setTropheeRespawn(24);
     playBell();
     showToast('💀 Boss terrassé ! Gloire éternelle !');
   };
+
+  // ── Respawn timer tick ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = Date.now();
+      const timers = {};
+      trophees.forEach(tr => {
+        if (tr.tue_le && tr.respawn_heures) {
+          const respawnAt = new Date(tr.tue_le).getTime() + (tr.respawn_heures || 24) * 3600 * 1000;
+          const diff = Math.max(0, Math.ceil((respawnAt - now) / 1000));
+          timers[tr.id] = diff;
+        }
+      });
+      setRespawnTimers(timers);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [trophees]);
+
+  function fmtTimer(secs) {
+    if (secs <= 0) return null;
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${h}h${m.toString().padStart(2,'0')}m${s.toString().padStart(2,'0')}s`;
+  }
+
+  // ── Liste de courses ─────────────────────────────────────────────────────
+  function buildShoppingList() {
+    const totals = {};
+    projets.filter(p => p.status !== 'Terminé').forEach(p => {
+      p.resources.forEach(r => {
+        const missing = Math.max(0, r.max - r.current);
+        if (missing > 0) totals[r.name] = (totals[r.name] || 0) + missing;
+      });
+    });
+    return Object.entries(totals).sort(([,a],[,b]) => b - a);
+  }
 
   // ── Dashboard helpers ─────────────────────────────────────────────────────
   const totalProjets   = projets.length;
@@ -2406,10 +2753,50 @@ export default function App() {
                 </button>
               ))}
               <button onClick={()=>setHideCompleted(h=>!h)}
-                className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all ml-auto ${hideCompleted ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700' : 'bg-stone-900 text-stone-500 border-stone-700'}`}>
+                className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all ${hideCompleted ? 'bg-emerald-900/50 text-emerald-300 border-emerald-700' : 'bg-stone-900 text-stone-500 border-stone-700'}`}>
                 {hideCompleted ? '✓ Terminés masqués' : 'Masquer terminés'}
               </button>
+              <button onClick={()=>setShowShoppingList(true)}
+                className="ml-auto text-[11px] font-bold px-3 py-1.5 rounded-lg border bg-blue-900/30 border-blue-700/50 text-blue-300 hover:bg-blue-900/50 transition-all flex items-center gap-1.5">
+                🛒 Liste de courses
+              </button>
             </div>
+
+            {/* Modal liste de courses */}
+            {showShoppingList&&(
+              <div className="fixed inset-0 z-[800] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={()=>setShowShoppingList(false)}>
+                <div className="bg-[#120d0a] border border-[#3a2520] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e=>e.stopPropagation()}>
+                  <div className="flex items-center justify-between p-4 border-b border-[#2a1d14]">
+                    <div className="font-black font-serif text-white flex items-center gap-2">🛒 Liste de courses
+                      <span className="text-[10px] text-stone-500 font-normal font-mono">projets non terminés</span>
+                    </div>
+                    <button onClick={()=>setShowShoppingList(false)} className="text-stone-500 hover:text-white text-xl">✕</button>
+                  </div>
+                  <div className="p-4 space-y-2 max-h-80 overflow-y-auto">
+                    {(() => {
+                      const list = buildShoppingList();
+                      if (list.length === 0) return <div className="text-center text-stone-600 italic text-xs py-6">Rien à acheter — tous les projets sont complets !</div>;
+                      return list.map(([mat,qty]) => (
+                        <div key={mat} className="flex items-center justify-between py-1.5 border-b border-[#1a130f] last:border-none">
+                          <span className="text-sm text-stone-200 font-medium">{mat}</span>
+                          <span className="text-sm font-black font-mono text-amber-400">Il manque {qty.toLocaleString('fr-FR')}</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                  <div className="p-4 border-t border-[#2a1d14]">
+                    <button onClick={()=>{
+                      const list = buildShoppingList();
+                      const txt = list.map(([m,q])=>`• Il manque ${q} ${m}`).join('\n');
+                      navigator.clipboard.writeText(`📋 Liste de courses — Arcane Frontier\n${new Date().toLocaleDateString('fr-FR')}\n\n${txt}`);
+                      showToast('📋 Liste copiée dans le presse-papier !');
+                    }} className="w-full bg-blue-900/40 border border-blue-700/50 hover:bg-blue-900/60 text-blue-300 font-black text-sm py-2.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                      <Copy className="w-4 h-4"/> Copier la liste
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3">
               {projetsFiltres.length === 0 ? (
@@ -2633,8 +3020,8 @@ export default function App() {
               <h3 onClick={handleSkullClick} className="text-sm font-black font-serif uppercase tracking-wider text-stone-200 flex items-center gap-2 cursor-default select-none" title="Cliquez 3 fois...">
                 <Skull className="w-5 h-5 text-red-400"/> Mur des Trophées
               </h3>
-              <form onSubmit={handleAddTrophee} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-end">
-                <div className="flex-1 w-full">
+              <form onSubmit={handleAddTrophee} className="bg-[#120d0a] border border-[#2b1c13] p-4 rounded-xl flex flex-col sm:flex-row gap-3 items-end flex-wrap">
+                <div className="flex-1 w-full min-w-[160px]">
                   <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Boss Vaincu</label>
                   <input type="text" value={tropheeBoss} onChange={e=>setTropheeBoss(e.target.value)}
                     placeholder="Ex: Obliterator, Ignis, Dragon..."
@@ -2647,6 +3034,11 @@ export default function App() {
                     {WORLD_TIERS.map(t=><option key={t} value={t}>Tier {t}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-[10px] text-stone-500 uppercase font-bold mb-1">Respawn (heures)</label>
+                  <input type="number" min={1} max={9999} value={tropheeRespawn} onChange={e=>setTropheeRespawn(parseInt(e.target.value)||24)}
+                    className="w-20 bg-[#070504] border border-[#38261c] rounded-lg p-2 text-white text-center"/>
+                </div>
                 <button type="submit" className="bg-red-800 hover:bg-red-700 text-white font-serif font-bold py-2 px-5 rounded-lg uppercase tracking-wide h-9">Déclarer le Kill</button>
               </form>
 
@@ -2656,17 +3048,31 @@ export default function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {trophees.map((tr,i)=>(
-                    <div key={tr.id||i} className="bg-[#120d0a] border border-red-900/60 rounded-xl p-4 text-center space-y-2 hover:border-red-700/80 hover:bg-red-950/20 transition-all group cursor-default">
-                      <div className="text-3xl group-hover:scale-110 transition-transform">💀</div>
-                      <div className="font-serif font-black text-red-300 text-sm leading-tight">{tr.boss}</div>
-                      <div className="text-[10px] text-stone-500 font-mono">Vaincu par<br/><span className="text-stone-300 font-bold">{tr.killed_by}</span></div>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-[10px] bg-red-900/40 text-red-300 border border-red-700/50 px-2 py-0.5 rounded font-bold">Tier {tr.tier}</span>
-                        {tr.date && <span className="text-[10px] text-stone-600 font-mono">{tr.date}</span>}
+                  {trophees.map((tr,i)=>{
+                    const timerSecs = respawnTimers[tr.id];
+                    const available = timerSecs === 0 || (!tr.tue_le);
+                    const timerStr = timerSecs > 0 ? fmtTimer(timerSecs) : null;
+                    return (
+                      <div key={tr.id||i} className="bg-[#120d0a] border border-red-900/60 rounded-xl p-4 text-center space-y-2 hover:border-red-700/80 hover:bg-red-950/20 transition-all group cursor-default">
+                        <div className="text-3xl group-hover:scale-110 transition-transform">💀</div>
+                        <div className="font-serif font-black text-red-300 text-sm leading-tight">{tr.boss}</div>
+                        <div className="text-[10px] text-stone-500 font-mono">Vaincu par<br/><span className="text-stone-300 font-bold">{tr.killed_by}</span></div>
+                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                          <span className="text-[10px] bg-red-900/40 text-red-300 border border-red-700/50 px-2 py-0.5 rounded font-bold">Tier {tr.tier}</span>
+                          {tr.date && <span className="text-[10px] text-stone-600 font-mono">{tr.date}</span>}
+                        </div>
+                        {tr.tue_le && (
+                          <div className="mt-1">
+                            {available ? (
+                              <span className="respawn-available inline-block bg-emerald-900/50 border border-emerald-600 text-emerald-300 text-[10px] font-black px-2 py-0.5 rounded-full">✅ Disponible !</span>
+                            ) : timerStr ? (
+                              <div className="text-[10px] text-stone-500 font-mono">⏱️ Respawn dans<br/><span className="text-amber-400 font-black">{timerStr}</span></div>
+                            ) : null}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
